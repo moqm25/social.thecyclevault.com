@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/AuthProvider";
+import { SignInLink } from "./SignInLink";
 
 /** Compact auth control in the top bar: sign-in link or username + sign-out. */
 export function UserMenu() {
@@ -8,9 +9,9 @@ export function UserMenu() {
 
 	if (!user) {
 		return (
-			<Link to="/login" className="rounded-full bg-coral px-4 py-1.5 text-sm font-medium text-white transition-transform hover:scale-[1.02]">
+			<SignInLink className="rounded-full bg-coral px-4 py-1.5 text-sm font-medium text-white transition-transform hover:scale-[1.02]">
 				Sign in
-			</Link>
+			</SignInLink>
 		);
 	}
 

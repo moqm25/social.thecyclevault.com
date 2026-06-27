@@ -6,6 +6,7 @@ import { CommentComposer } from "../features/comments/CommentComposer";
 import { VoteControl } from "../components/VoteControl";
 import { AuthorName } from "../components/AuthorName";
 import { ContentMenu } from "../components/ContentMenu";
+import { SignInLink } from "../components/SignInLink";
 import { ModerationDetails } from "../components/ModerationDetails";
 import { Skeleton, ErrorState } from "../components/states";
 import { relativeTime } from "../lib/time";
@@ -110,10 +111,7 @@ export default function PostDetailPage() {
 					</div>
 				) : (
 					<p className="mb-5 rounded-xl border border-line bg-bg-2 px-4 py-3 text-sm text-muted">
-						<Link to="/login" className="font-medium text-coral hover:underline">
-							Sign in
-						</Link>{" "}
-						to join the conversation.
+						<SignInLink className="font-medium text-coral hover:underline">Sign in</SignInLink> to join the conversation.
 					</p>
 				)}
 

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthProvider";
+import { SignInLink } from "../SignInLink";
 import { LockIcon, SparkIcon, HeartIcon } from "./icons";
 
 /**
@@ -23,14 +24,12 @@ export function RightRail() {
 						You’re browsing as a guest, so names stay hidden. Join free to see who’s talking and to post, reply, and vote.
 					</p>
 					<div className="mt-3 flex flex-col gap-2">
-						<Link
-							to="/login"
-							className="inline-flex items-center justify-center rounded-full bg-coral px-4 py-2 font-medium text-white transition-transform hover:scale-[1.015]">
+						<SignInLink className="inline-flex items-center justify-center rounded-full bg-coral px-4 py-2 font-medium text-white transition-transform hover:scale-[1.015]">
 							Join free
-						</Link>
-						<Link to="/login" className="inline-flex items-center justify-center rounded-full px-4 py-2 font-medium text-ink-2 hover:text-coral">
+						</SignInLink>
+						<SignInLink className="inline-flex items-center justify-center rounded-full px-4 py-2 font-medium text-ink-2 hover:text-coral">
 							Sign in
-						</Link>
+						</SignInLink>
 					</div>
 				</Card>
 			) : isSupporter ? (

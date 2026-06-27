@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../features/auth/AuthProvider";
 import { UserBadges } from "../components/Badge";
+import { SignInLink } from "../components/SignInLink";
 
 const PERKS = [
 	"Remove ads — a calm, ad-free community",
@@ -96,10 +97,7 @@ export default function SupporterPage() {
 							"We’ll let you know the moment Supporter goes live."
 						) : (
 							<>
-								<Link to="/login" className="font-medium text-coral hover:underline">
-									Sign in
-								</Link>{" "}
-								to be first in line.
+								<SignInLink className="font-medium text-coral hover:underline">Sign in</SignInLink> to be first in line.
 							</>
 						)}
 					</p>

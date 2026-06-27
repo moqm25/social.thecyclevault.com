@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FirebaseError } from "firebase/app";
 import { useQueryClient } from "@tanstack/react-query";
 import { TextField } from "../components/TextField";
+import { SignInLink } from "../components/SignInLink";
 import { Button } from "../components/Button";
 import { useAuth } from "../features/auth/AuthProvider";
 import { createCommunity } from "../lib/api";
@@ -53,10 +54,7 @@ export default function CreateCirclePage() {
 				<h1 className="text-xl font-semibold text-ink">Create a Circle</h1>
 				<p className="mt-2 text-muted">
 					Circles are member-made spaces for a topic you care about.{" "}
-					<Link to="/login" className="font-medium text-coral hover:underline">
-						Sign in
-					</Link>{" "}
-					to create one.
+					<SignInLink className="font-medium text-coral hover:underline">Sign in</SignInLink> to create one.
 				</p>
 			</div>
 		);
@@ -110,13 +108,7 @@ export default function CreateCirclePage() {
 			)}
 
 			<form onSubmit={onSubmit} className="space-y-4">
-				<TextField
-					label="Name"
-					value={name}
-					maxLength={40}
-					placeholder="e.g. Cycle & Sleep"
-					onChange={(e) => setName(e.target.value)}
-				/>
+				<TextField label="Name" value={name} maxLength={40} placeholder="e.g. Cycle & Sleep" onChange={(e) => setName(e.target.value)} />
 
 				<div className="space-y-1.5">
 					<label htmlFor="slug" className="block text-sm font-medium text-ink-2">

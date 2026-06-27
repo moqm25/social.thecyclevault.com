@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../features/auth/AuthProvider";
+import { useReturnTo } from "./SignInLink";
 import type { VoteValue } from "../types/models";
 
 /**
@@ -25,13 +26,14 @@ export function VoteControl({
 }) {
 	const { user } = useAuth();
 	const navigate = useNavigate();
+	const returnTo = useReturnTo();
 	const [myVote, setMyVote] = useState<VoteValue | 0>(0);
 	const [score, setScore] = useState<number>(baseScore);
 	const [pending, setPending] = useState(false);
 
 	async function cast(dir: VoteValue) {
 		if (!user) {
-			navigate("/login");
+			navigate("/login", { state: { from: returnTo } });
 			return;
 		}
 		if (pending) return;

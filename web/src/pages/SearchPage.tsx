@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import { useSearch } from "../features/search/hooks";
 import { useCommunities } from "../features/posts/hooks";
 import { PostCard } from "../components/PostCard";
+import { SignInLink } from "../components/SignInLink";
 import { FeedSkeleton, EmptyState, ErrorState, Skeleton } from "../components/states";
 import { SearchIcon, SparkIcon } from "../components/layout/icons";
 import type { SearchAnswer } from "../types/models";
@@ -105,10 +106,7 @@ export default function SearchPage() {
 					) : search.isError ? (
 						<ErrorState onRetry={() => search.refetch()} />
 					) : !data || (data.posts.length === 0 && data.communities.length === 0) ? (
-						<EmptyState
-							title="No matches yet"
-							body="Try fewer or different words. Some discussions may use other terms."
-						/>
+						<EmptyState title="No matches yet" body="Try fewer or different words. Some discussions may use other terms." />
 					) : (
 						<>
 							{data.answer && <AnswerCard answer={data.answer} aiAvailable={data.aiAvailable} />}
@@ -167,9 +165,7 @@ function AnswerCard({ answer, aiAvailable }: { answer: SearchAnswer; aiAvailable
 				</span>
 				<div className="leading-tight">
 					<p className="text-sm font-semibold text-ink">{isAI ? "AI summary" : "Community snapshot"}</p>
-					<p className="text-[11px] text-muted-2">
-						{isAI ? "Curated from public discussions" : "Summarized from public discussions"}
-					</p>
+					<p className="text-[11px] text-muted-2">{isAI ? "Curated from public discussions" : "Summarized from public discussions"}</p>
 				</div>
 			</div>
 
@@ -199,10 +195,7 @@ function AnswerCard({ answer, aiAvailable }: { answer: SearchAnswer; aiAvailable
 
 			{aiAvailable && (
 				<p className="mt-3 text-[12px] text-muted">
-					<Link to="/login" className="font-medium text-coral hover:underline">
-						Sign in
-					</Link>{" "}
-					for a richer AI-written answer.
+					<SignInLink className="font-medium text-coral hover:underline">Sign in</SignInLink> for a richer AI-written answer.
 				</p>
 			)}
 
@@ -221,9 +214,7 @@ function AnswerCard({ answer, aiAvailable }: { answer: SearchAnswer; aiAvailable
  */
 function CrisisBanner() {
 	return (
-		<section
-			role="note"
-			className="rounded-2xl border border-coral-soft/60 bg-coral-wash/40 p-4 sm:p-5">
+		<section role="note" className="rounded-2xl border border-coral-soft/60 bg-coral-wash/40 p-4 sm:p-5">
 			<p className="text-sm font-semibold text-ink">If you’re going through something hard, you’re not alone.</p>
 			<p className="mt-1 text-sm text-ink-2">
 				If you might be in danger or thinking about harming yourself, please reach out — talking to someone helps.
@@ -254,10 +245,7 @@ function CrisisBanner() {
 					</a>
 				</li>
 			</ul>
-			<p className="mt-3 text-[12px] text-muted-2">
-				The CycleVault is a peer community, not a crisis or medical service.
-			</p>
+			<p className="mt-3 text-[12px] text-muted-2">The CycleVault is a peer community, not a crisis or medical service.</p>
 		</section>
 	);
 }
-

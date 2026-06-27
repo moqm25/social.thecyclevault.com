@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import type { BadgeKind } from "../types/models";
 import { UserBadges } from "./Badge";
+import { SignInLink } from "./SignInLink";
 import { useAuth } from "../features/auth/AuthProvider";
 
 /**
@@ -30,8 +31,7 @@ export function AuthorName({
 	// username) so nothing identifying leaks into the page source.
 	if (!user) {
 		return (
-			<Link
-				to="/login"
+			<SignInLink
 				title="Sign in to see who’s talking"
 				aria-label="Hidden — sign in to see who’s talking"
 				className="inline-flex items-center gap-1 text-muted">
@@ -42,7 +42,7 @@ export function AuthorName({
 					<rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" strokeWidth="1.7" />
 					<path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
 				</svg>
-			</Link>
+			</SignInLink>
 		);
 	}
 

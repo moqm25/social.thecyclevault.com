@@ -1,18 +1,8 @@
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useCommunities } from "../../features/posts/hooks";
-import {
-	HomeIcon,
-	ShopIcon,
-	HeartIcon,
-	BellIcon,
-	UserIcon,
-	SettingsIcon,
-	ShieldIcon,
-	PlusIcon,
-	CirclesIcon,
-	SearchIcon,
-} from "./icons";
+import { SignInLink } from "../SignInLink";
+import { HomeIcon, ShopIcon, HeartIcon, BellIcon, UserIcon, SettingsIcon, ShieldIcon, PlusIcon, CirclesIcon, SearchIcon } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
@@ -113,9 +103,9 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 					<p className="px-3 pt-1 text-[13px] leading-relaxed text-muted-2">
 						<CirclesIcon size={14} className="mb-0.5 mr-1 inline" />
 						Circles are member-made spaces.{" "}
-						<Link to="/login" onClick={onNavigate} className="font-medium text-coral hover:underline">
+						<SignInLink onClick={onNavigate} className="font-medium text-coral hover:underline">
 							Join free
-						</Link>{" "}
+						</SignInLink>{" "}
 						to start one.
 					</p>
 				)}
@@ -133,19 +123,7 @@ function Section({ label, children }: { label?: string; children: React.ReactNod
 	);
 }
 
-function Item({
-	to,
-	icon: Icon,
-	label,
-	end,
-	onNavigate,
-}: {
-	to: string;
-	icon: IconType;
-	label: string;
-	end?: boolean;
-	onNavigate?: () => void;
-}) {
+function Item({ to, icon: Icon, label, end, onNavigate }: { to: string; icon: IconType; label: string; end?: boolean; onNavigate?: () => void }) {
 	return (
 		<NavLink
 			to={to}
