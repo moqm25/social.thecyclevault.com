@@ -73,12 +73,16 @@ Public-facing pseudonymous profile. `uid` equals the Firebase Auth UID.
 | `postCount`      | number                                        | **Function-only** counter                           |
 | `commentCount`   | number                                        | **Function-only** counter                           |
 | `moderatorOf`    | array<ref>                                    | communityIds moderated; default `[]`                |
+| `badges`         | array<enum>                                   | `supporter`,`founding_supporter`,`clinician`,`org`. **Function-only** (monetization/trust — see `MONETIZATION.md`). |
+| `supporter`      | bool?                                          | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase). |
+| `supporterSince` | ts?                                            | When Supporter began; null otherwise                |
 | `suspendedUntil` | ts?                                           | Set by suspension; null otherwise                   |
 | `createdAt`      | ts                                            | server                                              |
 | `updatedAt`      | ts                                            | server                                              |
 
 - **Client-editable subset (own doc only):** `displayName`, `avatarUrl`, `bio`.
-  Everything else is function-only and blocked by rules.
+  Everything else — including `badges`/`supporter` — is function-only and blocked
+  by the rules' `changedKeysWithin` allow-list (no rule change needed to add them).
 - **Email is intentionally absent** — it stays in Firebase Auth.
 
 ---

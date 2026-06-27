@@ -5,14 +5,16 @@ import HomePage from "./pages/HomePage";
 import CommunityPage from "./pages/CommunityPage";
 import NewPostPage from "./pages/NewPostPage";
 import PostDetailPage from "./pages/PostDetailPage";
+import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import ModDashboard from "./pages/ModDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFoundPage from "./pages/NotFoundPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import LoginPage from "./features/auth/LoginPage";
 
 /**
- * Route table — see docs/UI_REQUIREMENTS.md §3.
- * Pages not yet implemented render a calm PlaceholderPage so navigation works
- * end-to-end during the build-out. They are replaced feature-by-feature.
+ * Route table — see docs/UI_REQUIREMENTS.md §3. Every MVP route is implemented.
  */
 export default function App() {
 	return (
@@ -30,12 +32,12 @@ export default function App() {
 					}
 				/>
 				<Route path="/post/:postId" element={<PostDetailPage />} />
-				<Route path="/u/:username" element={<PlaceholderPage title="Profile" />} />
+				<Route path="/u/:username" element={<ProfilePage />} />
 				<Route
 					path="/settings"
 					element={
 						<ProtectedRoute>
-							<PlaceholderPage title="Settings" />
+							<SettingsPage />
 						</ProtectedRoute>
 					}
 				/>
@@ -43,7 +45,7 @@ export default function App() {
 					path="/notifications"
 					element={
 						<ProtectedRoute>
-							<PlaceholderPage title="Notifications" />
+							<NotificationsPage />
 						</ProtectedRoute>
 					}
 				/>
@@ -51,7 +53,7 @@ export default function App() {
 					path="/mod"
 					element={
 						<ProtectedRoute minRole="moderator">
-							<PlaceholderPage title="Moderation" />
+							<ModDashboard />
 						</ProtectedRoute>
 					}
 				/>
@@ -59,7 +61,7 @@ export default function App() {
 					path="/admin"
 					element={
 						<ProtectedRoute minRole="admin">
-							<PlaceholderPage title="Admin" />
+							<AdminDashboard />
 						</ProtectedRoute>
 					}
 				/>

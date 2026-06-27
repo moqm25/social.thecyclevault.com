@@ -7,6 +7,8 @@ import {
   orderBy,
   query,
   startAfter,
+  updateDoc,
+  serverTimestamp,
   where,
   Timestamp,
   type DocumentData,
@@ -14,7 +16,7 @@ import {
   type QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import type { Community, Post, Comment } from '../types/models';
+import type { Community, Post, Comment, UserProfile, AppNotification, Report } from '../types/models';
 
 /**
  * Firestore read helpers. Public content is read directly from the client
@@ -83,6 +85,11 @@ export async function getPost(id: string): Promise<Post | null> {
   return snap.exists() ? normalize<Post>({ id: snap.id, ...snap.data() }) : null;
 }
 
+export async function getComment(id: string): Promise<Comment | null> {
+  const snap = await getDoc(doc(db, 'comments', id));
+  return snap.exists() ? normalize<Comment>({ id: snap.id, ...snap.data() }) : null;
+}
+
 // ------------------------------- comments ---------------------------------
 
 export async function listComments(postId: string): Promise<Comment[]> {
@@ -109,4 +116,72 @@ export async function listUserPosts(authorId: string): Promise<Post[]> {
     ),
   );
   return snap.docs.map((d) => normalize<Post>({ id: d.id, ...d.data() }));
+}
+
+export async function listUserComments(authorId: string): Promise<Comment[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'comments'),
+      where('authorId', '==', authorId),
+      where('status', '==', 'active'),
+      orderBy('createdAt', 'desc'),
+      qLimit(PAGE_SIZE),
+    ),
+  );
+  return snap.docs.map((d) => normalize<Comment>({ id: d.id, ...d.data() }));
+}
+
+// ------------------------------- users ------------------------------------
+
+export async function getUserByUsername(username: string): Promise<UserProfile | null> {
+  const snap = await getDocs(
+    query(collection(db, 'users'), where('usernameLower', '==', username.toLowerCase()), qLimit(1)),
+  );
+  if (snap.empty) return null;
+  const d = snap.docs[0];
+  return normalize<UserProfile>({ uid: d.id, ...d.data() });
+}
+
+/**
+ * Update the signed-in user's own editable profile fields. Only displayName,
+ * avatarUrl, and bio are writable by the client (rules enforce this allow-list);
+ * updatedAt is set server-side.
+ */
+export async function updateMyProfile(
+  uid: string,
+  patch: { displayName?: string | null; bio?: string },
+): Promise<void> {
+  await updateDoc(doc(db, 'users', uid), {
+    ...patch,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+// --------------------------- notifications --------------------------------
+
+export async function listMyNotifications(uid: string): Promise<AppNotification[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'notifications'),
+      where('recipientId', '==', uid),
+      orderBy('createdAt', 'desc'),
+      qLimit(50),
+    ),
+  );
+  return snap.docs.map((d) => normalize<AppNotification>({ id: d.id, ...d.data() }));
+}
+
+// ----------------------------- moderation ---------------------------------
+
+/** Open/in-review reports for the mod queue (mods/admins only by rules). */
+export async function listOpenReports(): Promise<Report[]> {
+  const snap = await getDocs(
+    query(
+      collection(db, 'reports'),
+      where('status', 'in', ['open', 'reviewing']),
+      orderBy('createdAt', 'desc'),
+      qLimit(50),
+    ),
+  );
+  return snap.docs.map((d) => normalize<Report>({ id: d.id, ...d.data() }));
 }

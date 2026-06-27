@@ -7,6 +7,12 @@
 export type UserRole = "user" | "moderator" | "admin" | "superadmin";
 export type UserStatus = "active" | "suspended" | "banned" | "deleted";
 
+/**
+ * Badges power the monetization + trust layer (docs/MONETIZATION.md §4). All are
+ * server-set only (a verified purchase / vetting flow), never client-writable.
+ */
+export type BadgeKind = "supporter" | "founding_supporter" | "clinician" | "org";
+
 export interface UserProfile {
 	uid: string;
 	username: string;
@@ -20,6 +26,10 @@ export interface UserProfile {
 	postCount: number;
 	commentCount: number;
 	moderatorOf: string[];
+	/** Optional cosmetic/trust flair (function-only writes). */
+	badges?: BadgeKind[];
+	supporter?: boolean;
+	supporterSince?: number | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -107,3 +117,19 @@ export interface AppNotification {
 }
 
 export type ReportReason = "spam" | "harassment" | "medical_misinfo" | "self_harm" | "hate" | "off_topic" | "other";
+
+export type ReportStatus = "open" | "reviewing" | "resolved" | "dismissed";
+
+export interface Report {
+	id: string;
+	reporterId: string;
+	targetType: "post" | "comment" | "user";
+	targetId: string;
+	reason: ReportReason;
+	details: string;
+	status: ReportStatus;
+	resolution?: string | null;
+	handledBy?: string | null;
+	createdAt: number;
+	updatedAt: number;
+}
