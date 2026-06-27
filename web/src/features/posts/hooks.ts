@@ -34,10 +34,10 @@ export function usePost(id: string | undefined) {
 	});
 }
 
-export function useComments(postId: string | undefined) {
+export function useComments(postId: string | undefined, includeHidden = false) {
 	return useQuery({
-		queryKey: ["comments", postId],
-		queryFn: () => listComments(postId!),
+		queryKey: ["comments", postId, includeHidden ? "all" : "active"],
+		queryFn: () => listComments(postId!, includeHidden),
 		enabled: !!postId,
 	});
 }

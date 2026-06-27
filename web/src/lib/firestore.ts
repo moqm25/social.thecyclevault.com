@@ -104,10 +104,14 @@ export async function getComment(id: string): Promise<Comment | null> {
 
 // ------------------------------- comments ---------------------------------
 
-export async function listComments(postId: string): Promise<Comment[]> {
-	const snap = await getDocs(
-		query(collection(db, "comments"), where("postId", "==", postId), where("status", "==", "active"), orderBy("createdAt", "asc"), qLimit(300)),
-	);
+export async function listComments(postId: string, includeHidden = false): Promise<Comment[]> {
+	// Admin view (includeHidden) fetches every status so removed/deleted comments
+	// can be shown (marked) inline. Rules still gate this to mods/admins. The
+	// regular path filters to active and is index-backed (status+createdAt).
+	const constraints: QueryConstraint[] = includeHidden
+		? [where("postId", "==", postId), orderBy("createdAt", "asc"), qLimit(300)]
+		: [where("postId", "==", postId), where("status", "==", "active"), orderBy("createdAt", "asc"), qLimit(300)];
+	const snap = await getDocs(query(collection(db, "comments"), ...constraints));
 	return snap.docs.map((d) => normalize<Comment>({ id: d.id, ...d.data() }));
 }
 
@@ -232,4 +236,22 @@ export async function listAccountsNeedingReview(): Promise<UserModeration[]> {
 export async function getUserModeration(uid: string): Promise<UserModeration | null> {
 	const snap = await getDoc(doc(db, "userModeration", uid));
 	return snap.exists() ? normalize<UserModeration>({ uid: snap.id, ...snap.data() }) : null;
+}
+
+// ----------------------- removed / deleted content ------------------------
+
+/** Recently removed-or-deleted posts (mod/admin only). For the admin dashboard. */
+export async function listRemovedPosts(): Promise<Post[]> {
+	const snap = await getDocs(
+		query(collection(db, "posts"), where("status", "in", ["removed", "deleted"]), orderBy("updatedAt", "desc"), qLimit(30)),
+	);
+	return snap.docs.map((d) => normalize<Post>({ id: d.id, ...d.data() }));
+}
+
+/** Recently removed-or-deleted comments (mod/admin only). For the admin dashboard. */
+export async function listRemovedComments(): Promise<Comment[]> {
+	const snap = await getDocs(
+		query(collection(db, "comments"), where("status", "in", ["removed", "deleted"]), orderBy("updatedAt", "desc"), qLimit(30)),
+	);
+	return snap.docs.map((d) => normalize<Comment>({ id: d.id, ...d.data() }));
 }

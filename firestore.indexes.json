@@ -2,6 +2,30 @@
 	"//": "The CycleVault Social — Firestore composite indexes. Source: docs/DATA_MODEL.md §14. Feed/comment queries always filter status=='active' to satisfy security rules, so status is part of these indexes. Single-field indexes are auto-created. Review/prune after real usage.",
 	"indexes": [
 		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "updatedAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "comments",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "updatedAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "comments",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "postId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "ASCENDING" }
+			]
+		},
+		{
 			"collectionGroup": "sponsoredProducts",
 			"queryScope": "COLLECTION",
 			"fields": [

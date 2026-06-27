@@ -6,17 +6,20 @@ import { CommentComposer } from "../features/comments/CommentComposer";
 import { VoteControl } from "../components/VoteControl";
 import { UserBadges } from "../components/Badge";
 import { ContentMenu } from "../components/ContentMenu";
+import { ModerationDetails } from "../components/ModerationDetails";
 import { Skeleton, ErrorState } from "../components/states";
 import { relativeTime } from "../lib/time";
 import { useAuth } from "../features/auth/AuthProvider";
+import { useAdminView } from "../features/admin/AdminViewContext";
 
 /** Full post view: post body + vote + comment composer + threaded comments. */
 export default function PostDetailPage() {
 	const { postId } = useParams<{ postId: string }>();
 	const navigate = useNavigate();
 	const { user } = useAuth();
+	const { adminView } = useAdminView();
 	const post = usePost(postId);
-	const comments = useComments(postId);
+	const comments = useComments(postId, adminView);
 	const votePost = useVotePost(postId ?? "");
 	const createComment = useCreateComment(postId ?? "");
 	const deletePost = useDeletePost();
@@ -86,6 +89,8 @@ export default function PostDetailPage() {
 
 				<h1 className="mt-2 text-2xl font-semibold leading-tight text-ink">{p.title}</h1>
 				{p.body && <p className="mt-3 whitespace-pre-wrap leading-relaxed text-ink-2">{p.body}</p>}
+
+				{adminView && <ModerationDetails status={p.status} moderation={p.moderation} />}
 
 				<div className="mt-4 flex items-center gap-4">
 					<VoteControl baseScore={p.score} orientation="horizontal" onVote={(next, prev) => votePost.mutateAsync({ next, prev })} />

@@ -5,7 +5,9 @@ import { relativeTime } from "../../lib/time";
 import { VoteControl } from "../../components/VoteControl";
 import { UserBadges } from "../../components/Badge";
 import { ContentMenu } from "../../components/ContentMenu";
+import { ModerationDetails } from "../../components/ModerationDetails";
 import { useAuth } from "../auth/AuthProvider";
+import { useAdminView } from "../admin/AdminViewContext";
 import { useVoteComment } from "../posts/hooks";
 import { useCreateComment, useDeleteComment } from "./hooks";
 import { CommentComposer } from "./CommentComposer";
@@ -30,14 +32,17 @@ function buildTree(comments: Comment[]): TreeNode[] {
 
 function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 	const { user } = useAuth();
+	const { adminView } = useAdminView();
 	const voteComment = useVoteComment(postId);
 	const createComment = useCreateComment(postId);
 	const deleteComment = useDeleteComment(postId);
 	const [replying, setReplying] = useState(false);
 
+	const hidden = node.status === "removed" || node.status === "deleted";
+
 	return (
 		<li>
-			<div className="rounded-xl border border-line bg-surface p-3">
+			<div className={`rounded-xl border p-3 ${hidden ? "border-dashed border-line bg-bg-2/40" : "border-line bg-surface"}`}>
 				<div className="flex items-center gap-2 text-xs text-muted">
 					<Link to={`/u/${node.authorUsername}`} className="font-medium text-ink-2 hover:underline">
 						{node.authorUsername}
@@ -46,6 +51,11 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(node.createdAt)}</span>
 					{node.edited && <span className="italic">(edited)</span>}
+					{hidden && (
+						<span className="rounded-full bg-coral-wash px-1.5 py-0.5 text-[10px] font-semibold uppercase text-coral">
+							{node.status}
+						</span>
+					)}
 					<div className="ml-auto">
 						<ContentMenu
 							targetType="comment"
@@ -58,13 +68,15 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 
 				<p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{node.body}</p>
 
+				{adminView && <ModerationDetails status={node.status} moderation={node.moderation} />}
+
 				<div className="mt-2 flex items-center gap-3">
 					<VoteControl
 						baseScore={node.score}
 						orientation="horizontal"
 						onVote={(next, prev) => voteComment.mutateAsync({ commentId: node.id, next, prev })}
 					/>
-					{user && (
+					{user && !hidden && (
 						<button onClick={() => setReplying((v) => !v)} className="text-xs font-medium text-muted transition-colors hover:text-coral">
 							Reply
 						</button>

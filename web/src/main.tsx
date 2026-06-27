@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import App from "./App.tsx";
 import { ThemeProvider } from "./app/ThemeProvider.tsx";
 import { AuthProvider } from "./features/auth/AuthProvider.tsx";
+import { AdminViewProvider } from "./features/admin/AdminViewContext.tsx";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -26,7 +27,9 @@ createRoot(document.getElementById("root")!).render(
 			<ThemeProvider>
 				<BrowserRouter>
 					<AuthProvider>
-						<App />
+						<AdminViewProvider>
+							<App />
+						</AdminViewProvider>
 					</AuthProvider>
 				</BrowserRouter>
 			</ThemeProvider>
