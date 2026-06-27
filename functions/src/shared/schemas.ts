@@ -29,6 +29,22 @@ export const reserveUsernameSchema = z.object({
 	username: usernameSchema,
 });
 
+/** Community ("Circle") slug: lowercase, url-safe, 3–30 chars. */
+export const communitySlugSchema = z
+	.string()
+	.min(3)
+	.max(30)
+	.regex(/^[a-z0-9-]+$/)
+	.refine((s) => !s.startsWith("-") && !s.endsWith("-") && !s.includes("--"), "Use single hyphens between words.");
+
+export const createCommunitySchema = z.object({
+	slug: communitySlugSchema,
+	name: z.string().min(3).max(40),
+	description: z.string().min(10).max(300),
+	rules: z.array(z.string().min(1).max(200)).max(10).optional(),
+	color: z.enum(["coral", "lav"]).default("coral"),
+});
+
 export const createPostSchema = z.object({
 	communityId: z.string().min(1).max(64),
 	title: z.string().min(1).max(300),

@@ -4,7 +4,7 @@ import { useCreateComment } from "../features/comments/hooks";
 import { CommentThread } from "../features/comments/CommentThread";
 import { CommentComposer } from "../features/comments/CommentComposer";
 import { VoteControl } from "../components/VoteControl";
-import { UserBadges } from "../components/Badge";
+import { AuthorName } from "../components/AuthorName";
 import { ContentMenu } from "../components/ContentMenu";
 import { ModerationDetails } from "../components/ModerationDetails";
 import { Skeleton, ErrorState } from "../components/states";
@@ -67,10 +67,7 @@ export default function PostDetailPage() {
 						{p.communityId}
 					</Link>
 					<span aria-hidden="true">·</span>
-					<Link to={`/u/${p.authorUsername}`} className="hover:underline">
-						{p.authorUsername}
-					</Link>
-					<UserBadges badges={p.authorBadges} supporter={p.authorSupporter} max={2} />
+					<AuthorName username={p.authorUsername} badges={p.authorBadges} supporter={p.authorSupporter} maxBadges={2} />
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(p.createdAt)}</span>
 					{p.edited && <span className="italic">(edited)</span>}

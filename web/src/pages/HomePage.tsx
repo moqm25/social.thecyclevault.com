@@ -20,6 +20,9 @@ export default function HomePage() {
 						Ask questions, share what you’ve noticed, and learn from others — without accounts following you around or noise designed to
 						keep you scrolling.
 					</p>
+					<p className="mt-2 max-w-prose text-sm text-muted-2">
+						You’re browsing as a guest, so names are hidden. Join (free) to see who’s talking and to post, reply, and vote.
+					</p>
 					<div className="mt-5">
 						<Link
 							to="/login"
@@ -30,8 +33,17 @@ export default function HomePage() {
 				</section>
 			)}
 
+			<div className="flex items-center justify-between gap-2">
+				<h2 className="text-sm font-semibold uppercase tracking-wide text-muted-2">Circles</h2>
+				{user && (
+					<Link to="/circles/new" className="text-sm font-medium text-coral hover:underline">
+						+ New Circle
+					</Link>
+				)}
+			</div>
+
 			{communities.data && communities.data.length > 0 && (
-				<nav aria-label="Communities" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+				<nav aria-label="Circles" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
 					{communities.data.map((c) => (
 						<Link
 							key={c.slug}

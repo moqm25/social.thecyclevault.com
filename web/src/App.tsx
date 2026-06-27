@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
 import SupporterPage from "./pages/SupporterPage";
 import ShopPage from "./pages/ShopPage";
+import CreateCirclePage from "./pages/CreateCirclePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ModDashboard from "./pages/ModDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -30,6 +31,14 @@ export default function App() {
 				<Route path="/c/:communitySlug" element={<CommunityPage />} />
 				<Route path="/supporter" element={<SupporterPage />} />
 				<Route path="/shop" element={<ShopPage />} />
+				<Route
+					path="/circles/new"
+					element={
+						<ProtectedRoute>
+							<CreateCirclePage />
+						</ProtectedRoute>
+					}
+				/>
 				<Route
 					path="/post/new"
 					element={

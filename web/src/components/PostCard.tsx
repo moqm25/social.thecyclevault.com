@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import type { Post } from "../types/models";
 import { VoteControl } from "./VoteControl";
-import { UserBadges } from "./Badge";
+import { AuthorName } from "./AuthorName";
 import { ContentMenu } from "./ContentMenu";
 import { relativeTime } from "../lib/time";
 import { useVotePost, useDeletePost } from "../features/posts/hooks";
@@ -23,10 +23,7 @@ export function PostCard({ post }: { post: Post }) {
 						{post.communityId}
 					</Link>
 					<span aria-hidden="true">·</span>
-					<Link to={`/u/${post.authorUsername}`} className="hover:underline">
-						{post.authorUsername}
-					</Link>
-					<UserBadges badges={post.authorBadges} supporter={post.authorSupporter} max={1} />
+					<AuthorName username={post.authorUsername} badges={post.authorBadges} supporter={post.authorSupporter} maxBadges={1} />
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(post.createdAt)}</span>
 					{post.edited && <span className="italic">(edited)</span>}

@@ -1,9 +1,8 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import type { Comment } from "../../types/models";
 import { relativeTime } from "../../lib/time";
 import { VoteControl } from "../../components/VoteControl";
-import { UserBadges } from "../../components/Badge";
+import { AuthorName } from "../../components/AuthorName";
 import { ContentMenu } from "../../components/ContentMenu";
 import { ModerationDetails } from "../../components/ModerationDetails";
 import { useAuth } from "../auth/AuthProvider";
@@ -44,10 +43,13 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 		<li>
 			<div className={`rounded-xl border p-3 ${hidden ? "border-dashed border-line bg-bg-2/40" : "border-line bg-surface"}`}>
 				<div className="flex items-center gap-2 text-xs text-muted">
-					<Link to={`/u/${node.authorUsername}`} className="font-medium text-ink-2 hover:underline">
-						{node.authorUsername}
-					</Link>
-					<UserBadges badges={node.authorBadges} supporter={node.authorSupporter} max={1} />
+					<AuthorName
+						username={node.authorUsername}
+						badges={node.authorBadges}
+						supporter={node.authorSupporter}
+						maxBadges={1}
+						className="font-medium text-ink-2 hover:underline"
+					/>
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(node.createdAt)}</span>
 					{node.edited && <span className="italic">(edited)</span>}

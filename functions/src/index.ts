@@ -10,6 +10,9 @@ setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 // ---- auth / profile ----
 export { createUserProfile, reserveUsername } from "./auth/profile.js";
 
+// ---- communities (member-created "Circles") ----
+export { createCommunity } from "./communities/communities.js";
+
 // ---- posts ----
 export { createPost, updatePost, deletePostSoft, lockPost } from "./posts/posts.js";
 

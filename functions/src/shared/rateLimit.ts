@@ -38,4 +38,5 @@ export const RATE = {
 	vote: { limit: 200, windowMs: 60 * 60 * 1000 },
 	report: { limit: 20, windowMs: 24 * 60 * 60 * 1000 },
 	reserveUsername: { limit: 5, windowMs: 24 * 60 * 60 * 1000 },
+	createCommunity: { limit: 3, windowMs: 24 * 60 * 60 * 1000 },
 } as const;

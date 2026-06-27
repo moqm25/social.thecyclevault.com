@@ -41,6 +41,12 @@ export const createUserProfile = callable<
 
 export const reserveUsername = callable<{ username: string }, { available: boolean; reserved?: boolean }>("reserveUsername");
 
+// ---- communities ("Circles") ----
+export const createCommunity = callable<
+	{ slug: string; name: string; description: string; rules?: string[]; color?: "coral" | "lav" },
+	{ slug: string }
+>("createCommunity");
+
 // ---- posts ----
 export const createPost = callable<
 	{ communityId: string; title: string; body: string; tags?: string[] },
