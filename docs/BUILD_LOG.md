@@ -15,9 +15,9 @@
 
 ## ▶ Next action
 
-Install a JDK (`brew install temurin`) so the Firebase Emulator Suite + rules
-tests can run, then write Phase D tests (rules tests + function tests) and run the
-full stack against the emulator end-to-end.
+Phase E — CI/CD: write `.github/workflows/ci.yml` (lint, typecheck, test, build on
+PR) + `deploy.yml`, and the Pages SPA `404.html` fallback. Then Phase F (gated):
+Blaze upgrade + first deploy.
 
 ---
 
@@ -47,9 +47,9 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - Node `v22.17.0`, npm `10.9.2`
 - firebase-tools `15.7.0` (logged in: `moiezqamar@gmail.com`)
 - gh CLI `2.83.1` (logged in: `moqm25`)
-- ⚠ **Java NOT installed** — required for the Firestore emulator + rules tests.
-  Install before emulator-dependent steps (Phase D / local emulators):
-  `brew install temurin` (or any JDK 11+).
+- ✅ **Java installed** via `brew install openjdk` (keg-only, OpenJDK 26). It is
+  **not on the default PATH** — prefix emulator commands with:
+  `export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"` (CI uses actions/setup-java).
 
 ---
 
@@ -105,12 +105,16 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - [x] tsc build clean + eslint clean
 - [ ] firebase.json updated with functions config ✅ (predeploy lint+build)
 
-## Phase D — Testing ⏳ (needs Java for emulators)
+## Phase D — Testing ⏳ (Java installed)
 
-- [ ] Security-rules tests (`@firebase/rules-unit-testing`) — capability matrix
-- [ ] Function tests (`firebase-functions-test` + emulators)
-- [ ] Unit tests (Vitest): zod schemas, hotRank, vote reducer
-- [ ] Component tests (RTL); E2E (Playwright) — later
+- [x] Security-rules tests (`@firebase/rules-unit-testing`) — **23 tests**, full
+      capability matrix incl. role-escalation + field-smuggle + default-deny
+- [x] E2E function tests (full emulator: auth+functions+firestore) — **2 tests**:
+      signup→profile→post→vote (score 0→1→idempotent→0) + unauth rejection
+- [x] Unit tests (Vitest): voteMath (7) + ranking (5) = **12**; web HomePage **2**
+- [x] Total: **39 tests passing** across web + functions + rules + e2e
+- [ ] Component tests (RTL) beyond smoke; Playwright E2E — later (post-MVP UI)
+- Run: `tests/` → `npm test` (rules), `npm run test:e2e` (full stack, seeds first)
 
 ## Phase E — CI/CD ⏳
 
@@ -147,3 +151,6 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - `2026-06-26` — Cloud Functions backend implemented (20 callables across auth,
   posts, comments, votes, moderation, notifications, account) + seed script. tsc +
   eslint clean. Emulator E2E pending Java install.
+- `2026-06-27` — installed OpenJDK 26 (brew). Wrote + ran tests: 23 rules tests,
+  2 E2E (full emulator stack), 12 functions unit, 2 web = **39 passing**. Vote flow
+  and rules capability matrix validated end-to-end.

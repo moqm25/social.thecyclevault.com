@@ -4,6 +4,7 @@ import { requireActiveUser } from '../shared/auth.js';
 import { parseInput } from '../shared/validate.js';
 import { enforceRateLimit, RATE } from '../shared/rateLimit.js';
 import { hotRank } from '../shared/ranking.js';
+import { computeVoteDeltas } from '../shared/voteMath.js';
 import { voteOnPostSchema, voteOnCommentSchema } from '../shared/schemas.js';
 
 type TargetType = 'post' | 'comment';
@@ -38,9 +39,7 @@ async function applyVote(
       return { score: Number(target.score ?? 0), value: prev as 1 | -1 | 0 };
     }
 
-    const scoreDelta = value - prev; // e.g. up(1) from down(-1) => +2
-    const upDelta = (value === 1 ? 1 : 0) - (prev === 1 ? 1 : 0);
-    const downDelta = (value === -1 ? 1 : 0) - (prev === -1 ? 1 : 0);
+    const { scoreDelta, upDelta, downDelta } = computeVoteDeltas(prev, value);
 
     const newScore = Number(target.score ?? 0) + scoreDelta;
     const patch: Record<string, unknown> = {
