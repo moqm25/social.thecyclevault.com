@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { listRemovedPosts, listRemovedComments } from "../../lib/firestore";
 import { relativeTime } from "../../lib/time";
+import { ViewInContextLink } from "../../components/ViewInContextLink";
 
 /**
  * Admin: recently removed or deleted content (founder request — "deleted content
@@ -48,9 +49,9 @@ export function RemovedContentQueue() {
 									<span aria-hidden="true">·</span>
 									<span>{relativeTime(post.updatedAt)}</span>
 								</div>
-								<Link to={`/post/${post.id}`} className="mt-1 block font-medium text-ink hover:text-coral">
+								<ViewInContextLink postId={post.id} focusId={post.id} className="mt-1 block font-medium text-ink hover:text-coral">
 									{post.title}
-								</Link>
+								</ViewInContextLink>
 							</li>
 						))}
 					</ul>
@@ -70,9 +71,9 @@ export function RemovedContentQueue() {
 									<span aria-hidden="true">·</span>
 									<span>{relativeTime(comment.updatedAt)}</span>
 								</div>
-								<Link to={`/post/${comment.postId}`} className="mt-1 block text-ink-2 hover:text-coral">
+								<ViewInContextLink postId={comment.postId} focusId={comment.id} className="mt-1 block text-ink-2 hover:text-coral">
 									{comment.body}
-								</Link>
+								</ViewInContextLink>
 							</li>
 						))}
 					</ul>

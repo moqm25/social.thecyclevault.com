@@ -133,6 +133,8 @@ export interface Report {
 	reporterId: string;
 	targetType: "post" | "comment" | "user";
 	targetId: string;
+	/** Parent post of a reported comment (or the post itself); lets mods deep-link to context. */
+	postId?: string | null;
 	reason: ReportReason;
 	details: string;
 	status: ReportStatus;

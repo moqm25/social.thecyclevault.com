@@ -121,10 +121,22 @@ export const reportContent = onCall(async (request) => {
 		return { reportId: dupe.docs[0].id };
 	}
 
+	// For comment reports, capture the parent postId so moderators can deep-link
+	// straight to the comment in its thread (post reports already carry it as the
+	// target; user reports have none).
+	let postId: string | null = null;
+	if (input.targetType === "comment") {
+		const c = await db.collection(COL.comments).doc(input.targetId).get();
+		postId = c.exists ? (String((c.data() as Record<string, unknown>).postId ?? "") || null) : null;
+	} else if (input.targetType === "post") {
+		postId = input.targetId;
+	}
+
 	const ref = await db.collection(COL.reports).add({
 		reporterId: auth.uid,
 		targetType: input.targetType,
 		targetId: input.targetId,
+		postId,
 		reason: input.reason,
 		details: input.details ?? "",
 		status: "open",

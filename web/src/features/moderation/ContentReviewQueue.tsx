@@ -5,6 +5,7 @@ import { listAwaitingReview, listModerationStream } from "../../lib/firestore";
 import { reviewContent } from "../../lib/api";
 import { relativeTime } from "../../lib/time";
 import { Skeleton, EmptyState, ErrorState } from "../../components/states";
+import { ViewInContextLink } from "../../components/ViewInContextLink";
 import type { ModerationQueueItem, ModerationState } from "../../types/models";
 
 const STATE_LABEL: Record<ModerationState, { label: string; cls: string }> = {
@@ -68,11 +69,12 @@ function ReviewRow({ item, onDone }: { item: ModerationQueueItem; onDone: () => 
 				</p>
 			)}
 			<div className="mt-3 flex flex-wrap items-center gap-2">
-				<Link
-					to={item.contentType === "post" ? `/post/${item.contentId}` : `/post/${item.postId}`}
+				<ViewInContextLink
+					postId={item.contentType === "post" ? item.contentId : (item.postId ?? item.contentId)}
+					focusId={item.contentId}
 					className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 hover:text-coral">
 					View in context
-				</Link>
+				</ViewInContextLink>
 				<input
 					value={reason}
 					onChange={(e) => setReason(e.target.value)}

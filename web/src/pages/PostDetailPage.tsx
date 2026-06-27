@@ -1,4 +1,5 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
 import { usePost, useComments, useVotePost, useDeletePost } from "../features/posts/hooks";
 import { useCreateComment } from "../features/comments/hooks";
 import { CommentThread } from "../features/comments/CommentThread";
@@ -17,6 +18,8 @@ import { useAdminView } from "../features/admin/AdminViewContext";
 export default function PostDetailPage() {
 	const { postId } = useParams<{ postId: string }>();
 	const navigate = useNavigate();
+	const location = useLocation();
+	const [searchParams] = useSearchParams();
 	const { user } = useAuth();
 	const { adminView } = useAdminView();
 	const post = usePost(postId);
@@ -24,6 +27,20 @@ export default function PostDetailPage() {
 	const votePost = useVotePost(postId ?? "");
 	const createComment = useCreateComment(postId ?? "");
 	const deletePost = useDeletePost();
+
+	// Moderation deep-link: ?focus=<id> highlights the flagged item; state.from
+	// remembers the queue we came from so we can offer a "← Back" button.
+	const focus = searchParams.get("focus");
+	const backTo = (location.state as { from?: string } | null)?.from ?? null;
+	const postFocused = !!focus && !!postId && focus === postId;
+	const commentFocus = focus && focus !== postId ? focus : undefined;
+	const articleRef = useRef<HTMLElement>(null);
+
+	useEffect(() => {
+		if (postFocused && articleRef.current) {
+			articleRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}, [postFocused]);
 
 	if (post.isPending) {
 		return (
@@ -51,6 +68,14 @@ export default function PostDetailPage() {
 
 	return (
 		<div className="space-y-6">
+			{backTo && (
+				<button
+					type="button"
+					onClick={() => navigate(backTo)}
+					className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-coral">
+					<span aria-hidden="true">←</span> Back to review
+				</button>
+			)}
 			{p.status === "pending" && (
 				<div className="rounded-xl border border-lav-soft bg-lav-wash px-4 py-3 text-sm text-ink-2">
 					<strong className="text-ink">Under review.</strong> This is visible only to you while a moderator checks it. You’ll be notified
@@ -62,7 +87,11 @@ export default function PostDetailPage() {
 					<strong className="text-ink">Removed.</strong> This content wasn’t approved and isn’t visible to others.
 				</div>
 			)}
-			<article className="rounded-2xl border border-line bg-surface p-5 shadow-soft">
+			<article
+				ref={articleRef}
+				className={`rounded-2xl border bg-surface p-5 shadow-soft transition-shadow ${
+					postFocused ? "border-coral ring-2 ring-coral/40" : "border-line"
+				}`}>
 				<div className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
 					<Link to={`/c/${p.communityId}`} className="font-medium text-lav hover:underline">
 						{p.communityId}
@@ -123,7 +152,7 @@ export default function PostDetailPage() {
 				) : comments.isError ? (
 					<ErrorState onRetry={() => comments.refetch()} />
 				) : (
-					<CommentThread comments={comments.data ?? []} postId={p.id} />
+					<CommentThread comments={comments.data ?? []} postId={p.id} focusId={commentFocus} />
 				)}
 			</section>
 		</div>

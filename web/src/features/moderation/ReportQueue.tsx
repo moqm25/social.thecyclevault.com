@@ -5,6 +5,7 @@ import { listOpenReports } from "../../lib/firestore";
 import { removeContent, dismissReport, suspendUser, banUser } from "../../lib/api";
 import { relativeTime } from "../../lib/time";
 import { Skeleton, EmptyState, ErrorState } from "../../components/states";
+import { ViewInContextLink } from "../../components/ViewInContextLink";
 import type { Report, ReportReason } from "../../types/models";
 
 const REASON_LABEL: Record<ReportReason, string> = {
@@ -36,7 +37,9 @@ function ReportRow({ report, isAdmin, onDone }: { report: Report; isAdmin: boole
 	}
 
 	const isContent = report.targetType === "post" || report.targetType === "comment";
-	const targetLink = report.targetType === "post" ? `/post/${report.targetId}` : report.targetType === "user" ? `/u/${report.targetId}` : undefined;
+	// Post reports highlight the post; comment reports deep-link into the thread via
+	// the stored postId. User reports link to the profile.
+	const contentPostId = report.targetType === "post" ? report.targetId : report.postId ?? null;
 	const priority = PRIORITY.includes(report.reason);
 
 	return (
@@ -53,13 +56,20 @@ function ReportRow({ report, isAdmin, onDone }: { report: Report; isAdmin: boole
 			{report.details && <p className="mt-2 text-sm text-ink-2">“{report.details}”</p>}
 
 			<div className="mt-3 flex flex-wrap items-center gap-2">
-				{targetLink && (
-					<Link
-						to={targetLink}
+				{isContent && contentPostId ? (
+					<ViewInContextLink
+						postId={contentPostId}
+						focusId={report.targetId}
 						className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 transition-colors hover:text-coral">
 						View {report.targetType}
+					</ViewInContextLink>
+				) : report.targetType === "user" ? (
+					<Link
+						to={`/u/${report.targetId}`}
+						className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 transition-colors hover:text-coral">
+						View user
 					</Link>
-				)}
+				) : null}
 				{isContent && (
 					<button
 						onClick={() =>

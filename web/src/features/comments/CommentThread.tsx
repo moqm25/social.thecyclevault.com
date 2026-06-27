@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Comment } from "../../types/models";
 import { relativeTime } from "../../lib/time";
 import { VoteControl } from "../../components/VoteControl";
@@ -29,7 +29,7 @@ function buildTree(comments: Comment[]): TreeNode[] {
 	return roots;
 }
 
-function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
+function CommentItem({ node, postId, focusId }: { node: TreeNode; postId: string; focusId?: string }) {
 	const { user } = useAuth();
 	const { adminView } = useAdminView();
 	const voteComment = useVoteComment(postId);
@@ -38,10 +38,28 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 	const [replying, setReplying] = useState(false);
 
 	const hidden = node.status === "removed" || node.status === "deleted";
+	const focused = focusId === node.id;
+	const cardRef = useRef<HTMLDivElement>(null);
+
+	// When this comment is the moderation focus, bring it into view once.
+	useEffect(() => {
+		if (focused && cardRef.current) {
+			cardRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+		}
+	}, [focused]);
 
 	return (
 		<li>
-			<div className={`rounded-xl border p-3 ${hidden ? "border-dashed border-line bg-bg-2/40" : "border-line bg-surface"}`}>
+			<div
+				id={`comment-${node.id}`}
+				ref={cardRef}
+				className={`rounded-xl border p-3 transition-shadow ${
+					focused
+						? "border-coral bg-coral-wash/40 ring-2 ring-coral/40"
+						: hidden
+							? "border-dashed border-line bg-bg-2/40"
+							: "border-line bg-surface"
+				}`}>
 				<div className="flex items-center gap-2 text-xs text-muted">
 					<AuthorName
 						username={node.authorUsername}
@@ -104,7 +122,7 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 			{node.children.length > 0 && (
 				<ul className="mt-2 space-y-2 border-l border-line pl-3 sm:pl-4">
 					{node.children.map((child) => (
-						<CommentItem key={child.id} node={child} postId={postId} />
+						<CommentItem key={child.id} node={child} postId={postId} focusId={focusId} />
 					))}
 				</ul>
 			)}
@@ -112,7 +130,7 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 	);
 }
 
-export function CommentThread({ comments, postId }: { comments: Comment[]; postId: string }) {
+export function CommentThread({ comments, postId, focusId }: { comments: Comment[]; postId: string; focusId?: string }) {
 	const tree = useMemo(() => buildTree(comments), [comments]);
 	if (tree.length === 0) {
 		return <p className="py-6 text-center text-sm text-muted">No comments yet. Start the conversation.</p>;
@@ -120,7 +138,7 @@ export function CommentThread({ comments, postId }: { comments: Comment[]; postI
 	return (
 		<ul className="space-y-2">
 			{tree.map((node) => (
-				<CommentItem key={node.id} node={node} postId={postId} />
+				<CommentItem key={node.id} node={node} postId={postId} focusId={focusId} />
 			))}
 		</ul>
 	);
