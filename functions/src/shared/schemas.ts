@@ -115,3 +115,48 @@ export const reviewContentSchema = z.object({
 	decision: z.enum(["approve", "reject"]),
 	reason: z.string().max(500).optional(),
 });
+
+const httpsUrl = z.string().url().startsWith("https://").max(2000);
+
+export const productCategories = [
+	"period-care",
+	"femtech",
+	"books",
+	"wellness",
+	"supplements",
+	"tools",
+	"other",
+] as const;
+
+export const upsertSponsoredProductSchema = z.object({
+	id: z.string().min(1).optional(), // present = update
+	name: z.string().min(1).max(120),
+	blurb: z.string().min(1).max(400),
+	imageUrl: httpsUrl.optional(),
+	url: httpsUrl,
+	category: z.enum(productCategories),
+	sponsor: z.string().max(120).optional(),
+	active: z.boolean().default(true),
+});
+
+export const setProductActiveSchema = z.object({
+	id: z.string().min(1),
+	active: z.boolean(),
+});
+
+export const recordProductClickSchema = z.object({
+	id: z.string().min(1),
+});
+
+export const broadcastAnnouncementSchema = z.object({
+	title: z.string().max(120).optional(),
+	body: z.string().max(500).optional(),
+	level: z.enum(["info", "warning"]).default("info"),
+	active: z.boolean().default(true),
+});
+
+export const grantBadgeSchema = z.object({
+	uid: z.string().min(1),
+	badge: z.enum(["supporter", "founding_supporter", "clinician", "org"]),
+	grant: z.boolean().default(true),
+});

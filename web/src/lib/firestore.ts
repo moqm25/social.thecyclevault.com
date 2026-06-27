@@ -16,7 +16,18 @@ import {
 	type QueryConstraint,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import type { Community, Post, Comment, UserProfile, AppNotification, Report, ModerationQueueItem } from '../types/models';
+import type {
+	Community,
+	Post,
+	Comment,
+	UserProfile,
+	AppNotification,
+	Report,
+	ModerationQueueItem,
+	SponsoredProduct,
+	ProductCategory,
+	Announcement,
+} from "../types/models";
 
 /**
  * Firestore read helpers. Public content is read directly from the client
@@ -175,4 +186,33 @@ export async function listAwaitingReview(): Promise<ModerationQueueItem[]> {
 export async function listModerationStream(): Promise<ModerationQueueItem[]> {
 	const snap = await getDocs(query(collection(db, "moderationQueue"), orderBy("createdAt", "desc"), qLimit(50)));
 	return snap.docs.map((d) => normalize<ModerationQueueItem>({ id: d.id, ...d.data() }));
+}
+
+// -------------------------- sponsored products ----------------------------
+
+/**
+ * Active products for the public Shop / in-feed placement. Optional category
+ * filter. Reads are allowed by rules only where active == true.
+ */
+export async function listSponsoredProducts(category?: ProductCategory): Promise<SponsoredProduct[]> {
+	const constraints: QueryConstraint[] = [where("active", "==", true)];
+	if (category) constraints.push(where("category", "==", category));
+	constraints.push(orderBy("createdAt", "desc"), qLimit(60));
+	const snap = await getDocs(query(collection(db, "sponsoredProducts"), ...constraints));
+	return snap.docs.map((d) => normalize<SponsoredProduct>({ id: d.id, ...d.data() }));
+}
+
+/** Admin view: ALL products incl. paused (requires mod/admin per rules). */
+export async function listAllSponsoredProducts(): Promise<SponsoredProduct[]> {
+	const snap = await getDocs(query(collection(db, "sponsoredProducts"), orderBy("createdAt", "desc"), qLimit(100)));
+	return snap.docs.map((d) => normalize<SponsoredProduct>({ id: d.id, ...d.data() }));
+}
+
+/** The current page-wide announcement banner, if any (settings/global). */
+export async function getAnnouncement(): Promise<Announcement | null> {
+	const snap = await getDoc(doc(db, "settings", "global"));
+	if (!snap.exists()) return null;
+	const ann = (snap.data() as DocumentData).announcement;
+	if (!ann) return null;
+	return normalize<Announcement>(ann);
 }

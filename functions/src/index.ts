@@ -37,3 +37,12 @@ export { markNotificationRead } from "./notifications/notifications.js";
 
 // ---- account (privacy: export + delete) ----
 export { exportMyData, deleteMyAccount } from "./users/account.js";
+
+// ---- platform (sponsored products, announcement, badges) ----
+export {
+	upsertSponsoredProduct,
+	setSponsoredProductActive,
+	recordSponsoredClick,
+	broadcastAnnouncement,
+	grantBadge,
+} from "./platform/platform.js";

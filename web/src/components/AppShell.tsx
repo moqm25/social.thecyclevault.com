@@ -28,6 +28,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 			<footer className="mx-auto max-w-3xl px-4 py-10 text-center text-sm text-muted">
 				<p>This platform does not provide medical advice. Consult a clinician for health concerns.</p>
 				<nav className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
+					<Link to="/shop" className="hover:text-coral">
+						Shop
+					</Link>
+					<Link to="/supporter" className="hover:text-coral">
+						Supporter
+					</Link>
 					<Link to="/guidelines" className="hover:text-coral">
 						Community Guidelines
 					</Link>

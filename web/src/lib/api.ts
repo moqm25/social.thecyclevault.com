@@ -106,3 +106,32 @@ export const reviewContent = callable<
 export const suspendUser = callable<{ uid: string; durationHours: number; reason: string }, { ok: true }>("suspendUser");
 
 export const banUser = callable<{ uid: string; scope?: "global"; reason: string; permanent?: boolean }, { ok: true }>("banUser");
+
+// ---- platform (admin: sponsored products, announcement, badges) ----
+import type { ProductCategory, BadgeKind } from "../types/models";
+
+export const upsertSponsoredProduct = callable<
+	{
+		id?: string;
+		name: string;
+		blurb: string;
+		imageUrl?: string;
+		url: string;
+		category: ProductCategory;
+		sponsor?: string;
+		active?: boolean;
+	},
+	{ id: string }
+>("upsertSponsoredProduct");
+
+export const setSponsoredProductActive = callable<{ id: string; active: boolean }, { ok: true }>("setSponsoredProductActive");
+
+/** Aggregate-only; never blocks navigation. Fire-and-forget from the click handler. */
+export const recordSponsoredClick = callable<{ id: string }, { ok: true }>("recordSponsoredClick");
+
+export const broadcastAnnouncement = callable<
+	{ title?: string; body?: string; level?: "info" | "warning"; active: boolean },
+	{ ok: true }
+>("broadcastAnnouncement");
+
+export const grantBadge = callable<{ uid: string; badge: BadgeKind; grant?: boolean }, { ok: true }>("grantBadge");

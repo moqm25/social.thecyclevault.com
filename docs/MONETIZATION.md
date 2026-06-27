@@ -78,9 +78,9 @@ AdSense or any behavioral network. Instead:
    vetted femtech, books, clinics). Flat fee, **no tracking**, no third-party SDK,
    links open externally. This is the same engine as §C "Products & Tools" — just
    surfaced as a single in-feed/sidebar unit. We fully control vetting + display.
-2. **Contextual ad networks (no tracking)** — e.g. the *model* EthicalAds proved
+2. **Contextual ad networks (no tracking)** — e.g. the _model_ EthicalAds proved
    (contextual, GDPR-clean, no cookies, ~$2.50 CPM; though EthicalAds itself targets
-   *developer* audiences, so it's not a fit for our readers). If/when a reputable
+   _developer_ audiences, so it's not a fit for our readers). If/when a reputable
    **contextual, no-tracking** network serving a health/wellness audience is vetted,
    it can fill unsold inventory. Ads chosen by **page topic**, never by the user.
 
@@ -94,8 +94,30 @@ advertisers; no behavioral targeting; a public note explaining the model.
 
 **Why this still satisfies the request:** free tier is ad-supported, paying removes
 ads — but the "ads" are ethical placements, not surveillance. It protects the brand
-*and* the revenue. (If we ever truly needed behavioral ads to survive, the honest
+_and_ the revenue. (If we ever truly needed behavioral ads to survive, the honest
 move would be to not do it — the privacy promise is the product.)
+
+**✅ Implemented (Sponsored Products + Shop).** Rather than generic "ads," the free
+tier shows **Sponsored Products** — vetted, admin-curated items (period care,
+femtech, books, wellness, supplements, tools). Implementation:
+
+- **Collection** `sponsoredProducts` (function-only writes; public read of `active`
+  items). Fields: name, blurb, imageUrl, url, category, sponsor, active, `clickCount`.
+- **In-feed unit** (`AdSlot`) shows **one** clearly-labeled "Sponsored" product after
+  the 3rd post, rotated **by day** (time-based, not per-user). Renders **nothing** for
+  Supporters — upgrading removes sponsored placements.
+- **Shop page** (`/shop`) — a calm, browsable directory of all active products,
+  filterable by category. Open to everyone (Supporters can browse; they just don't
+  get the in-feed unit). A "Browse the Shop" link sits on the in-feed unit.
+- **No tracking.** Outbound links are `rel="sponsored nofollow noopener noreferrer"`;
+  we record only an **aggregate** `clickCount` (no user id, no profile) via
+  `recordSponsoredClick`. Images load with `referrerPolicy="no-referrer"`.
+- **Admin-managed** via Admin → *Sponsored products* (`upsertSponsoredProduct`,
+  `setSponsoredProductActive`); every change is written to the audit log.
+
+This is the same engine as §C "Products & Tools," surfaced two ways (one in-feed unit
++ a full Shop). Demo/example entries live in `functions/scripts/seedSponsoredProducts.mjs`;
+real products are added by an admin in production.
 
 ### B. Verified Clinician / Expert program (trust + revenue) ⭐
 

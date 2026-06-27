@@ -120,6 +120,15 @@ service cloud.firestore {
       allow write: if false; // functions only
     }
 
+    // ------------------------ sponsoredProducts -------------------------------
+    // Vetted, clearly-labeled products (docs/MONETIZATION.md). Public can read
+    // ACTIVE products to browse the Shop; mods/admins can read all (incl. paused).
+    // Writes are function-only (admin upsert/toggle + aggregate click counter).
+    match /sponsoredProducts/{id} {
+      allow read: if resource.data.active == true || isMod();
+      allow write: if false;
+    }
+
     // --------------------------- default deny --------------------------------
     match /{document=**} {
       allow read, write: if false;

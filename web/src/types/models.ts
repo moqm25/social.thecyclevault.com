@@ -136,12 +136,7 @@ export interface Report {
 	updatedAt: number;
 }
 
-export type ModerationState =
-	| "auto_approved"
-	| "ai_approved"
-	| "awaiting_human"
-	| "human_approved"
-	| "human_removed";
+export type ModerationState = "auto_approved" | "ai_approved" | "awaiting_human" | "human_approved" | "human_removed";
 
 export interface ModerationQueueItem {
 	id: string;
@@ -168,4 +163,41 @@ export interface ContentModeration {
 	severity: "none" | "low" | "high";
 	flags: string[];
 	safeConfidence?: number | null;
+}
+
+export type ProductCategory =
+	| "period-care"
+	| "femtech"
+	| "books"
+	| "wellness"
+	| "supplements"
+	| "tools"
+	| "other";
+
+/**
+ * A vetted, clearly-labeled product shown in place of generic ads
+ * (docs/MONETIZATION.md). No tracking — only an aggregate clickCount is kept.
+ * Admin-managed (function-only writes). Free members see them; Supporters don't.
+ */
+export interface SponsoredProduct {
+	id: string;
+	name: string;
+	blurb: string;
+	imageUrl?: string | null;
+	url: string;
+	category: ProductCategory;
+	sponsor?: string | null;
+	active: boolean;
+	clickCount?: number;
+	createdAt: number;
+	updatedAt: number;
+}
+
+/** Page-wide banner set by an admin (stored at settings/global.announcement). */
+export interface Announcement {
+	id: string;
+	title: string;
+	body: string;
+	level: "info" | "warning";
+	updatedAt: number;
 }
