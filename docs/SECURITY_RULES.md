@@ -205,14 +205,48 @@ service firebase.storage {
 ## 6. Auth-layer protections
 
 - **Email/password + optional Google.** Email is never written to Firestore.
+- **Passwords are never seen by us.** Firebase Authentication is the identity
+  provider: the password goes browser → Google Identity Platform over TLS and is
+  hashed there with **scrypt** (memory-hard). No password is ever stored in our
+  Firestore, Cloud Functions, logs, or client bundle. There is nothing for us to
+  encrypt — the credential never touches our systems.
+- **Password policy (client).** `passwordSchema` requires ≥ 8 chars, at least one
+  letter and one number, and rejects a blocklist of trivially common passwords.
+  This is friendly UX validation; the durable protections are scrypt + rate limits.
+- **Email-enumeration protection** is ENABLED on the prod project
+  (`emailPrivacyConfig.enableImprovedEmailPrivacy = true`) so sign-in/reset errors
+  don't reveal whether an email is registered.
 - **Email verification** required before first post/comment (checked in functions
   via `context.auth.token.email_verified`).
+- **App Check (reCAPTCHA v3)** is wired in `lib/firebase.ts`: when
+  `VITE_RECAPTCHA_SITE_KEY` is set it activates `initializeAppCheck`, attesting
+  that traffic comes from our genuine app and blunting scripted abuse against
+  callables and Firestore. Go-live steps: register a reCAPTCHA v3 key in the
+  Firebase console (App Check), set the repo Variable, then turn on **enforcement**
+  per service (Firestore, Functions). Disabled automatically against the emulator.
 - **Custom claims** may mirror `role` for cheaper rule checks later; the
   **source of truth stays `users.role`**, mutated only by `setUserRole`
   (superadmin). Claims are refreshed by that function.
-- **App Check** (reCAPTCHA v3 for web) SHOULD be enabled to ensure callable
-  functions and Firestore are reached only by our app, blunting scripted abuse.
-  Tracked as a launch hardening item.
+
+---
+
+## 6a. Wider security posture
+
+- **Transport:** everything is HTTPS — GitHub Pages, Firestore, callables. No
+  plaintext endpoints.
+- **No raw HTML rendering.** User content (post/comment bodies) is rendered as
+  text through React (auto-escaped); the codebase contains **no**
+  `dangerouslySetInnerHTML`, `innerHTML`, `eval`, or `document.write`. When
+  markdown is added later it MUST go through a sanitizer (e.g. DOMPurify) before
+  render.
+- **No secrets in the repo.** `VITE_FIREBASE_*` are public client config (safe to
+  ship); `.env.local` and any service-account JSON are gitignored. Function
+  secrets, if ever needed, live in Secret Manager (`functions:secrets:set`).
+- **Rate limiting + abuse prevention:** fixed-window limits on every mutating
+  callable (`shared/rateLimit.ts`), account-age/email-verification gates, report
+  de-duplication, and append-only audit logs (`MODERATION_PLAN.md`).
+- **PII minimization:** no real name, no health/cycle data, no precise location,
+  and **no IP** is ever stored (audit logs deliberately omit it).
 
 ---
 

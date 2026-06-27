@@ -123,6 +123,7 @@ export default function LoginPage() {
 							label="Password"
 							type="password"
 							autoComplete="new-password"
+							hint="At least 8 characters, with a letter and a number."
 							{...signUpForm.register("password")}
 							error={signUpForm.formState.errors.password?.message}
 						/>

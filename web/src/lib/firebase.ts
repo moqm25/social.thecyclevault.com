@@ -1,4 +1,5 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
+import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth";
 import { getFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator, type Functions } from "firebase/functions";
@@ -20,6 +21,20 @@ const firebaseConfig = {
 };
 
 export const app: FirebaseApp = initializeApp(firebaseConfig);
+
+/**
+ * App Check (reCAPTCHA v3) — proves requests come from our genuine app, blunting
+ * scripted abuse against callables and Firestore. Activated only when a site key
+ * is configured (so local/dev is unaffected). Enforcement is toggled per-service
+ * in the Firebase console as a go-live step (see DEPLOYMENT_PLAN §6).
+ */
+if (env.VITE_RECAPTCHA_SITE_KEY && !useEmulators) {
+	initializeAppCheck(app, {
+		provider: new ReCaptchaV3Provider(env.VITE_RECAPTCHA_SITE_KEY),
+		isTokenAutoRefreshEnabled: true,
+	});
+}
+
 export const auth: Auth = getAuth(app);
 export const db: Firestore = getFirestore(app);
 export const functions: Functions = getFunctions(app, "us-central1");

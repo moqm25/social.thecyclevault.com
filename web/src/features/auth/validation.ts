@@ -13,7 +13,28 @@ export const usernameSchema = z
 
 export const emailSchema = z.string().email("Enter a valid email");
 
-export const passwordSchema = z.string().min(8, "At least 8 characters").max(128, "Too long");
+// A small set of obviously weak passwords to reject outright. Not exhaustive —
+// real protection is length + Firebase's own hashing (scrypt) and rate limits.
+const COMMON_PASSWORDS = new Set([
+	"password",
+	"password1",
+	"password123",
+	"12345678",
+	"123456789",
+	"qwerty123",
+	"11111111",
+	"iloveyou",
+	"letmein1",
+	"abc12345",
+]);
+
+export const passwordSchema = z
+	.string()
+	.min(8, "Use at least 8 characters")
+	.max(128, "That's too long")
+	.regex(/[A-Za-z]/, "Include at least one letter")
+	.regex(/[0-9]/, "Include at least one number")
+	.refine((p) => !COMMON_PASSWORDS.has(p.toLowerCase()), "That password is too common");
 
 export const signInSchema = z.object({
 	email: emailSchema,

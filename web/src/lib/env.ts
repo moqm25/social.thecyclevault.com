@@ -12,6 +12,10 @@ const envSchema = z.object({
 	VITE_FIREBASE_STORAGE_BUCKET: z.string().min(1),
 	VITE_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
 	VITE_FIREBASE_APP_ID: z.string().min(1),
+	// Optional reCAPTCHA v3 site key. When present, App Check is activated so the
+	// backend can verify requests come from our real app (anti-bot/abuse). Absent
+	// in local/dev; set as a repo Variable before go-live (see DEPLOYMENT_PLAN §6).
+	VITE_RECAPTCHA_SITE_KEY: z.string().optional(),
 	VITE_USE_FIREBASE_EMULATORS: z.enum(["true", "false"]).optional().default("false"),
 });
 
