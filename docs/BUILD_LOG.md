@@ -13,6 +13,21 @@
 
 ---
 
+## ⚠ One thing waiting on you (non-blocking)
+
+The CI/deploy **workflow files are committed locally (`0edd3f4`) but not pushed** —
+GitHub rejected the push because the current credential lacks the `workflow` OAuth
+scope. To publish them, run once:
+
+```bash
+gh auth refresh -h github.com -s workflow   # interactive, your browser
+cd Files/social.thecyclevault.com && git push origin main
+```
+
+Everything else is pushed. This does not block local development or the build.
+
+---
+
 ## ▶ Next action
 
 **Phase F — GO-LIVE (gated on founder approval).** Everything buildable is done and
@@ -167,3 +182,6 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
   and rules capability matrix validated end-to-end.
 - `2026-06-27` — Phase E: CI workflow (web/functions/rules+e2e), gated manual deploy
   workflow, SPA 404 fallback + CNAME/.nojekyll in web/public. Live site untouched.
+- `2026-06-27` — SPA fallback + docs pushed (`b5576d1`). Workflow files committed
+  locally (`0edd3f4`) but push rejected for missing `workflow` scope — awaiting
+  `gh auth refresh -s workflow` + push. All app/backend/test code is on origin.
