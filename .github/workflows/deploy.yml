@@ -16,79 +16,79 @@ name: Deploy (gated)
 #   4. Project upgraded to Blaze (for the firebase job's functions deploy).
 
 on:
-  workflow_dispatch:
-    inputs:
-      target:
-        description: What to deploy
-        type: choice
-        default: web
-        options: [web, firebase, both]
+    workflow_dispatch:
+        inputs:
+            target:
+                description: What to deploy
+                type: choice
+                default: web
+                options: [web, firebase, both]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
+    group: deploy-${{ github.ref }}
+    cancel-in-progress: false
 
 jobs:
-  web:
-    if: ${{ inputs.target == 'web' || inputs.target == 'both' }}
-    name: Build + deploy SPA to GitHub Pages
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: web/package-lock.json
-      - working-directory: web
-        run: npm ci
-      - name: Build (inject public Firebase config)
-        working-directory: web
-        env:
-          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
-          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
-          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
-          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
-          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
-          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
-          VITE_USE_FIREBASE_EMULATORS: 'false'
-        run: npm run build
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: web/dist
-      - id: deploy
-        uses: actions/deploy-pages@v4
+    web:
+        if: ${{ inputs.target == 'web' || inputs.target == 'both' }}
+        name: Build + deploy SPA to GitHub Pages
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deploy.outputs.page_url }}
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: npm
+                  cache-dependency-path: web/package-lock.json
+            - working-directory: web
+              run: npm ci
+            - name: Build (inject public Firebase config)
+              working-directory: web
+              env:
+                  VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+                  VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+                  VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+                  VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+                  VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+                  VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+                  VITE_USE_FIREBASE_EMULATORS: "false"
+              run: npm run build
+            - uses: actions/configure-pages@v5
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: web/dist
+            - id: deploy
+              uses: actions/deploy-pages@v4
 
-  firebase:
-    if: ${{ inputs.target == 'firebase' || inputs.target == 'both' }}
-    name: Deploy rules, indexes, functions
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          cache-dependency-path: functions/package-lock.json
-      - working-directory: functions
-        run: npm ci
-      - working-directory: functions
-        run: npm run build
-      - name: Write service account key
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/sa.json"
-      - name: Deploy (rules + indexes first, then functions)
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
-        run: |
-          npm i -g firebase-tools
-          firebase deploy --only firestore:rules,firestore:indexes,storage --project cyclevault-social
-          firebase deploy --only functions --project cyclevault-social
+    firebase:
+        if: ${{ inputs.target == 'firebase' || inputs.target == 'both' }}
+        name: Deploy rules, indexes, functions
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: npm
+                  cache-dependency-path: functions/package-lock.json
+            - working-directory: functions
+              run: npm ci
+            - working-directory: functions
+              run: npm run build
+            - name: Write service account key
+              run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "$RUNNER_TEMP/sa.json"
+            - name: Deploy (rules + indexes first, then functions)
+              env:
+                  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/sa.json
+              run: |
+                  npm i -g firebase-tools
+                  firebase deploy --only firestore:rules,firestore:indexes,storage --project cyclevault-social
+                  firebase deploy --only functions --project cyclevault-social

@@ -8,80 +8,85 @@
  * docs/UI_REQUIREMENTS.md §2. Light values on :root, dark overrides on .dark.
  */
 :root {
-  --coral: #ff7a85;
-  --coral-soft: #ffb4bb;
-  --coral-wash: #ffe6e8;
-  --lav: #a89bff;
-  --lav-soft: #c9c2ff;
-  --lav-wash: #ece8ff;
-  --cream: #fff8f6;
-  --bg: #fbf8fb;
-  --bg-2: #f6f1f6;
-  --surface: #ffffff;
-  --ink: #0f1116;
-  --ink-2: #2a2733;
-  --muted: #6b6677;
-  --muted-2: #9b95ae;
-  --line: #ece7ef;
+	--coral: #ff7a85;
+	--coral-soft: #ffb4bb;
+	--coral-wash: #ffe6e8;
+	--lav: #a89bff;
+	--lav-soft: #c9c2ff;
+	--lav-wash: #ece8ff;
+	--cream: #fff8f6;
+	--bg: #fbf8fb;
+	--bg-2: #f6f1f6;
+	--surface: #ffffff;
+	--ink: #0f1116;
+	--ink-2: #2a2733;
+	--muted: #6b6677;
+	--muted-2: #9b95ae;
+	--line: #ece7ef;
 
-  --grad-warm: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%);
+	--grad-warm: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%);
 }
 
 .dark {
-  --coral: #ff8a93;
-  --coral-soft: #c9747c;
-  --coral-wash: #2a1d20;
-  --lav: #b6adff;
-  --lav-soft: #8079b3;
-  --lav-wash: #20203a;
-  --cream: #15131a;
-  --bg: #0f0e13;
-  --bg-2: #16141c;
-  --surface: #1a1822;
-  --ink: #f5f2f8;
-  --ink-2: #d9d4e0;
-  --muted: #a39daf;
-  --muted-2: #7a7488;
-  --line: #272430;
+	--coral: #ff8a93;
+	--coral-soft: #c9747c;
+	--coral-wash: #2a1d20;
+	--lav: #b6adff;
+	--lav-soft: #8079b3;
+	--lav-wash: #20203a;
+	--cream: #15131a;
+	--bg: #0f0e13;
+	--bg-2: #16141c;
+	--surface: #1a1822;
+	--ink: #f5f2f8;
+	--ink-2: #d9d4e0;
+	--muted: #a39daf;
+	--muted-2: #7a7488;
+	--line: #272430;
 }
 
 html {
-  -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
+	-webkit-text-size-adjust: 100%;
+	text-rendering: optimizeLegibility;
 }
 
 body {
-  margin: 0;
-  background-color: var(--bg);
-  color: var(--ink);
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  font-size: 15px; /* accessibility floor — UI_REQUIREMENTS.md §6 */
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
-  font-feature-settings: 'cv11', 'ss01';
+	margin: 0;
+	background-color: var(--bg);
+	color: var(--ink);
+	font-family:
+		"Inter",
+		ui-sans-serif,
+		system-ui,
+		-apple-system,
+		sans-serif;
+	font-size: 15px; /* accessibility floor — UI_REQUIREMENTS.md §6 */
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+	font-feature-settings: "cv11", "ss01";
 }
 
 /* Calm, accessible focus ring. */
 :focus-visible {
-  outline: 2px solid var(--lav);
-  outline-offset: 2px;
-  border-radius: 6px;
+	outline: 2px solid var(--lav);
+	outline-offset: 2px;
+	border-radius: 6px;
 }
 
 /* Respect reduced-motion globally. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 /* Brand wordmark — "The CycleVault" with the accent serif on "Vault". */
 .brand-serif {
-  font-family: 'Fraunces', ui-serif, Georgia, serif;
-  font-style: italic;
+	font-family: "Fraunces", ui-serif, Georgia, serif;
+	font-style: italic;
 }

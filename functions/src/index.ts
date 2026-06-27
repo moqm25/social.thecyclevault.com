@@ -1,38 +1,38 @@
-import { setGlobalOptions } from 'firebase-functions/v2';
+import { setGlobalOptions } from "firebase-functions/v2";
 
 /**
  * The CycleVault Social — Cloud Functions entry point.
  * Region pinned to us-central1 (matches Firestore). maxInstances caps cost/abuse
  * blast radius (docs/COST_MODEL.md §6); raise if real traffic needs it.
  */
-setGlobalOptions({ region: 'us-central1', maxInstances: 10 });
+setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 
 // ---- auth / profile ----
-export { createUserProfile, reserveUsername } from './auth/profile.js';
+export { createUserProfile, reserveUsername } from "./auth/profile.js";
 
 // ---- posts ----
-export { createPost, updatePost, deletePostSoft, lockPost } from './posts/posts.js';
+export { createPost, updatePost, deletePostSoft, lockPost } from "./posts/posts.js";
 
 // ---- comments ----
-export { createComment, updateComment, deleteCommentSoft } from './comments/comments.js';
+export { createComment, updateComment, deleteCommentSoft } from "./comments/comments.js";
 
 // ---- voting ----
-export { voteOnPost, voteOnComment } from './votes/votes.js';
+export { voteOnPost, voteOnComment } from "./votes/votes.js";
 
 // ---- moderation ----
 export {
-  reportContent,
-  removeContent,
-  restoreContent,
-  suspendUser,
-  banUser,
-  unbanUser,
-  dismissReport,
-  setUserRole,
-} from './moderation/moderation.js';
+	reportContent,
+	removeContent,
+	restoreContent,
+	suspendUser,
+	banUser,
+	unbanUser,
+	dismissReport,
+	setUserRole,
+} from "./moderation/moderation.js";
 
 // ---- notifications ----
-export { markNotificationRead } from './notifications/notifications.js';
+export { markNotificationRead } from "./notifications/notifications.js";
 
 // ---- account (privacy: export + delete) ----
-export { exportMyData, deleteMyAccount } from './users/account.js';
+export { exportMyData, deleteMyAccount } from "./users/account.js";
