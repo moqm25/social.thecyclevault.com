@@ -1,0 +1,116 @@
+rules_version = '2';
+
+// The CycleVault Social — Cloud Firestore Security Rules
+// Source of truth: docs/SECURITY_RULES.md (Phase 0, Accepted).
+// Principle: fail closed; trust the server only. All privileged writes go through
+// Cloud Functions (Admin SDK), which bypass these rules. Client-facing rules are
+// therefore deliberately strict — mostly read-only or no-access.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ----------------------------- helpers -----------------------------------
+    function isSignedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+
+    // Role/status are read from the user's own profile doc.
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(uid())).data;
+    }
+    function isActive() { return isSignedIn() && userDoc().status == 'active'; }
+    function role() { return isSignedIn() ? userDoc().role : 'guest'; }
+    function isMod() { return role() in ['moderator', 'admin', 'superadmin']; }
+    function isAdmin() { return role() in ['admin', 'superadmin']; }
+
+    // Only these keys may differ between before/after on a client profile edit.
+    function changedKeysWithin(allowed) {
+      return request.resource.data.diff(resource.data)
+        .affectedKeys().hasOnly(allowed);
+    }
+
+    // ------------------------------ users ------------------------------------
+    match /users/{userId} {
+      allow read: if true; // public pseudonymous profile
+      allow update: if isSignedIn() && userId == uid()
+        && changedKeysWithin(['displayName', 'avatarUrl', 'bio', 'updatedAt'])
+        && request.resource.data.bio.size() <= 300
+        && (request.resource.data.displayName == null
+          || request.resource.data.displayName.size() <= 50);
+      allow create, delete: if false; // functions only
+    }
+
+    // ---------------------------- usernames ----------------------------------
+    match /usernames/{name} {
+      allow get: if true; // availability check
+      allow list, write: if false;
+    }
+
+    // --------------------------- communities ---------------------------------
+    match /communities/{slug} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ------------------------------ posts ------------------------------------
+    match /posts/{postId} {
+      allow read: if resource.data.status == 'active' || isMod();
+      allow write: if false; // createPost / updatePost / deletePostSoft / lockPost
+    }
+
+    // ----------------------------- comments ----------------------------------
+    match /comments/{commentId} {
+      allow read: if resource.data.status == 'active' || isMod();
+      allow write: if false;
+    }
+
+    // ------------------------------ votes ------------------------------------
+    match /votes/{voteId} {
+      allow read: if isSignedIn() && resource.data.uid == uid();
+      allow write: if false; // voteOnPost / voteOnComment only
+    }
+
+    // ----------------------------- reports -----------------------------------
+    match /reports/{reportId} {
+      allow read: if isMod()
+        || (isSignedIn() && resource.data.reporterId == uid());
+      allow write: if false;
+    }
+
+    // ------------------------ moderationActions -------------------------------
+    match /moderationActions/{id} {
+      allow read: if isMod();
+      allow write: if false;
+    }
+
+    // -------------------------- notifications --------------------------------
+    match /notifications/{id} {
+      allow read: if isSignedIn() && resource.data.recipientId == uid();
+      allow update: if isSignedIn() && resource.data.recipientId == uid()
+        && changedKeysWithin(['read']); // may only flip read
+      allow create, delete: if false;
+    }
+
+    // ----------------------------- auditLogs ---------------------------------
+    match /auditLogs/{id} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ------------------------------- bans ------------------------------------
+    match /bans/{id} {
+      allow read: if isMod();
+      allow write: if false;
+    }
+
+    // ----------------------------- settings ----------------------------------
+    match /settings/{id} {
+      allow read: if true; // feature flags / announcement
+      allow write: if false; // admin functions only
+    }
+
+    // --------------------------- default deny --------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

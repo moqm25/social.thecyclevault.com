@@ -1,0 +1,120 @@
+{
+	"//": "The CycleVault Social — Firestore composite indexes. Source: docs/DATA_MODEL.md §14. Single-field indexes are auto-created by Firestore. Review/prune after real usage.",
+	"indexes": [
+		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "communityId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "communityId", "order": "ASCENDING" },
+				{ "fieldPath": "hotRank", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "communityId", "order": "ASCENDING" },
+				{ "fieldPath": "score", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "authorId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "comments",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "postId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "ASCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "comments",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "postId", "order": "ASCENDING" },
+				{ "fieldPath": "score", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "comments",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "authorId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "reports",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "reports",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "communityId", "order": "ASCENDING" },
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "moderationActions",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "communityId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "moderationActions",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "targetId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "notifications",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "recipientId", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
+			"collectionGroup": "notifications",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "recipientId", "order": "ASCENDING" },
+				{ "fieldPath": "read", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		}
+	],
+	"fieldOverrides": []
+}

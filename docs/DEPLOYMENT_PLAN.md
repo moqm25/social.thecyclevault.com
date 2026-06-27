@@ -18,15 +18,21 @@ AI assistant (or the founder) operates Firebase. Two independent deploy targets:
 | -------------- | --------------------------- | -------------------------- | ----------------------------- |
 | **Local**      | Emulator Suite              | `npm run dev` (Vite)       | Day-to-day dev; no cloud cost |
 | **Staging**    | `cyclevault-social-staging` | Pages preview / branch     | Pre-prod verification         |
-| **Production** | `cyclevault-social-prod`    | `social.thecyclevault.com` | Live                          |
+| **Production** | `cyclevault-social`         | `social.thecyclevault.com` | Live                          |
 
-Project aliases live in `.firebaserc` (`firebase use --add`). The Vite app reads
-`VITE_FIREBASE_*` env vars per environment (see §5).
+> **Launch decision (2026-06-26):** start with a **single production project**
+> (`cyclevault-social`) + the **Local Emulator Suite** for all day-to-day dev —
+> simplest and $0. A dedicated **staging** project (`cyclevault-social-staging`) is
+> added later via `firebase use --add`. `.firebaserc` currently maps
+> `default → cyclevault-social`.
+
+Project aliases live in `.firebaserc`. The Vite app reads `VITE_FIREBASE_*` env
+vars per environment (see §5).
 
 > **Blaze required.** Cloud Functions (2nd gen) deploy only on the **Blaze
-> pay-as-you-go** plan. Both cloud projects must be on Blaze with a billing account
-> **and budget alerts** (see [`COST_MODEL.md`](./COST_MODEL.md)). The free Spark
-> plan cannot deploy functions.
+> pay-as-you-go** plan. The production project must be on Blaze with a billing
+> account **and budget alerts** (see [`COST_MODEL.md`](./COST_MODEL.md)). The free
+> Spark plan cannot deploy functions; local emulator development needs no billing.
 
 ---
 
