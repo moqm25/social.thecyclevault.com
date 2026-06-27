@@ -6,7 +6,7 @@
 - **Related:** `../../MASTER PRODUCT SPEC.txt` (V3 ethical monetization), `COST_MODEL.md`
 
 > The CycleVault's entire brand is **"Private. Local. Yours."** Monetization must
-> *reinforce* trust, never erode it. This doc defines revenue streams that are
+> _reinforce_ trust, never erode it. This doc defines revenue streams that are
 > compatible with a privacy-first health community, the non-negotiable rules, and
 > a phased rollout tied to audience size.
 
@@ -45,23 +45,63 @@ Free tier stays fully usable (read, post, comment, vote, report).
 
 **Pricing (suggested, undercuts the app since it's lighter):**
 
-| Plan | Price |
-| --- | --- |
-| Monthly | **$2.99 / mo** |
-| Annual | **$19.99 / yr** (≈ 44% off) |
+| Plan     | Price                                      |
+| -------- | ------------------------------------------ |
+| Monthly  | **$2.99 / mo**                             |
+| Annual   | **$19.99 / yr** (≈ 44% off)                |
 | Lifetime | **$49.99** one-time (early-adopter option) |
 
 **Smart bundle:** app **Supporters get forum Supporter free** (and vice-versa as a
-trial). This raises the value of *both* products and is a strong reason to convert.
+trial). This raises the value of _both_ products and is a strong reason to convert.
 
 **Why first:** recurring, low-friction, no traffic threshold for brands, fully on-
-brand (people pay to *support the mission*, like public radio).
+brand (people pay to _support the mission_, like public radio).
+
+### A2. Ad-supported free tier → "go ad-free" upgrade (founder request) ⭐
+
+> Requested approach: show ads to free users; let them **upgrade to remove ads**.
+> This is the classic, proven freemium lever — and it folds neatly into Supporter
+> (Supporter = ad-free). The catch is **how** we do ads without betraying a
+> privacy-first health brand.
+
+**The hard truth (and why this needs care):** mainstream ad networks (Google
+AdSense, programmatic/RTB, Meta Audience Network) run on **behavioral tracking,
+third-party cookies, and ad SDKs** — exactly what our [§0 NEVER list](#0-the-hard-rules-what-we-will-never-do)
+forbids. On a **menstrual-health** site, behavioral targeting is also a landmine
+(pregnancy/fertility retargeting is creepy and a PR risk). So we do **not** use
+AdSense or any behavioral network. Instead:
+
+**Ethical ad models we WILL use (pick per stage):**
+
+1. **First-party direct-sold sponsorships** (preferred) — one tasteful, clearly
+   **"Sponsored"** placement we sell directly to vetted partners (period products,
+   vetted femtech, books, clinics). Flat fee, **no tracking**, no third-party SDK,
+   links open externally. This is the same engine as §C "Products & Tools" — just
+   surfaced as a single in-feed/sidebar unit. We fully control vetting + display.
+2. **Contextual ad networks (no tracking)** — e.g. the *model* EthicalAds proved
+   (contextual, GDPR-clean, no cookies, ~$2.50 CPM; though EthicalAds itself targets
+   *developer* audiences, so it's not a fit for our readers). If/when a reputable
+   **contextual, no-tracking** network serving a health/wellness audience is vetted,
+   it can fill unsold inventory. Ads chosen by **page topic**, never by the user.
+
+**The upgrade:** free users see **at most one** calm, labeled, non-tracking
+placement; **Supporter removes it** ("go ad-free"). Same `users.supporter` flag
+already gates this — the `AdSlot` component renders nothing for Supporters.
+
+**Guardrails specific to ads:** one unit max; never between content; always
+labeled "Sponsored"; no animation/auto-play; no health-misinfo or predatory
+advertisers; no behavioral targeting; a public note explaining the model.
+
+**Why this still satisfies the request:** free tier is ad-supported, paying removes
+ads — but the "ads" are ethical placements, not surveillance. It protects the brand
+*and* the revenue. (If we ever truly needed behavioral ads to survive, the honest
+move would be to not do it — the privacy promise is the product.)
 
 ### B. Verified Clinician / Expert program (trust + revenue) ⭐
 
 Vetted health professionals (OB-GYNs, midwives, nurses, pelvic-floor PTs,
 dietitians) earn a **"Verified Clinician"** badge after credential verification.
-This is the "certified users" idea — and it's a *trust* feature first, revenue second.
+This is the "certified users" idea — and it's a _trust_ feature first, revenue second.
 
 - **Verification fee:** e.g. **$49 / yr** to cover manual vetting + the badge, OR
   free-but-vetted to seed credibility early, then introduce the fee at scale.
@@ -115,12 +155,12 @@ the low single digits for a long time. So break-even is trivially low:
 
 ## 3. Phased rollout (tied to audience, not dates)
 
-| Stage | Audience | Monetization live |
-| --- | --- | --- |
-| **Launch** | 0–1k | Nothing paid. Build trust + content. Maybe a Tip jar. |
-| **Stage 1** | 1k–10k | **Supporter membership** + app bundle. **Clinician verification** (free-but-vetted → fee). |
-| **Stage 2** | 10k–100k | **Sponsored "Products & Tools"** (flat fee, labeled). Paid verification. "Ask an Expert." |
-| **Stage 3** | 100k+ | Premium events/content; revenue-share expert programs. |
+| Stage       | Audience | Monetization live                                                                          |
+| ----------- | -------- | ------------------------------------------------------------------------------------------ |
+| **Launch**  | 0–1k     | Nothing paid. Build trust + content. Maybe a Tip jar.                                      |
+| **Stage 1** | 1k–10k   | **Supporter membership** + app bundle. **Clinician verification** (free-but-vetted → fee). |
+| **Stage 2** | 10k–100k | **Sponsored "Products & Tools"** (flat fee, labeled). Paid verification. "Ask an Expert."  |
+| **Stage 3** | 100k+    | Premium events/content; revenue-share expert programs.                                     |
 
 Don't front-load monetization onto an empty room — **audience first, revenue second.**
 
@@ -159,4 +199,4 @@ Frame it like **public media**, not like an ad network:
 
 Transparency: a short public note on where money comes from (Supporters, vetted
 verification, clearly-labeled sponsors) and where it never comes from (your data).
-This *is* a marketing asset for a privacy brand.
+This _is_ a marketing asset for a privacy brand.
