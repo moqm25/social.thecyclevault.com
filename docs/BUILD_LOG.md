@@ -31,10 +31,11 @@ forum UI build does not depend on this (it uses the local emulator).
 
 ## ▶ Next action
 
-**Forum UI — read + write paths are built and green** (feed, community, post detail,
-composer, voting, threaded comments). Remaining UI: profile page, notifications
-inbox, settings, mod/admin dashboards. Then Part B public cutover (gated). Backend
-gap still open: founder's one-click Auth init (note at top).
+**Forum core is browser-validated and working** (signup → email-gate → post →
+vote → comment → threaded replies, all live against the emulator). Remaining UI:
+profile page, notifications inbox, settings, mod/admin dashboards. Then Part B
+public cutover (gated). Backend gap still open: founder's one-click Auth init
+(note at top) — prod signups need it.
 
 ---
 
@@ -182,6 +183,13 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - [ ] Profile (`/u/:username`), notifications inbox, settings, mod/admin dashboards
 - [ ] **Composite indexes revised**: feed/comment queries filter status=='active',
       so indexes now include status (18 total); redeployed to prod.
+- [x] **Browser-validated** (emulator, full stack): signup→createUserProfile,
+      email-verification gate (correctly blocks unverified), createPost, feed
+      render, upvote, comment, threaded replies — all working.
+- [x] **2 bugs found + fixed via browser test**: (a) VoteControl double-counted
+      (local offset + refetch); now reconciles to server score, no vote-query
+      invalidation. (b) createComment 400 'received null' — callable encoder turns
+      undefined→null; fixed via client strip-undefined + schema `.nullish()`.
 - Built against the local emulator; wired to the live callables in `lib/api.ts`.
 
 ---
