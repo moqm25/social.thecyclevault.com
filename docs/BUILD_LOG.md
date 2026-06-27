@@ -43,6 +43,40 @@ guest name-blur + legal pages.** All browser-validated. Sensible next steps:
 
 ---
 
+## ✅ Done since last entry (2026-06-27, session 4)
+
+**Community search + grounded AI curated answer** (`3aeb2e8`): a Reddit-style
+search with an optional AI summary that stays on-brand — calm, private,
+women-first, never medical advice.
+
+- **UX**: top-bar search (desktop) + a Search item in the sidebar/mobile drawer →
+  `/search?q=…`. Results page shows, in order: a **curated answer card** (numbered
+  sources linking to the cited discussions + a not-medical-advice disclaimer),
+  matching **Circles**, and matching **Discussions** (reuses `PostCard`, so guest
+  name-blur + moderation rules are preserved). No query → **Popular topics** chips.
+- **Backend** `searchContent` callable (`functions/src/search/search.ts`):
+  privacy-first by construction — **stateless** (queries never stored/tied to a
+  user), searches **only `active`** posts (no removed/pending), strips moderation
+  fields. In-memory ranking (title>tags>body, exact-phrase bonus, popularity
+  tiebreak). Guests allowed; authed callers rate-limited (`search`, `searchAI`).
+- **Two grounded answer sources**, structurally identical to the client
+  (`answer.source`): `snapshot` (deterministic, no key needed, always honest +
+  non-medical) and `ai` (real OpenAI Chat Completions via fetch). The AI path sends
+  **only** post title + a short body excerpt + the Circle name — **no usernames, no
+  PII** — and is hard-prompted to stay grounded, cite `[1]`/`[2]`, never invent
+  facts, and never give medical advice. **Falls back to the snapshot** on any
+  failure — search never breaks.
+- **AI is opt-in**, mirroring moderation: prod requires a dedicated `SEARCH_AI_KEY`
+  (optional `SEARCH_AI_MODEL`, default `gpt-4o-mini`); the emulator falls back to a
+  local `OPENAI_API_KEY` for dev/demo. No key → grounded snapshot. Docs: `SEARCH.md`.
+- Validated against the emulator (curl + signed-in render): correct results, answer
+  card with sources + disclaimer, Circles + Discussions with correct comment counts,
+  guest name-blur intact, graceful snapshot fallback (the ambient dev key was a 401
+  → cleanly degraded). typecheck + lint + functions build clean. `searchContent`
+  **deployed to prod**.
+
+---
+
 ## ✅ Done since last entry (2026-06-27, session 3)
 
 Six founder-requested feature chunks — each built → typecheck/lint/test clean →
@@ -64,8 +98,7 @@ deployed to prod → committed:
 4. **Strike & auto-suspension** (`ec49cd5`): human-confirmed removals strike the
    author; auto-escalate 1=warn→2=24h→3=7d→4=30d→5+=needsAdminReview; **decay 90d**;
    admin override (`clearUserStrikes`) + "Accounts needing review" panel. Strike
-   history in mod-only `userModeration` (never on public profile). `MODERATION_PLAN
-   §3a`.
+   history in mod-only `userModeration` (never on public profile). `MODERATION_PLAN §3a`.
 5. **Admin view-as + deleted view + announcement** (`4648063`): admins toggle
    Member ⇄ Admin view (deleted/removed shown inline + moderation details);
    "Deleted & removed" dashboard tab; page-wide dismissible announcement banner
