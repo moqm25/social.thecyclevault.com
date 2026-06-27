@@ -17,7 +17,6 @@ service cloud.firestore {
     function userDoc() {
       return get(/databases/$(database)/documents/users/$(uid())).data;
     }
-    function isActive() { return isSignedIn() && userDoc().status == 'active'; }
     function role() { return isSignedIn() ? userDoc().role : 'guest'; }
     function isMod() { return role() in ['moderator', 'admin', 'superadmin']; }
     function isAdmin() { return role() in ['admin', 'superadmin']; }

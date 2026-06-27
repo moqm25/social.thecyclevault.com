@@ -9,36 +9,33 @@
 - **Firebase project ID:** `cyclevault-social` (region `us-central1`)
 - **Product name:** **The CycleVault** ("The" is part of the name — keep casing).
 - **Authoritative specs:** `docs/adr/0001-foundational-architecture.md` + the 9
-  Phase 0 docs. This log records *execution*, not design.
+  Phase 0 docs. This log records _execution_, not design.
 
 ---
 
-## ⚠ One thing waiting on you (non-blocking)
+## ⚠ One thing waiting on you (1 console click)
 
-The CI/deploy **workflow files are committed locally (`0edd3f4`) but not pushed** —
-GitHub rejected the push because the current credential lacks the `workflow` OAuth
-scope. To publish them, run once:
+Firebase **Authentication is not initialized** on the project, so signups fail with
+`CONFIGURATION_NOT_FOUND`. This one-time init can't be done with the CLI token — it
+needs the console:
 
-```bash
-gh auth refresh -h github.com -s workflow   # interactive, your browser
-cd Files/social.thecyclevault.com && git push origin main
-```
+1. Open <https://console.firebase.google.com/project/cyclevault-social/authentication>
+2. Click **Get started**.
+3. **Sign-in method** → **Email/Password** → toggle **Enable** → **Save**.
+   (Leave "Email link / passwordless" OFF.)
 
-Everything else is pushed. This does not block local development or the build.
+That's it — everything else in the backend is already deployed and verified. The
+forum UI build does not depend on this (it uses the local emulator).
 
 ---
 
 ## ▶ Next action
 
-**Phase F — GO-LIVE (gated on founder approval).** Everything buildable is done and
-green. To launch (see `docs/DEPLOYMENT_PLAN.md` §9 + `.github/workflows/deploy.yml`):
-1. Upgrade `cyclevault-social` to **Blaze** + set a budget alert.
-2. Enable **Email/Password** auth provider (Console → Authentication).
-3. Add repo **Variables** (`VITE_FIREBASE_*`) + secret `FIREBASE_SERVICE_ACCOUNT`.
-4. Run the `Deploy (gated)` workflow with target `firebase` → seed communities in prod.
-5. Switch **Pages source → GitHub Actions**, run `Deploy (gated)` target `web`
-   (this replaces the live "Coming soon" page).
-6. Publish forum privacy policy + terms.
+**Building the forum UI (Phase G).** Backend is deployed + verified in prod; the
+only backend gap is the founder's one-click Auth init (note at top). Build order:
+feed + community pages → post detail + comments + composer → voting (optimistic) →
+profile/notifications/settings → mod/admin. All against the local emulator, wired
+to the live callables. Public cutover (Part B) stays deferred until the UI is ready.
 
 ---
 
@@ -148,17 +145,38 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - Note: did NOT switch Pages to Actions (that's the gated go-live step), so the
   live Coming-soon page is untouched.
 
-## Phase F — Go live ⛔ (gated on founder approval)
+## Phase F — GO-LIVE (gated) — backend deployed ✅ / public cutover pending
 
-- [ ] Upgrade prod project to **Blaze** + budget alerts (founder, console)
-- [ ] First `firebase deploy` (rules, indexes, functions)
-- [ ] Replace live "Coming soon" `index.html` with the built SPA
-- [ ] Publish forum privacy policy + terms (separate from the app's local-only one)
+**Part A — Backend go-live (done 2026-06-27, Blaze enabled by founder):**
+
+- [x] Enabled billing-gated APIs (cloudbuild, artifactregistry, run, eventarc).
+- [x] `firebase deploy --only firestore:rules,firestore:indexes` ✅ (prod).
+- [x] `firebase deploy --only functions` — **all 20 callables LIVE** in
+      us-central1 (v2/nodejs20). Smoke test: unauth call → 401 `UNAUTHENTICATED`.
+- [x] Seeded 6 communities in prod via `scripts/seedCommunitiesProd.mjs` (REST +
+      CLI token; idempotent).
+- [ ] **Auth init** — founder console click (see note at top). Until then signups
+      return `CONFIGURATION_NOT_FOUND`.
+- [ ] Storage rules deploy — deferred: needs one-time bucket "Get started". Storage
+      is Phase 2 (no uploads at launch), so not blocking.
+
+**Part B — Public cutover (deferred until forum UI exists):**
+
+- [ ] Repo Variables `VITE_FIREBASE_*`; Pages source → GitHub Actions; run gated
+      `web` deploy (replaces the live Coming-soon page); publish forum privacy+terms.
+
+## Phase G — Forum UI (in progress)
+
+- [ ] Feed (Hot/New/Top) + community pages, PostCard + VoteControl (optimistic)
+- [ ] Post detail + threaded comments + composer
+- [ ] Profile, notifications, settings; mod/admin dashboards
+- Built against the local emulator; wired to the live callables in `lib/api.ts`.
+
+---
 
 ---
 
 ## Command journal
-
 > Append every meaningful command + outcome here, newest last.
 
 - `2026-06-26` — verified env (node/npm/firebase/gh), `firebase login:list` →
@@ -185,3 +203,9 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - `2026-06-27` — SPA fallback + docs pushed (`b5576d1`). Workflow files committed
   locally (`0edd3f4`) but push rejected for missing `workflow` scope — awaiting
   `gh auth refresh -s workflow` + push. All app/backend/test code is on origin.
+- `2026-06-27` — founder granted `workflow` scope + pushed workflows (`3504976`);
+  CI run green. Founder enabled **Blaze**.
+- `2026-06-27` — **Phase F Part A**: enabled billing-gated APIs; deployed Firestore
+  rules+indexes; deployed **all 20 Cloud Functions** (us-central1, prod); seeded 6
+  communities (REST seed script). Smoke test: unauth callable → 401 UNAUTHENTICATED.
+  Removed unused `isActive` rules helper. Remaining: founder Auth-init console click.
