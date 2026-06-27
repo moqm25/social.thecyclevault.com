@@ -221,3 +221,30 @@ export interface UserModeration {
 	lastStrikeAt?: number | null;
 	updatedAt: number;
 }
+
+/** A discussion cited by a curated search answer. */
+export interface SearchAnswerSource {
+	id: string;
+	title: string;
+	communityId: string;
+}
+
+/**
+ * Curated answer for a search (docs/SEARCH.md). `source` is "ai" when a real LLM
+ * synthesized it (grounded in the cited discussions) or "snapshot" for the
+ * deterministic fallback. Always non-medical-advice.
+ */
+export interface SearchAnswer {
+	text: string;
+	sources: SearchAnswerSource[];
+	source: "ai" | "snapshot";
+}
+
+export interface SearchResults {
+	query: string;
+	posts: Post[];
+	communities: Community[];
+	answer: SearchAnswer | null;
+	/** True when an AI answer is configured but the viewer must sign in to get it. */
+	aiAvailable: boolean;
+}

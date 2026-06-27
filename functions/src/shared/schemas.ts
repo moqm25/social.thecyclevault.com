@@ -186,3 +186,10 @@ export const grantBadgeSchema = z.object({
 	badge: z.enum(["supporter", "founding_supporter", "clinician", "org"]),
 	grant: z.boolean().default(true),
 });
+
+export const searchContentSchema = z.object({
+	query: z.string().min(1).max(200),
+	// Whether to attempt a curated answer (AI when configured + signed-in, else a
+	// grounded community snapshot). Defaults on.
+	ai: z.boolean().optional(),
+});

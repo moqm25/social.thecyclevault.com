@@ -11,6 +11,7 @@ import {
 	ShieldIcon,
 	PlusIcon,
 	CirclesIcon,
+	SearchIcon,
 } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
@@ -47,6 +48,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 			<Section>
 				<Item to="/feed" icon={HomeIcon} label="Home" end onNavigate={onNavigate} />
+				<Item to="/search" icon={SearchIcon} label="Search" onNavigate={onNavigate} />
 				<Item to="/shop" icon={ShopIcon} label="Shop" onNavigate={onNavigate} />
 				<Item to="/supporter" icon={HeartIcon} label="Become a Supporter" onNavigate={onNavigate} />
 			</Section>

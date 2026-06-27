@@ -13,6 +13,9 @@ export { createUserProfile, reserveUsername } from "./auth/profile.js";
 // ---- communities (member-created "Circles") ----
 export { createCommunity } from "./communities/communities.js";
 
+// ---- search (community search + grounded curated answer) ----
+export { searchContent } from "./search/search.js";
+
 // ---- posts ----
 export { createPost, updatePost, deletePostSoft, lockPost } from "./posts/posts.js";
 

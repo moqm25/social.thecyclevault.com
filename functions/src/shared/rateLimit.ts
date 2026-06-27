@@ -39,4 +39,6 @@ export const RATE = {
 	report: { limit: 20, windowMs: 24 * 60 * 60 * 1000 },
 	reserveUsername: { limit: 5, windowMs: 24 * 60 * 60 * 1000 },
 	createCommunity: { limit: 3, windowMs: 24 * 60 * 60 * 1000 },
+	search: { limit: 90, windowMs: 60 * 60 * 1000 },
+	searchAI: { limit: 25, windowMs: 60 * 60 * 1000 },
 } as const;

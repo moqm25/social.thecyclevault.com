@@ -47,6 +47,11 @@ export const createCommunity = callable<
 	{ slug: string }
 >("createCommunity");
 
+// ---- search (community search + grounded curated answer) ----
+import type { SearchResults } from "../types/models";
+
+export const searchContent = callable<{ query: string; ai?: boolean }, SearchResults>("searchContent");
+
 // ---- posts ----
 export const createPost = callable<
 	{ communityId: string; title: string; body: string; tags?: string[] },

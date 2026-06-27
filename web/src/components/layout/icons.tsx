@@ -136,3 +136,10 @@ export const LeafIcon = (p: IconProps) => (
 		<path d="M9 16c2.5-3 5-4.5 8-5.5" />
 	</Base>
 );
+
+export const SearchIcon = (p: IconProps) => (
+	<Base {...p}>
+		<circle cx="11" cy="11" r="7" />
+		<path d="m20 20-3.2-3.2" />
+	</Base>
+);

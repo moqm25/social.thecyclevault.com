@@ -7,6 +7,7 @@ import { AnnouncementBanner } from "../AnnouncementBanner";
 import { AdminViewToggle } from "../AdminViewToggle";
 import { SidebarNav } from "./SidebarNav";
 import { RightRail } from "./RightRail";
+import { TopSearch } from "./TopSearch";
 import { MenuIcon, CloseIcon } from "./icons";
 
 /**
@@ -54,6 +55,7 @@ export function AppLayout() {
 					<Link to="/feed" className="text-[17px]" aria-label="The CycleVault Social — home">
 						<BrandWordmark />
 					</Link>
+					<TopSearch />
 					<div className="ml-auto flex items-center gap-2">
 						<AdminViewToggle />
 						<ThemeToggle />
