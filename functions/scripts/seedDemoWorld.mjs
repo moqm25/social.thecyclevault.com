@@ -119,7 +119,7 @@ function addAccount(a) {
 }
 
 // --- Named / special accounts -------------------------------------------------
-addAccount({ username: "TheCycleVault", email: "team@cyclevault.test", role: "superadmin", badges: ["org"], supporter: true,
+addAccount({ username: "TheCycleVault", email: "founder@thecyclevault.com", role: "superadmin", badges: ["org"], supporter: true,
 	displayName: "The CycleVault", bio: "Official account of The CycleVault. Here to keep things calm, kind, and private.", note: "OFFICIAL · superadmin" });
 addAccount({ username: "calmfox", email: "admin@example.com", role: "admin", supporter: true,
 	displayName: "Robin (Admin)", bio: "Community admin. If you need a human, reply in-thread.", note: "Admin (easy login)" });
@@ -678,7 +678,7 @@ ${SHARED_PASSWORD}
 
 | Purpose | Username | Email |
 | --- | --- | --- |
-| Superadmin (everything) | \`TheCycleVault\` | team@cyclevault.test |
+| Superadmin (everything) | \`TheCycleVault\` | founder@thecyclevault.com |
 | Admin (easy login) | \`calmfox\` | admin@example.com |
 | Moderator | \`gentleheron\` | gentleheron@example.test |
 | Verified Clinician | \`Dr_Maya\` | dr_maya@example.test |
