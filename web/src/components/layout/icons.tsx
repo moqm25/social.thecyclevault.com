@@ -143,3 +143,18 @@ export const SearchIcon = (p: IconProps) => (
 		<path d="m20 20-3.2-3.2" />
 	</Base>
 );
+
+export const LifeBuoyIcon = (p: IconProps) => (
+	<Base {...p}>
+		<circle cx="12" cy="12" r="9" />
+		<circle cx="12" cy="12" r="3.4" />
+		<path d="m5.6 5.6 3.8 3.8M14.6 14.6l3.8 3.8M18.4 5.6l-3.8 3.8M9.4 14.6l-3.8 3.8" />
+	</Base>
+);
+
+export const TerminalIcon = (p: IconProps) => (
+	<Base {...p}>
+		<rect x="3" y="4.5" width="18" height="15" rx="2.2" />
+		<path d="m7 9.5 3 2.5-3 2.5M12.5 14.5H17" />
+	</Base>
+);

@@ -5,6 +5,8 @@ import { ThemeToggle } from "../ThemeToggle";
 import { UserMenu } from "../UserMenu";
 import { AnnouncementBanner } from "../AnnouncementBanner";
 import { AdminViewToggle } from "../AdminViewToggle";
+import { AdminModeRibbon } from "../AdminModeRibbon";
+import { useAdminView } from "../../features/admin/AdminViewContext";
 import { SidebarNav } from "./SidebarNav";
 import { RightRail } from "./RightRail";
 import { TopSearch } from "./TopSearch";
@@ -19,6 +21,7 @@ import { MenuIcon, CloseIcon } from "./icons";
 export function AppLayout() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const location = useLocation();
+	const { adminView } = useAdminView();
 
 	// Dense, task-focused pages use the full content width (no context rail).
 	const fullWidthPrefixes = ["/admin", "/mod", "/settings", "/post/new", "/circles/new"];
@@ -46,9 +49,13 @@ export function AppLayout() {
 				className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-coral focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lift">
 				Skip to content
 			</a>
+			<AdminModeRibbon />
 			<AnnouncementBanner />
 
-			<header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
+			<header
+				className={`sticky top-0 z-30 border-b backdrop-blur transition-colors ${
+					adminView ? "border-coral/40 bg-coral-wash/80 shadow-[inset_0_2px_0_0_var(--coral)]" : "border-line bg-bg/85"
+				}`}>
 				<div className="mx-auto flex h-14 max-w-[1320px] items-center gap-3 px-4">
 					<button
 						type="button"
@@ -114,7 +121,7 @@ export function AppLayout() {
 							</button>
 						</div>
 						<div className="flex-1 overflow-y-auto px-3 py-4">
-							<SidebarNav onNavigate={() => setDrawerOpen(false)} />
+							<SidebarNav mobile onNavigate={() => setDrawerOpen(false)} />
 						</div>
 					</div>
 				</div>

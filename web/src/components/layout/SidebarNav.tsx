@@ -2,6 +2,7 @@ import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useCommunities } from "../../features/posts/hooks";
 import { SignInLink } from "../SignInLink";
+import { AdminViewToggle } from "../AdminViewToggle";
 import { HomeIcon, ShopIcon, HeartIcon, BellIcon, UserIcon, SettingsIcon, ShieldIcon, PlusIcon, CirclesIcon, SearchIcon } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
@@ -10,9 +11,10 @@ type IconType = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
 /**
  * Left navigation for the app shell (product register). Used both in the sticky
  * desktop sidebar and inside the mobile drawer. `onNavigate` lets the drawer close
- * itself when a destination is chosen.
+ * itself when a destination is chosen. `mobile` surfaces the admin View-mode
+ * switch inside the drawer (where the compact top-bar toggle is hidden).
  */
-export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+export function SidebarNav({ onNavigate, mobile = false }: { onNavigate?: () => void; mobile?: boolean }) {
 	const { user, profile } = useAuth();
 	const communities = useCommunities();
 	const role = profile?.role;
@@ -26,6 +28,8 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 
 	return (
 		<nav aria-label="Primary" className="flex flex-col gap-6 text-[15px]">
+			{mobile && <AdminViewToggle variant="panel" />}
+
 			{user && (
 				<Link
 					to="/post/new"
