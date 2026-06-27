@@ -87,18 +87,18 @@ Given a flagged item, returns a **confidence that it is safe** (0–1) and a dec
 
 One entry **per post and per comment** ("all content trickles through here"):
 
-| Field | Notes |
-| --- | --- |
-| `contentType` | `post` \| `comment` |
-| `contentId`, `communityId`, `postId?` | references |
-| `authorId`, `authorUsername` | denormalized |
-| `excerpt` | first ~200 chars for the dashboard |
-| `tier1` | `{ score, severity, flags[] }` |
-| `tier2` | `{ safeConfidence, decision, usedAI }` (present if Tier 1 flagged) |
-| `state` | `auto_approved` · `ai_approved` · `awaiting_human` · `human_approved` · `human_removed` |
-| `decidedBy` | `heuristic` · `ai` · moderator uid |
-| `reason` | human note on reject/approve |
-| `createdAt`, `decidedAt` | server |
+| Field                                 | Notes                                                                                   |
+| ------------------------------------- | --------------------------------------------------------------------------------------- |
+| `contentType`                         | `post` \| `comment`                                                                     |
+| `contentId`, `communityId`, `postId?` | references                                                                              |
+| `authorId`, `authorUsername`          | denormalized                                                                            |
+| `excerpt`                             | first ~200 chars for the dashboard                                                      |
+| `tier1`                               | `{ score, severity, flags[] }`                                                          |
+| `tier2`                               | `{ safeConfidence, decision, usedAI }` (present if Tier 1 flagged)                      |
+| `state`                               | `auto_approved` · `ai_approved` · `awaiting_human` · `human_approved` · `human_removed` |
+| `decidedBy`                           | `heuristic` · `ai` · moderator uid                                                      |
+| `reason`                              | human note on reject/approve                                                            |
+| `createdAt`, `decidedAt`              | server                                                                                  |
 
 Content (`posts`/`comments`) also carries a small `moderation` map mirroring the
 outcome, and the existing **`status`** field gates visibility (`active` /

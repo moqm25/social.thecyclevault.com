@@ -45,8 +45,8 @@ export default function PostDetailPage() {
 		<div className="space-y-6">
 			{p.status === "pending" && (
 				<div className="rounded-xl border border-lav-soft bg-lav-wash px-4 py-3 text-sm text-ink-2">
-					<strong className="text-ink">Under review.</strong> This is visible only to you while a moderator checks
-					it. You’ll be notified once it’s approved.
+					<strong className="text-ink">Under review.</strong> This is visible only to you while a moderator checks it. You’ll be notified
+					once it’s approved.
 				</div>
 			)}
 			{p.status === "removed" && (

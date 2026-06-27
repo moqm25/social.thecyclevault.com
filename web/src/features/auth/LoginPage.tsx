@@ -116,10 +116,7 @@ export default function LoginPage() {
 							error={signInForm.formState.errors.password?.message}
 						/>
 						<div className="text-right">
-							<button
-								type="button"
-								onClick={onForgotPassword}
-								className="text-sm font-medium text-lav hover:underline">
+							<button type="button" onClick={onForgotPassword} className="text-sm font-medium text-lav hover:underline">
 								Forgot password?
 							</button>
 						</div>

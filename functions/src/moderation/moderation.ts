@@ -47,11 +47,7 @@ export const reviewContent = onCall(async (request) => {
 		}
 	}
 	// Resolve the queue entry/entries for this content.
-	const queue = await db
-		.collection(COL.moderationQueue)
-		.where("contentId", "==", input.contentId)
-		.limit(5)
-		.get();
+	const queue = await db.collection(COL.moderationQueue).where("contentId", "==", input.contentId).limit(5).get();
 	queue.forEach((q) =>
 		batch.update(q.ref, {
 			state: approve ? "human_approved" : "human_removed",

@@ -29,9 +29,7 @@ function ItemMeta({ item }: { item: ModerationQueueItem }) {
 				{item.authorUsername}
 			</Link>
 			<span className="text-muted-2">· {relativeTime(item.createdAt)}</span>
-			{item.tier1.flags.length > 0 && (
-				<span className="text-muted-2">· flags: {item.tier1.flags.join(", ")}</span>
-			)}
+			{item.tier1.flags.length > 0 && <span className="text-muted-2">· flags: {item.tier1.flags.join(", ")}</span>}
 			{item.tier2 && (
 				<span className="text-muted-2">
 					· AI safe {(item.tier2.safeConfidence * 100).toFixed(0)}%{item.tier2.usedAI ? "" : " (heuristic)"}
@@ -65,8 +63,8 @@ function ReviewRow({ item, onDone }: { item: ModerationQueueItem; onDone: () => 
 			<p className="mt-2 whitespace-pre-wrap text-[15px] text-ink">{item.excerpt}</p>
 			{isSelfHarm && (
 				<p className="mt-2 rounded-lg bg-coral/10 px-3 py-2 text-sm text-ink-2">
-					⚠ Possible crisis content — handle with care and empathy. Approving keeps it visible; consider reaching out
-					with support resources.
+					⚠ Possible crisis content — handle with care and empathy. Approving keeps it visible; consider reaching out with support
+					resources.
 				</p>
 			)}
 			<div className="mt-3 flex flex-wrap items-center gap-2">

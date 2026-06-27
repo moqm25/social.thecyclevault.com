@@ -50,8 +50,8 @@ export default function SupporterPage() {
 					Keep it <span className="brand-serif text-coral">calm and ad-free</span>.
 				</h1>
 				<p className="mx-auto mt-3 max-w-prose text-muted">
-					The CycleVault Social is free and always will be. If it’s useful to you, becoming a Supporter removes ads
-					and keeps the community running — no data sales, no trackers, no exceptions.
+					The CycleVault Social is free and always will be. If it’s useful to you, becoming a Supporter removes ads and keeps the community
+					running — no data sales, no trackers, no exceptions.
 				</p>
 			</section>
 
@@ -75,9 +75,7 @@ export default function SupporterPage() {
 					{PLANS.map((pl) => (
 						<div
 							key={pl.name}
-							className={`rounded-2xl border p-5 text-center ${
-								pl.best ? "border-coral bg-coral-wash" : "border-line bg-surface"
-							}`}>
+							className={`rounded-2xl border p-5 text-center ${pl.best ? "border-coral bg-coral-wash" : "border-line bg-surface"}`}>
 							<p className="text-sm font-medium text-muted">{pl.name}</p>
 							<p className="mt-1 text-2xl font-semibold text-ink">{pl.price}</p>
 							<p className="text-xs text-muted">{pl.per}</p>
@@ -93,7 +91,10 @@ export default function SupporterPage() {
 						Coming soon
 					</button>
 					<p className="mt-2 text-sm text-muted">
-						Payments are being set up. {user ? "We’ll let you know the moment Supporter goes live." : (
+						Payments are being set up.{" "}
+						{user ? (
+							"We’ll let you know the moment Supporter goes live."
+						) : (
 							<>
 								<Link to="/login" className="font-medium text-coral hover:underline">
 									Sign in

@@ -45,13 +45,13 @@ would be strictly worse.
 
 ## 2. Findings & fixes
 
-| ID | Severity | Finding | Status |
-| --- | --- | --- | --- |
-| **M-1** | Medium | `avatarUrl` was in the client-writable profile allow-list but unvalidated. With no upload flow yet, a crafted direct write could set a `javascript:`/tracking URL that becomes an XSS/SSRF/tracking vector when avatars render. | ✅ Fixed |
-| **L-1** | Low | `createUserProfile` had no rate limit (every other mutating callable does). | ✅ Fixed |
-| **L-2** | Low | App Check was wired client-side but **not enforced** server-side, so callables couldn't reject non-app traffic. | ✅ Fixed (env-gated) |
-| **L-3** | Low | Profile-update rule assumed `bio`/`displayName` are strings; a non-string write could error or slip the length check. | ✅ Fixed |
-| **F-1** | Missing | No password-reset ("forgot password") flow. | ✅ Added |
+| ID      | Severity | Finding                                                                                                                                                                                                                         | Status               |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **M-1** | Medium   | `avatarUrl` was in the client-writable profile allow-list but unvalidated. With no upload flow yet, a crafted direct write could set a `javascript:`/tracking URL that becomes an XSS/SSRF/tracking vector when avatars render. | ✅ Fixed             |
+| **L-1** | Low      | `createUserProfile` had no rate limit (every other mutating callable does).                                                                                                                                                     | ✅ Fixed             |
+| **L-2** | Low      | App Check was wired client-side but **not enforced** server-side, so callables couldn't reject non-app traffic.                                                                                                                 | ✅ Fixed (env-gated) |
+| **L-3** | Low      | Profile-update rule assumed `bio`/`displayName` are strings; a non-string write could error or slip the length check.                                                                                                           | ✅ Fixed             |
+| **F-1** | Missing  | No password-reset ("forgot password") flow.                                                                                                                                                                                     | ✅ Added             |
 
 ### Fix detail
 
@@ -72,18 +72,18 @@ would be strictly worse.
 
 ## 3. OWASP Top 10 review
 
-| Risk | Assessment |
-| --- | --- |
-| **A01 Broken Access Control** | Strong. All privileged writes go through Cloud Functions with role checks (`requireRole`, `requireModeratorOf`); Firestore rules fail closed; no client path to `role`/`status`/`karma`/counters/`badges`. Rules-test suite asserts the capability matrix (allow + deny). |
-| **A02 Cryptographic Failures** | Passwords: scrypt at Identity Platform (we never see them). All transport HTTPS. No sensitive data stored to encrypt (no PII/health/IP). |
-| **A03 Injection** | No SQL. Firestore parameterized via SDK. No `eval`/`Function`. User content rendered as text by React (auto-escaped); **no `dangerouslySetInnerHTML` anywhere** (verified). Server input validated with Zod on every callable. |
-| **A04 Insecure Design** | Server-authoritative, least-privilege, append-only audit logs, rate limits, deterministic vote IDs. Privacy boundary documented (ADR-0001). |
-| **A05 Security Misconfiguration** | Fail-closed default-deny rule. App Check enforcement available. Budget alerts + maxInstances cap. No debug endpoints. |
-| **A06 Vulnerable Components** | 0 vulnerabilities in **production** deps (web + functions). Dev-only advisories don't ship. `npm audit` in CI recommended (see §5). |
-| **A07 Identification & Auth Failures** | Firebase Auth; email-verification gate before first post/comment; email-enumeration protection; rate limits; suspension/ban enforced server-side. |
-| **A08 Software & Data Integrity** | CI runs lint/typecheck/tests + rules/e2e before any deploy. Deploy is gated/manual. No untrusted plugins. |
-| **A09 Logging & Monitoring** | `moderationActions` + `auditLogs` (append-only, admin-only). No IP/PII logged. Function logs available. |
-| **A10 SSRF** | No server-side fetch of user-supplied URLs. (avatarUrl now function-only removes the future client vector.) |
+| Risk                                   | Assessment                                                                                                                                                                                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A01 Broken Access Control**          | Strong. All privileged writes go through Cloud Functions with role checks (`requireRole`, `requireModeratorOf`); Firestore rules fail closed; no client path to `role`/`status`/`karma`/counters/`badges`. Rules-test suite asserts the capability matrix (allow + deny). |
+| **A02 Cryptographic Failures**         | Passwords: scrypt at Identity Platform (we never see them). All transport HTTPS. No sensitive data stored to encrypt (no PII/health/IP).                                                                                                                                  |
+| **A03 Injection**                      | No SQL. Firestore parameterized via SDK. No `eval`/`Function`. User content rendered as text by React (auto-escaped); **no `dangerouslySetInnerHTML` anywhere** (verified). Server input validated with Zod on every callable.                                            |
+| **A04 Insecure Design**                | Server-authoritative, least-privilege, append-only audit logs, rate limits, deterministic vote IDs. Privacy boundary documented (ADR-0001).                                                                                                                               |
+| **A05 Security Misconfiguration**      | Fail-closed default-deny rule. App Check enforcement available. Budget alerts + maxInstances cap. No debug endpoints.                                                                                                                                                     |
+| **A06 Vulnerable Components**          | 0 vulnerabilities in **production** deps (web + functions). Dev-only advisories don't ship. `npm audit` in CI recommended (see §5).                                                                                                                                       |
+| **A07 Identification & Auth Failures** | Firebase Auth; email-verification gate before first post/comment; email-enumeration protection; rate limits; suspension/ban enforced server-side.                                                                                                                         |
+| **A08 Software & Data Integrity**      | CI runs lint/typecheck/tests + rules/e2e before any deploy. Deploy is gated/manual. No untrusted plugins.                                                                                                                                                                 |
+| **A09 Logging & Monitoring**           | `moderationActions` + `auditLogs` (append-only, admin-only). No IP/PII logged. Function logs available.                                                                                                                                                                   |
+| **A10 SSRF**                           | No server-side fetch of user-supplied URLs. (avatarUrl now function-only removes the future client vector.)                                                                                                                                                               |
 
 ---
 

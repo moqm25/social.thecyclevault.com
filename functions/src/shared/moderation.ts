@@ -181,11 +181,7 @@ export function isClean(t1: Tier1Result): boolean {
  * If MODERATION_AI_KEY is configured, defer to a real model; otherwise use a
  * refined heuristic. Fails safe (routes to human) on any uncertainty/error.
  */
-export async function assessSafety(
-	rawTitle: string,
-	rawBody: string,
-	t1: Tier1Result,
-): Promise<Tier2Result> {
+export async function assessSafety(rawTitle: string, rawBody: string, t1: Tier1Result): Promise<Tier2Result> {
 	// Optional real-AI path (drop-in; off until a key is provisioned).
 	if (process.env.MODERATION_AI_KEY) {
 		try {
@@ -232,12 +228,7 @@ async function reviewWithExternalAI(text: string): Promise<number> {
 	return r.flagged ? Math.min(1 - maxScore, 0.5) : 1 - maxScore;
 }
 
-export type ModerationState =
-	| "auto_approved"
-	| "ai_approved"
-	| "awaiting_human"
-	| "human_approved"
-	| "human_removed";
+export type ModerationState = "auto_approved" | "ai_approved" | "awaiting_human" | "human_approved" | "human_removed";
 
 /** Compute the publish decision for newly-created content. */
 export async function moderateNewContent(
