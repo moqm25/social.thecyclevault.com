@@ -15,9 +15,15 @@
 
 ## ▶ Next action
 
-Phase E — CI/CD: write `.github/workflows/ci.yml` (lint, typecheck, test, build on
-PR) + `deploy.yml`, and the Pages SPA `404.html` fallback. Then Phase F (gated):
-Blaze upgrade + first deploy.
+**Phase F — GO-LIVE (gated on founder approval).** Everything buildable is done and
+green. To launch (see `docs/DEPLOYMENT_PLAN.md` §9 + `.github/workflows/deploy.yml`):
+1. Upgrade `cyclevault-social` to **Blaze** + set a budget alert.
+2. Enable **Email/Password** auth provider (Console → Authentication).
+3. Add repo **Variables** (`VITE_FIREBASE_*`) + secret `FIREBASE_SERVICE_ACCOUNT`.
+4. Run the `Deploy (gated)` workflow with target `firebase` → seed communities in prod.
+5. Switch **Pages source → GitHub Actions**, run `Deploy (gated)` target `web`
+   (this replaces the live "Coming soon" page).
+6. Publish forum privacy policy + terms.
 
 ---
 
@@ -116,11 +122,16 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - [ ] Component tests (RTL) beyond smoke; Playwright E2E — later (post-MVP UI)
 - Run: `tests/` → `npm test` (rules), `npm run test:e2e` (full stack, seeds first)
 
-## Phase E — CI/CD ⏳
+## Phase E — CI/CD ✅
 
-- [ ] `.github/workflows/ci.yml` (lint, typecheck, test, build on PR)
-- [ ] `.github/workflows/deploy.yml` (Pages + Firebase on main)
-- [ ] Pages SPA `404.html` fallback; keep `CNAME` in build output
+- [x] `.github/workflows/ci.yml` — on push/PR: web (lint+typecheck+test+build),
+      functions (lint+build+unit), rules+E2E (emulators w/ setup-java). No deploys.
+- [x] `.github/workflows/deploy.yml` — **manual `workflow_dispatch` only**, target
+      web|firebase|both. Gated; documents Blaze + Pages-source + vars/secrets needs.
+- [x] Pages SPA `404.html` fallback (rafgraph technique) + restore script in
+      index.html; `.nojekyll`; `CNAME` in `web/public/` — verified emitted to dist/.
+- Note: did NOT switch Pages to Actions (that's the gated go-live step), so the
+  live Coming-soon page is untouched.
 
 ## Phase F — Go live ⛔ (gated on founder approval)
 
@@ -154,3 +165,5 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - `2026-06-27` — installed OpenJDK 26 (brew). Wrote + ran tests: 23 rules tests,
   2 E2E (full emulator stack), 12 functions unit, 2 web = **39 passing**. Vote flow
   and rules capability matrix validated end-to-end.
+- `2026-06-27` — Phase E: CI workflow (web/functions/rules+e2e), gated manual deploy
+  workflow, SPA 404 fallback + CNAME/.nojekyll in web/public. Live site untouched.

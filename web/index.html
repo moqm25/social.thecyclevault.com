@@ -10,6 +10,22 @@
       content="The CycleVault Social — a calm, private community to ask questions and share experiences about your cycle."
     />
     <title>The CycleVault Social</title>
+    <script type="text/javascript">
+      // Companion to public/404.html — restores a deep-link path that the 404
+      // fallback encoded into the query string, before React Router mounts.
+      (function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&');
+            })
+            .join('?');
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+        }
+      })(window.location);
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

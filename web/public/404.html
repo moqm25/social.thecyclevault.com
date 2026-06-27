@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>The CycleVault Social</title>
+    <script type="text/javascript">
+      // SPA fallback for GitHub Pages (no server-side rewrites).
+      // Encodes the requested deep-link path into a query string and redirects to
+      // index.html, where a companion script restores it before React Router runs.
+      // Technique: https://github.com/rafgraph/spa-github-pages
+      // Custom domain serves from root, so pathSegmentsToKeep = 0.
+      var pathSegmentsToKeep = 0;
+      var l = window.location;
+      l.replace(
+        l.protocol +
+          '//' +
+          l.hostname +
+          (l.port ? ':' + l.port : '') +
+          l.pathname
+            .split('/')
+            .slice(0, 1 + pathSegmentsToKeep)
+            .join('/') +
+          '/?/' +
+          l.pathname
+            .slice(1)
+            .split('/')
+            .slice(pathSegmentsToKeep)
+            .join('/')
+            .replace(/&/g, '~and~') +
+          (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+          l.hash,
+      );
+    </script>
+  </head>
+  <body></body>
+</html>
