@@ -23,35 +23,46 @@ optional/off.)
 
 ## ▶ Next action
 
-**MVP UI is complete and browser-validated** (auth, feed, communities, post,
-composer, voting, comments, profile, settings, notifications, mod/admin). Security
-hardened (App Check wired, password policy, email-enumeration protection). Auth
-provider enabled by founder. Sensible next steps:
+**MVP UI complete + AI/human moderation live + security audited + monetization
+designed.** All browser-validated. Sensible next steps:
 
 - **Part B public cutover (gated):** set repo Variables `VITE_FIREBASE_*` (+
   optional `VITE_RECAPTCHA_SITE_KEY`), switch Pages source → GitHub Actions (this
   replaces the live "Coming soon" page), publish forum privacy + terms.
-- **App Check enforcement:** register a reCAPTCHA v3 key, set the Variable, enable
-  enforcement per service.
-- **Monetization (when audience exists):** Supporter membership first — see
-  `MONETIZATION.md`; needs a payments integration (Stripe) + `grantSupporter` fn.
-- Polish: lazy-load routes (trim initial JS), seed demo content, accessibility pass.
+- **App Check enforcement:** register a reCAPTCHA v3 key, set the Variable + the
+  `ENFORCE_APP_CHECK=true` function env var, enable enforcement per service.
+- **Real AI moderation (optional upgrade):** set the `MODERATION_AI_KEY` secret to
+  swap the Tier-2 heuristic for OpenAI's Moderation endpoint (code path ready).
+- **Monetization (when audience exists):** Stripe + `grantSupporter` fn to flip
+  `users.supporter` (ad-free) — see `MONETIZATION.md`.
+- Polish: lazy-load routes (trim initial JS), seed demo content, a11y pass.
 
 ---
 
-## ✅ Done since last entry (2026-06-27)
+## ✅ Done since last entry (2026-06-27, session 2)
 
-- **Auth provider ENABLED** by founder (Email/Password) — prod signups work.
-- **Security hardening:** App Check (reCAPTCHA v3) wired (activates with site key),
-  password policy (len + letter + number + common-password blocklist), email-
-  enumeration protection enabled on prod, XSS audit (no raw HTML sinks), documented
-  password model (Firebase scrypt — we never see passwords). `9955793`.
-- **Remaining UI built + browser-validated:** profile, settings (profile edit +
-  data export + account deletion), notifications inbox + bell, mod + admin report
-  queues. `7f1d464`.
-- **Monetization:** `docs/MONETIZATION.md` strategy (privacy-first: Supporter
-  membership, Verified Clinician program, labeled Sponsored listings, tip jar) +
-  foundational badge/supporter data hooks (function-only) + Badge UI.
+- **Security audit** (`docs/SECURITY_AUDIT.md`): no critical/high; 4 lower-severity
+  fixed — avatarUrl→function-only, createUserProfile rate limit, env-gated App Check
+  enforcement in `requireAuth`, rule string-guards, + Forgot-password flow. `39c1cba`.
+- **Ads-or-upgrade monetization** (`MONETIZATION.md §A2`): ethical model (NO
+  behavioral networks — would break the brand); `AdSlot` (one labeled, no-tracking
+  unit, hidden for Supporters) + `/supporter` upgrade page. `556f36d`.
+- **AI + human moderation pipeline** (`docs/MODERATION_AI.md`): Tier-1 heuristic
+  (inline) + Tier-2 AI checker (≥90% safe → publish, else human; pluggable real AI
+  via `MODERATION_AI_KEY`); `moderationQueue` full audit stream; `reviewContent`
+  callable; author notifications at each step; self-harm crisis handling; admin/mod
+  `ContentReviewQueue` (awaiting + all-activity). 9 moderation unit tests.
+  **Browser-validated end-to-end**: benign→auto-approved→feed; spam→held→hidden→
+  admin reject→removed; author notified throughout. `f03e9f7`.
+- **Fix:** `ProtectedRoute` now waits for the profile before role decision (was
+  bouncing real admins/mods on hard refresh). `a9808bb`.
+
+### Earlier this day (session 1)
+
+- Auth provider ENABLED (Email/Password). App Check wired, password policy, email-
+  enumeration protection. `9955793`.
+- Profile, settings (edit + export + delete), notifications, mod/admin report
+  queues. `7f1d464`. Monetization strategy v1 + badge hooks.
 
 ---
 
