@@ -13,31 +13,44 @@
 
 ---
 
-## ⚠ One thing waiting on you (1 console click)
+## ✓ Auth initialized (done 2026-06-27)
 
-Firebase **Authentication is not initialized** on the project, so signups fail with
-`CONFIGURATION_NOT_FOUND`. This one-time init can't be done with the CLI token — it
-needs the console:
-
-1. Open <https://console.firebase.google.com/project/cyclevault-social/authentication>
-2. Click **Get started**.
-3. **Sign-in method** → **Email/Password** → toggle **Enable** → **Save**.
-   (Leave "Email link / passwordless" OFF.)
-
-That's it — everything else in the backend is already deployed and verified. The
-forum UI build does not depend on this (it uses the local emulator).
+Firebase Authentication is initialized with **Email/Password enabled** in prod;
+email-enumeration protection is on. Prod signups work. (Google sign-in remains
+optional/off.)
 
 ---
 
 ## ▶ Next action
 
-**Forum core is browser-validated and working** (signup → email-gate → post →
-vote → comment → threaded replies, all live against the emulator). Remaining UI:
-profile page, notifications inbox, settings, mod/admin dashboards. Then Part B
-public cutover (gated). Backend gap still open: founder's one-click Auth init
-(note at top) — prod signups need it.
+**MVP UI is complete and browser-validated** (auth, feed, communities, post,
+composer, voting, comments, profile, settings, notifications, mod/admin). Security
+hardened (App Check wired, password policy, email-enumeration protection). Auth
+provider enabled by founder. Sensible next steps:
+- **Part B public cutover (gated):** set repo Variables `VITE_FIREBASE_*` (+
+  optional `VITE_RECAPTCHA_SITE_KEY`), switch Pages source → GitHub Actions (this
+  replaces the live "Coming soon" page), publish forum privacy + terms.
+- **App Check enforcement:** register a reCAPTCHA v3 key, set the Variable, enable
+  enforcement per service.
+- **Monetization (when audience exists):** Supporter membership first — see
+  `MONETIZATION.md`; needs a payments integration (Stripe) + `grantSupporter` fn.
+- Polish: lazy-load routes (trim initial JS), seed demo content, accessibility pass.
 
 ---
+
+## ✅ Done since last entry (2026-06-27)
+
+- **Auth provider ENABLED** by founder (Email/Password) — prod signups work.
+- **Security hardening:** App Check (reCAPTCHA v3) wired (activates with site key),
+  password policy (len + letter + number + common-password blocklist), email-
+  enumeration protection enabled on prod, XSS audit (no raw HTML sinks), documented
+  password model (Firebase scrypt — we never see passwords). `9955793`.
+- **Remaining UI built + browser-validated:** profile, settings (profile edit +
+  data export + account deletion), notifications inbox + bell, mod + admin report
+  queues. `7f1d464`.
+- **Monetization:** `docs/MONETIZATION.md` strategy (privacy-first: Supporter
+  membership, Verified Clinician program, labeled Sponsored listings, tip jar) +
+  foundational badge/supporter data hooks (function-only) + Badge UI.
 
 ---
 
