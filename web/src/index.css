@@ -90,3 +90,50 @@ body {
 	font-family: "Fraunces", ui-serif, Georgia, serif;
 	font-style: italic;
 }
+
+/* Shell + landing motion (all gated behind motion-safe utilities in markup,
+   and neutralized by the global prefers-reduced-motion rule above). */
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+@keyframes slideIn {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(0);
+	}
+}
+@keyframes riseIn {
+	from {
+		opacity: 0;
+		transform: translateY(12px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Calm ambient brand wash for the landing surface. Soft, slow, decorative only. */
+.landing-aura {
+	position: absolute;
+	inset: -20% -10% auto -10%;
+	height: 70vh;
+	z-index: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(40% 55% at 22% 18%, color-mix(in oklab, var(--coral) 32%, transparent), transparent 70%),
+		radial-gradient(38% 50% at 82% 12%, color-mix(in oklab, var(--lav) 34%, transparent), transparent 70%);
+	filter: blur(40px);
+	opacity: 0.55;
+}
+.dark .landing-aura {
+	opacity: 0.38;
+}
+

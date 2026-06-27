@@ -1,7 +1,9 @@
 import { Routes, Route } from "react-router-dom";
-import { AppShell } from "./components/AppShell";
+import { AppLayout } from "./components/layout/AppLayout";
+import { AuthLayout } from "./components/layout/AuthLayout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
+import FeedPage from "./pages/FeedPage";
 import CommunityPage from "./pages/CommunityPage";
 import NewPostPage from "./pages/NewPostPage";
 import PostDetailPage from "./pages/PostDetailPage";
@@ -20,17 +22,32 @@ import TermsPage from "./pages/legal/TermsPage";
 import GuidelinesPage from "./pages/legal/GuidelinesPage";
 
 /**
- * Route table — see docs/UI_REQUIREMENTS.md §3. Every MVP route is implemented.
+ * Route table (docs/UI_REQUIREMENTS.md §3).
+ * Three layouts: a brand landing front door (`/`), a minimal auth screen (`/login`),
+ * and the app workspace shell (sidebar + content + context rail) for everything else.
  */
 export default function App() {
 	return (
-		<AppShell>
-			<Routes>
-				<Route path="/" element={<HomePage />} />
+		<Routes>
+			{/* Public front door — brand welcome (redirects members to /feed). */}
+			<Route path="/" element={<LandingPage />} />
+
+			{/* Auth — its own quiet chrome. */}
+			<Route element={<AuthLayout />}>
 				<Route path="/login" element={<LoginPage />} />
+			</Route>
+
+			{/* App workspace — sidebar shell. */}
+			<Route element={<AppLayout />}>
+				<Route path="/feed" element={<FeedPage />} />
 				<Route path="/c/:communitySlug" element={<CommunityPage />} />
 				<Route path="/supporter" element={<SupporterPage />} />
 				<Route path="/shop" element={<ShopPage />} />
+				<Route path="/post/:postId" element={<PostDetailPage />} />
+				<Route path="/u/:username" element={<ProfilePage />} />
+				<Route path="/privacy" element={<PrivacyPage />} />
+				<Route path="/terms" element={<TermsPage />} />
+				<Route path="/guidelines" element={<GuidelinesPage />} />
 				<Route
 					path="/circles/new"
 					element={
@@ -47,11 +64,6 @@ export default function App() {
 						</ProtectedRoute>
 					}
 				/>
-				<Route path="/post/:postId" element={<PostDetailPage />} />
-				<Route path="/u/:username" element={<ProfilePage />} />
-				<Route path="/privacy" element={<PrivacyPage />} />
-				<Route path="/terms" element={<TermsPage />} />
-				<Route path="/guidelines" element={<GuidelinesPage />} />
 				<Route
 					path="/settings"
 					element={
@@ -85,7 +97,7 @@ export default function App() {
 					}
 				/>
 				<Route path="*" element={<NotFoundPage />} />
-			</Routes>
-		</AppShell>
+			</Route>
+		</Routes>
 	);
 }

@@ -41,7 +41,7 @@ export default function LoginPage() {
 	const { signIn, signUp, resetPassword } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const from = (location.state as { from?: string } | null)?.from ?? "/";
+	const from = (location.state as { from?: string } | null)?.from ?? "/feed";
 
 	const signInForm = useForm<SignInValues>({ resolver: zodResolver(signInSchema) });
 	const signUpForm = useForm<SignUpValues>({ resolver: zodResolver(signUpSchema) });
