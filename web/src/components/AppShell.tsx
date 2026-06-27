@@ -27,6 +27,17 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 			<footer className="mx-auto max-w-3xl px-4 py-10 text-center text-sm text-muted">
 				<p>This platform does not provide medical advice. Consult a clinician for health concerns.</p>
+				<nav className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1">
+					<Link to="/guidelines" className="hover:text-coral">
+						Community Guidelines
+					</Link>
+					<Link to="/privacy" className="hover:text-coral">
+						Privacy
+					</Link>
+					<Link to="/terms" className="hover:text-coral">
+						Terms
+					</Link>
+				</nav>
 				<p className="mt-2">
 					<span className="brand-serif">The CycleVault</span> · Private. Local. Yours.
 				</p>

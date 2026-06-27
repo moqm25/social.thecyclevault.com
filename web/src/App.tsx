@@ -13,6 +13,9 @@ import ModDashboard from "./pages/ModDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./features/auth/LoginPage";
+import PrivacyPage from "./pages/legal/PrivacyPage";
+import TermsPage from "./pages/legal/TermsPage";
+import GuidelinesPage from "./pages/legal/GuidelinesPage";
 
 /**
  * Route table — see docs/UI_REQUIREMENTS.md §3. Every MVP route is implemented.
@@ -35,6 +38,9 @@ export default function App() {
 				/>
 				<Route path="/post/:postId" element={<PostDetailPage />} />
 				<Route path="/u/:username" element={<ProfilePage />} />
+				<Route path="/privacy" element={<PrivacyPage />} />
+				<Route path="/terms" element={<TermsPage />} />
+				<Route path="/guidelines" element={<GuidelinesPage />} />
 				<Route
 					path="/settings"
 					element={
