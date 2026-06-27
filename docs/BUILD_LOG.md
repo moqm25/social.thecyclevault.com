@@ -24,18 +24,65 @@ optional/off.)
 ## ▶ Next action
 
 **MVP UI complete + AI/human moderation live + security audited + monetization
-designed.** All browser-validated. Sensible next steps:
+designed + Sponsored Products/Shop + strikes + admin tools + member Circles +
+guest name-blur + legal pages.** All browser-validated. Sensible next steps:
 
 - **Part B public cutover (gated):** set repo Variables `VITE_FIREBASE_*` (+
   optional `VITE_RECAPTCHA_SITE_KEY`), switch Pages source → GitHub Actions (this
   replaces the live "Coming soon" page), publish forum privacy + terms.
+- **Legal review (recommended before launch):** the /privacy, /terms, /guidelines
+  pages are brand-aligned templates — have a lawyer review.
 - **App Check enforcement:** register a reCAPTCHA v3 key, set the Variable + the
   `ENFORCE_APP_CHECK=true` function env var, enable enforcement per service.
 - **Real AI moderation (optional upgrade):** set the `MODERATION_AI_KEY` secret to
   swap the Tier-2 heuristic for OpenAI's Moderation endpoint (code path ready).
-- **Monetization (when audience exists):** Stripe + `grantSupporter` fn to flip
-  `users.supporter` (ad-free) — see `MONETIZATION.md`.
-- Polish: lazy-load routes (trim initial JS), seed demo content, a11y pass.
+- **Payments (when audience exists):** Stripe + `grantSupporter` fn to flip
+  `users.supporter` (removes sponsored placements) — see `MONETIZATION.md`.
+- Seed real Sponsored Products via Admin → Sponsored products (demo seed:
+  `functions/scripts/seedSponsoredProducts.mjs`).
+
+---
+
+## ✅ Done since last entry (2026-06-27, session 3)
+
+Six founder-requested feature chunks — each built → typecheck/lint/test clean →
+deployed to prod → committed:
+
+1. **Legal pages** (`b13aea5`): forum Privacy Policy (distinct from the app's
+   local-only policy), Terms of Service, Community Guidelines (women-first, crisis
+   988, strikes). Shared `LegalLayout`; routes `/privacy /terms /guidelines`;
+   footer links. _(Templates — legal review recommended.)_
+2. **Sponsored Products + Shop** (`88ad292`): replaced the generic ad with vetted,
+   labeled Sponsored Products (free tier sees them; Supporters don't). New
+   `sponsoredProducts` collection (fn-only writes, public read of active), `/shop`
+   browse page, admin manager, aggregate-only click counts (no tracking),
+   `rel="sponsored nofollow"`. Functions: upsert/setActive/recordClick (+
+   broadcastAnnouncement, grantBadge for later). `MONETIZATION.md §A2` updated.
+3. **Delete-own content + badges everywhere** (`2bd4101`): `ContentMenu` (⋯) —
+   authors delete their own post/comment, others report it. Badges now render in
+   feed/detail/comments (denormalized author flair, zero extra reads).
+4. **Strike & auto-suspension** (`ec49cd5`): human-confirmed removals strike the
+   author; auto-escalate 1=warn→2=24h→3=7d→4=30d→5+=needsAdminReview; **decay 90d**;
+   admin override (`clearUserStrikes`) + "Accounts needing review" panel. Strike
+   history in mod-only `userModeration` (never on public profile). `MODERATION_PLAN
+   §3a`.
+5. **Admin view-as + deleted view + announcement** (`4648063`): admins toggle
+   Member ⇄ Admin view (deleted/removed shown inline + moderation details);
+   "Deleted & removed" dashboard tab; page-wide dismissible announcement banner
+   (`broadcastAnnouncement` → `settings/global`).
+6. **Member Circles + guest name-blur** (`53a892f`): `createCommunity` (creator =
+   circle-scoped mod, NOT global; rate-limited; reserved slugs); `/circles/new`
+   flow; HomePage "Circles" + "+ New Circle". **Guest name-blur** (`AuthorName`):
+   logged-out guests can't see who's talking (blurred "a member", real name not in
+   DOM) — the privacy differentiator. `requireModeratorOf` now honors `moderatorOf`
+   for per-community actions (global actions stay role-gated — safe).
+
+**Prod function count:** ~30 callables. Rules + indexes redeployed. All commits
+pushed through `53a892f`.
+
+---
+
+## ▶ Earlier next-action (session 2, superseded)
 
 ---
 
