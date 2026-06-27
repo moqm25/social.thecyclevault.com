@@ -28,6 +28,7 @@ export {
 	suspendUser,
 	banUser,
 	unbanUser,
+	clearUserStrikes,
 	dismissReport,
 	setUserRole,
 } from "./moderation/moderation.js";

@@ -207,3 +207,17 @@ export interface Announcement {
 	level: "info" | "warning";
 	updatedAt: number;
 }
+
+/**
+ * Private per-user moderation counters (mod-only readable). Lives in its own
+ * collection so strike history never appears on the public profile.
+ */
+export interface UserModeration {
+	uid: string;
+	strikeCount: number;
+	strikeTotal: number;
+	needsAdminReview: boolean;
+	lastReason?: string | null;
+	lastStrikeAt?: number | null;
+	updatedAt: number;
+}

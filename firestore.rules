@@ -129,6 +129,16 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ------------------------- userModeration ---------------------------------
+    // Private moderation counters (strikes, review flag). Kept OFF the public
+    // profile doc so strike history isn't world-readable. Mods/admins read; all
+    // writes are function-only. The per-user `users/{uid}/strikes` subcollection
+    // is denied by the default rule below (function-only via Admin SDK).
+    match /userModeration/{userId} {
+      allow read: if isMod();
+      allow write: if false;
+    }
+
     // --------------------------- default deny --------------------------------
     match /{document=**} {
       allow read, write: if false;

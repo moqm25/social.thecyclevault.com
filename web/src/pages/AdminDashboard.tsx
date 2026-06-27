@@ -1,5 +1,6 @@
 import { ReportQueue } from "../features/moderation/ReportQueue";
 import { ContentReviewQueue } from "../features/moderation/ContentReviewQueue";
+import { AccountReviewQueue } from "../features/moderation/AccountReviewQueue";
 import { SponsoredProductsAdmin } from "../features/admin/SponsoredProductsAdmin";
 
 /** Admin dashboard: AI/human content review + report queue with user-level actions. */
@@ -19,6 +20,14 @@ export default function AdminDashboard() {
 			<div>
 				<h2 className="mb-3 text-lg font-semibold text-ink">Reports</h2>
 				<ReportQueue isAdmin />
+			</div>
+
+			<div>
+				<h2 className="mb-1 text-lg font-semibold text-ink">Accounts needing review</h2>
+				<p className="mb-3 text-sm text-muted">
+					Flagged automatically after repeated strikes. Strikes decay after 90 days; you can suspend, ban, or clear.
+				</p>
+				<AccountReviewQueue />
 			</div>
 
 			<div>

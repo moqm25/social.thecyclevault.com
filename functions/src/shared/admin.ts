@@ -28,4 +28,5 @@ export const COL = {
 	rateLimits: "rateLimits",
 	moderationQueue: "moderationQueue",
 	sponsoredProducts: "sponsoredProducts",
+	userModeration: "userModeration",
 } as const;

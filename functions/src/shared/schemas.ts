@@ -91,6 +91,9 @@ export const removeContentSchema = z.object({
 	targetId: z.string().min(1),
 	reason: z.string().min(1).max(500),
 	relatedReportId: z.string().optional(),
+	// Whether removing this content also adds a strike to the author (default yes).
+	// Mods can set false for benign removals (wrong community, duplicate, etc.).
+	strike: z.boolean().default(true),
 });
 
 export const suspendUserSchema = z.object({
@@ -113,6 +116,13 @@ export const reviewContentSchema = z.object({
 	contentType: z.enum(["post", "comment"]),
 	contentId: z.string().min(1),
 	decision: z.enum(["approve", "reject"]),
+	reason: z.string().max(500).optional(),
+	// On reject, whether to also strike the author (default yes).
+	strike: z.boolean().default(true),
+});
+
+export const clearStrikesSchema = z.object({
+	uid: z.string().min(1),
 	reason: z.string().max(500).optional(),
 });
 

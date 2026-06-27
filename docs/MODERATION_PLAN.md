@@ -91,6 +91,42 @@ deletion). `removed` vs `deleted` is preserved so actions are reversible
 
 ---
 
+## 3a. Strikes & auto-suspension (✅ implemented)
+
+When a **human** removes a user's content for breaking the guidelines
+(`removeContent`, or `reviewContent` with `reject`), the author accrues a
+**strike**. AI holds alone never strike — only a human-confirmed removal does, so
+nobody is penalized for something a person hasn't judged. Mods can pass
+`strike:false` for benign removals (wrong community, duplicate).
+
+**Escalation ladder** (by count of currently-active strikes):
+
+| Active strikes | Consequence                              |
+| -------------- | ---------------------------------------- |
+| 1              | Warning only (calm notification)         |
+| 2              | 24-hour suspension                       |
+| 3              | 7-day suspension                         |
+| 4              | 30-day suspension                        |
+| 5+             | `needsAdminReview` — a human decides     |
+
+- **Decay:** strikes **expire after 90 days** (`expiresAtMs`); only active
+  (non-expired, non-cleared) strikes count toward escalation. A long-ago mistake
+  doesn't follow someone forever.
+- **Never shortens** an existing longer suspension; **never downgrades** a ban.
+- **Admin override:** `clearUserStrikes` wipes active strikes + the review flag.
+- **5+ never auto-permabans** — it flags the account so an admin chooses (suspend
+  longer / ban / clear) on the **Accounts needing review** panel.
+- **Privacy:** strike history lives in a mod-only collection (`userModeration/{uid}`
+  + a function-only `users/{uid}/strikes` subcollection), **never** on the public
+  profile. Only the enforced suspension (`status`/`suspendedUntil`) is on the user
+  doc, exactly as before.
+- **Every strike is audited** (`moderationActions` + `auditLogs`) and the user is
+  notified with a clear, kind explanation and a link to the guidelines.
+
+Code: `functions/src/shared/strikes.ts` (`applyStrike`, `clearStrikes`).
+
+---
+
 ## 4. Health-safety policy (domain-specific)
 
 Because the forum touches health:

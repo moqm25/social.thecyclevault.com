@@ -27,6 +27,7 @@ import type {
 	SponsoredProduct,
 	ProductCategory,
 	Announcement,
+	UserModeration,
 } from "../types/models";
 
 /**
@@ -215,4 +216,20 @@ export async function getAnnouncement(): Promise<Announcement | null> {
 	const ann = (snap.data() as DocumentData).announcement;
 	if (!ann) return null;
 	return normalize<Announcement>(ann);
+}
+
+// --------------------------- user moderation ------------------------------
+
+/** Accounts flagged for admin review after repeated strikes (mod/admin only). */
+export async function listAccountsNeedingReview(): Promise<UserModeration[]> {
+	const snap = await getDocs(
+		query(collection(db, "userModeration"), where("needsAdminReview", "==", true), qLimit(50)),
+	);
+	return snap.docs.map((d) => normalize<UserModeration>({ uid: d.id, ...d.data() }));
+}
+
+/** A single user's private moderation record (strike counts), or null. */
+export async function getUserModeration(uid: string): Promise<UserModeration | null> {
+	const snap = await getDoc(doc(db, "userModeration", uid));
+	return snap.exists() ? normalize<UserModeration>({ uid: snap.id, ...snap.data() }) : null;
 }

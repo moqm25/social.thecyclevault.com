@@ -90,7 +90,7 @@ export const exportMyData = callable<
 export const deleteMyAccount = callable<Record<string, never>, { ok: true }>("deleteMyAccount");
 
 // ---- moderation actions (mod/admin) ----
-export const removeContent = callable<{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string }, { ok: true }>(
+export const removeContent = callable<{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string; strike?: boolean }, { ok: true }>(
 	"removeContent",
 );
 
@@ -99,13 +99,15 @@ export const dismissReport = callable<{ reportId: string }, { ok: true }>("dismi
 export const lockPost = callable<{ postId: string; locked: boolean; reason?: string }, { ok: true }>("lockPost");
 
 export const reviewContent = callable<
-	{ contentType: "post" | "comment"; contentId: string; decision: "approve" | "reject"; reason?: string },
+	{ contentType: "post" | "comment"; contentId: string; decision: "approve" | "reject"; reason?: string; strike?: boolean },
 	{ ok: true }
 >("reviewContent");
 
 export const suspendUser = callable<{ uid: string; durationHours: number; reason: string }, { ok: true }>("suspendUser");
 
 export const banUser = callable<{ uid: string; scope?: "global"; reason: string; permanent?: boolean }, { ok: true }>("banUser");
+
+export const clearUserStrikes = callable<{ uid: string; reason?: string }, { ok: true }>("clearUserStrikes");
 
 // ---- platform (admin: sponsored products, announcement, badges) ----
 import type { ProductCategory, BadgeKind } from "../types/models";

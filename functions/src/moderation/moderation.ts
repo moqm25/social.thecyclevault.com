@@ -5,7 +5,15 @@ import { parseInput } from "../shared/validate.js";
 import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordModerationAction, recordAuditLog } from "../shared/audit.js";
 import { createNotification } from "../shared/notify.js";
-import { reportContentSchema, removeContentSchema, suspendUserSchema, banUserSchema, reviewContentSchema } from "../shared/schemas.js";
+import { applyStrike, clearStrikes } from "../shared/strikes.js";
+import {
+	reportContentSchema,
+	removeContentSchema,
+	suspendUserSchema,
+	banUserSchema,
+	reviewContentSchema,
+	clearStrikesSchema,
+} from "../shared/schemas.js";
 
 const MOD_MAX_SUSPEND_HOURS = 168; // 7 days; admins may exceed
 
@@ -75,6 +83,19 @@ export const reviewContent = onCall(async (request) => {
 			: `After review, this wasn’t approved.${input.reason ? ` Reason: ${input.reason}` : ""}`,
 		link: input.contentType === "post" ? `/post/${input.contentId}` : `/post/${content.postId}`,
 	});
+
+	// A human-confirmed rejection counts as a strike (auto-escalates; decays in 90d).
+	// Skip self-removals and benign mod overrides (strike:false).
+	if (!approve && input.strike && String(content.authorId) !== auth.uid) {
+		await applyStrike({
+			uid: String(content.authorId),
+			actorId: auth.uid,
+			reason: input.reason ?? "Content removed after review",
+			contentType: input.contentType,
+			contentId: input.contentId,
+			communityId: String(content.communityId),
+		});
+	}
 
 	return { ok: true as const };
 });
@@ -161,6 +182,19 @@ export const removeContent = onCall(async (request) => {
 		body: `A moderator removed your ${input.targetType}: ${input.reason}`,
 		link: input.targetType === "post" ? `/post/${input.targetId}` : `/post/${content.postId}`,
 	});
+
+	// Removing guideline-breaking content strikes the author (auto-escalates; 90d
+	// decay). Mods can pass strike:false for benign removals (wrong community, dupe).
+	if (input.strike && String(content.authorId) !== auth.uid) {
+		await applyStrike({
+			uid: String(content.authorId),
+			actorId: auth.uid,
+			reason: input.reason,
+			contentType: input.targetType,
+			contentId: input.targetId,
+			communityId: String(content.communityId),
+		});
+	}
 
 	return { ok: true as const };
 });
@@ -342,5 +376,14 @@ export const unbanUser = onCall(async (request) => {
 		targetId: uid,
 		reason: "Unbanned",
 	});
+	return { ok: true as const };
+});
+
+/** clearUserStrikes — admin override: wipe a user's active strikes + review flag. */
+export const clearUserStrikes = onCall(async (request) => {
+	const { auth, profile } = await requireActiveUser(request);
+	requireRole(profile, "admin");
+	const input = parseInput(clearStrikesSchema, request.data);
+	await clearStrikes(input.uid, auth.uid, input.reason);
 	return { ok: true as const };
 });
