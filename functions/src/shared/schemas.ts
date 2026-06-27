@@ -53,7 +53,8 @@ export const lockPostSchema = z.object({
 
 export const createCommentSchema = z.object({
 	postId: z.string().min(1),
-	parentCommentId: z.string().min(1).optional(),
+	// nullish: tolerate clients that serialize an absent parent as null.
+	parentCommentId: z.string().min(1).nullish(),
 	body: z.string().min(1).max(10_000),
 });
 

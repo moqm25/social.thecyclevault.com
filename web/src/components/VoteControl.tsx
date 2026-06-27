@@ -4,12 +4,15 @@ import { useAuth } from '../features/auth/AuthProvider';
 import type { VoteValue } from '../types/models';
 
 /**
- * Vote control with optimistic local state. Displays score = base score adjusted
- * by the user's in-session vote delta. Guests are nudged to sign in.
+ * Vote control with optimistic local state, reconciled against the server's
+ * authoritative score. `onVote` resolves with the new score from the callable
+ * (voteOnPost/voteOnComment return `{ score }`). Guests are nudged to sign in.
  *
- * We intentionally do NOT pre-read the user's existing vote (saves a Firestore
- * read per item); the active state reflects votes made this session. The server
- * is authoritative and idempotent, so re-voting is always safe.
+ * We seed the displayed score from `baseScore` once and then own it locally, so
+ * callers must NOT invalidate the post/feed query on vote (that would refetch a
+ * score already including this vote and double-count). On a fresh load the server
+ * score is the source of truth. We also don't pre-read the user's existing vote
+ * (saves a Firestore read per item); the active state reflects this session.
  */
 export function VoteControl({
   baseScore,
@@ -18,14 +21,13 @@ export function VoteControl({
 }: {
   baseScore: number;
   orientation?: 'vertical' | 'horizontal';
-  onVote: (next: VoteValue | 0, prev: VoteValue | 0) => Promise<unknown>;
+  onVote: (next: VoteValue | 0, prev: VoteValue | 0) => Promise<{ score: number } | unknown>;
 }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [myVote, setMyVote] = useState<VoteValue | 0>(0);
+  const [score, setScore] = useState<number>(baseScore);
   const [pending, setPending] = useState(false);
-
-  const displayScore = baseScore + myVote;
 
   async function cast(dir: VoteValue) {
     if (!user) {
@@ -33,19 +35,26 @@ export function VoteControl({
       return;
     }
     if (pending) return;
-    const prev = myVote;
+    const prevVote = myVote;
+    const prevScore = score;
     const next: VoteValue | 0 = myVote === dir ? 0 : dir; // toggle off if same
+
+    // Optimistic update.
     setMyVote(next);
+    setScore(prevScore + (next - prevVote));
     setPending(true);
     try {
-      await onVote(next, prev);
+      const res = (await onVote(next, prevVote)) as { score?: number } | undefined;
+      if (res && typeof res.score === 'number') setScore(res.score); // reconcile
     } catch {
-      setMyVote(prev); // rollback
+      setMyVote(prevVote);
+      setScore(prevScore); // rollback
     } finally {
       setPending(false);
     }
   }
 
+  const displayScore = score;
   const wrap = orientation === 'vertical' ? 'flex-col' : 'flex-row';
   const up = myVote === 1;
   const down = myVote === -1;

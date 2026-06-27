@@ -8,10 +8,27 @@ import type { ReportReason, VoteValue } from "../types/models";
  * directly. Inputs mirror the contract; server re-validates everything with Zod.
  */
 
+/**
+ * Strip `undefined` values before sending. The Firebase callable encoder converts
+ * `undefined` to `null` on the wire, which the server's `.optional()` Zod fields
+ * reject ("expected string, received null"). Removing undefined keys keeps optional
+ * fields truly optional.
+ */
+function stripUndefined<T>(data: T): T {
+	if (data && typeof data === "object" && !Array.isArray(data)) {
+		const out: Record<string, unknown> = {};
+		for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+			if (v !== undefined) out[k] = v;
+		}
+		return out as T;
+	}
+	return data;
+}
+
 function callable<TInput, TOutput>(name: string) {
 	const fn = httpsCallable<TInput, TOutput>(functions, name);
 	return async (data: TInput): Promise<TOutput> => {
-		const res: HttpsCallableResult<TOutput> = await fn(data);
+		const res: HttpsCallableResult<TOutput> = await fn(stripUndefined(data));
 		return res.data;
 	};
 }

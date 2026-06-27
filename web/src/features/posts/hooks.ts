@@ -2,7 +2,6 @@ import {
   useInfiniteQuery,
   useQuery,
   useMutation,
-  useQueryClient,
 } from '@tanstack/react-query';
 import {
   listPosts,
@@ -59,23 +58,23 @@ export function useComments(postId: string | undefined) {
  * Optimistic vote on a post. Updates the cached post score immediately, rolls
  * back on error. `next` is the desired vote value; `prev` the current one.
  */
+/**
+ * Vote mutations return the server's authoritative score, which VoteControl
+ * reconciles locally. We deliberately do NOT invalidate the post/feed/comment
+ * queries here: those provide the seed `baseScore`, and refetching one that
+ * already includes this vote would double-count. A fresh page load re-reads the
+ * true score from the server.
+ */
 export function useVotePost(postId: string) {
-  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ next }: { next: VoteValue | 0; prev: VoteValue | 0 }) =>
       voteOnPost({ postId, value: next }),
-    onSettled: () => {
-      qc.invalidateQueries({ queryKey: ['post', postId] });
-      qc.invalidateQueries({ queryKey: ['feed'] });
-    },
   });
 }
 
-export function useVoteComment(postId: string) {
-  const qc = useQueryClient();
+export function useVoteComment(_postId: string) {
   return useMutation({
     mutationFn: ({ commentId, next }: { commentId: string; next: VoteValue | 0; prev: VoteValue | 0 }) =>
       voteOnComment({ commentId, value: next }),
-    onSettled: () => qc.invalidateQueries({ queryKey: ['comments', postId] }),
   });
 }
