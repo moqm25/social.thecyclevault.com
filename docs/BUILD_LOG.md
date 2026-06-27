@@ -15,9 +15,20 @@
 
 ## ▶ Next action
 
-Create the Firebase cloud project:
-`firebase projects:create cyclevault-social --display-name "The CycleVault Social"`
-(See **Phase A** below.) Then continue down the checklist in order.
+Retry Firestore DB creation (API was still propagating):
+`firebase firestore:databases:create "(default)" --location=us-central1`
+Then continue Phase B (frontend scaffold in `web/`).
+
+---
+
+## Live-site safety (important)
+
+The repo **root `index.html` is the live "Coming soon" page** served by GitHub
+Pages from `main`. Replacing it is **gated** (Phase F). To avoid breaking it during
+development, the SPA is built in a **`web/` subfolder** (slight divergence from the
+docs' root layout, chosen for live-site safety). `functions/` stays at repo root.
+At go-live, GitHub Pages source switches to **GitHub Actions** which builds
+`web/` → `dist/` and publishes it.
 
 ---
 
@@ -53,11 +64,17 @@ Create the Firebase cloud project:
 
 ## Phase A — Cloud project (free, Spark plan) ⏳
 
-- [ ] `firebase projects:create cyclevault-social --display-name "The CycleVault Social"`
-- [ ] `firebase apps:create WEB "The CycleVault Social Web"` → capture App ID
-- [ ] `firebase apps:sdkconfig WEB <appId>` → write real values into `.env.local`
+- [x] `firebase projects:create cyclevault-social --display-name "The CycleVault Social"`
+- [x] `firebase apps:create WEB "The CycleVault Social Web"` → App ID
+      `1:841106244670:web:c27119d5f1bd4edc167d6f` (project number `841106244670`)
+- [x] `firebase apps:sdkconfig WEB <appId>` → real values written to `web/.env.local`
+- [x] Enabled GCP APIs via Service Usage REST (Firebase CLI token): firestore,
+      cloudfunctions, firebasestorage, identitytoolkit ✅. cloudbuild +
+      artifactregistry returned **needs-billing** → deferred to Phase F (Blaze).
 - [ ] `firebase firestore:databases:create "(default)" --location=us-central1`
-- [ ] (Console, manual) Enable Auth → Email/Password provider
+      — **pending**: API still propagating; retry shortly.
+- [ ] (Console, manual) Enable Auth → Email/Password provider (Identity Toolkit API
+      already on; provider toggle done at go-live or via REST)
 
 ## Phase B — Frontend scaffold ⏳
 
@@ -105,3 +122,8 @@ Create the Firebase cloud project:
 
 - `2026-06-26` — verified env (node/npm/firebase/gh), `firebase login:list` →
   `moiezqamar@gmail.com`. `cyclevault-social` not in existing 6 projects (ID free).
+- `2026-06-26` — `gh auth setup-git` to fix HTTPS push; pushed Phase 0 config (`2e183e3`).
+- `2026-06-26` — created project `cyclevault-social` + WEB app; pulled SDK config →
+  `web/.env.local`. Enabled core GCP APIs via Service Usage REST using the Firebase
+  CLI access token (no secret printed). Firestore DB create deferred (API propagating).
+- `2026-06-26` — SPA placed in `web/` to protect live Coming-soon `index.html`.
