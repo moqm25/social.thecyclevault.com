@@ -248,3 +248,26 @@ export interface SearchResults {
 	/** True when an AI answer is configured but the viewer must sign in to get it. */
 	aiAvailable: boolean;
 }
+
+/** Time-window of newly-created activity counts (admin analytics). */
+export interface PlatformStatsWindow {
+	users: number;
+	posts: number;
+	comments: number;
+	votes: number;
+}
+
+export type PlatformStatsWindowKey = "24h" | "7d" | "30d" | "90d" | "365d";
+
+/** Admin usage analytics + a rough (non-billing) cost estimate. */
+export interface PlatformStats {
+	generatedAt: number;
+	totals: { users: number; posts: number; comments: number; votes: number; communities: number };
+	windows: Record<PlatformStatsWindowKey, PlatformStatsWindow>;
+	estimate: {
+		estStorageMb: number;
+		estWrites30d: number;
+		estMonthlyUsd: number;
+		withinFreeTier: boolean;
+	};
+}

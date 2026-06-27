@@ -6,10 +6,14 @@ import {
 	signOut as fbSignOut,
 	sendEmailVerification,
 	sendPasswordResetEmail,
+	reauthenticateWithCredential,
+	updatePassword,
+	EmailAuthProvider,
 	type User,
 } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
+import { env, useEmulators } from "../../lib/env";
 import type { UserProfile } from "../../types/models";
 
 interface AuthContextValue {
@@ -24,6 +28,8 @@ interface AuthContextValue {
 	signOutUser: () => Promise<void>;
 	sendVerification: () => Promise<void>;
 	resetPassword: (email: string) => Promise<void>;
+	/** Change the signed-in user's password (re-authenticates with the current one first). */
+	changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,6 +79,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			},
 			resetPassword: async (email) => {
 				await sendPasswordResetEmail(auth, email);
+				// Dev convenience: the Auth emulator never sends a real email — it stores
+				// the reset link in its OOB API. Surface it in the console so the flow is
+				// testable locally. Best-effort; never blocks or throws.
+				if (useEmulators) {
+					try {
+						const res = await fetch(`http://127.0.0.1:9099/emulator/v1/projects/${env.VITE_FIREBASE_PROJECT_ID}/oobCodes`);
+						const body = (await res.json()) as { oobCodes?: Array<{ email?: string; requestType?: string; oobLink?: string }> };
+						const link = [...(body.oobCodes ?? [])].reverse().find((c) => c.email === email && c.requestType === "PASSWORD_RESET")?.oobLink;
+						if (link) console.info(`[The CycleVault Social] (emulator) password-reset link for ${email}:\n${link}`);
+					} catch {
+						/* best-effort dev helper */
+					}
+				}
+			},
+			changePassword: async (currentPassword, newPassword) => {
+				const u = auth.currentUser;
+				if (!u || !u.email) throw new Error("auth/no-current-user");
+				// Re-authenticate first: updatePassword requires a recent login, and this
+				// also confirms the current password is correct before we change it.
+				const cred = EmailAuthProvider.credential(u.email, currentPassword);
+				await reauthenticateWithCredential(u, cred);
+				await updatePassword(u, newPassword);
 			},
 		}),
 		[user, profile, loading],

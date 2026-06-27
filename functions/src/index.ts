@@ -54,3 +54,6 @@ export {
 	broadcastAnnouncement,
 	grantBadge,
 } from "./platform/platform.js";
+
+// ---- admin (usage analytics + cost estimate) ----
+export { getPlatformStats } from "./admin/stats.js";

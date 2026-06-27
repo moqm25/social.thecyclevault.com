@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
 import { useAuth } from "../features/auth/AuthProvider";
+import { passwordSchema } from "../features/auth/validation";
 import { useTheme } from "../app/ThemeProvider";
 import { updateMyProfile } from "../lib/firestore";
 import { exportMyData, deleteMyAccount } from "../lib/api";
@@ -11,7 +13,7 @@ import { Skeleton } from "../components/states";
 type Theme = "light" | "dark" | "system";
 
 export default function SettingsPage() {
-	const { user, profile, signOutUser } = useAuth();
+	const { user, profile, signOutUser, changePassword } = useAuth();
 	const { theme, setTheme } = useTheme();
 	const navigate = useNavigate();
 
@@ -19,6 +21,12 @@ export default function SettingsPage() {
 	const [bio, setBio] = useState(profile?.bio ?? "");
 	const [savedMsg, setSavedMsg] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+
+	const [curPw, setCurPw] = useState("");
+	const [newPw, setNewPw] = useState("");
+	const [confirmPw, setConfirmPw] = useState("");
+	const [pwSaving, setPwSaving] = useState(false);
+	const [pwMsg, setPwMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
 	const [exporting, setExporting] = useState(false);
 	const [confirmText, setConfirmText] = useState("");
@@ -43,6 +51,58 @@ export default function SettingsPage() {
 			setSavedMsg("Couldn’t save. Please try again.");
 		} finally {
 			setSaving(false);
+		}
+	}
+
+	function pwError(err: unknown): string {
+		if (err instanceof FirebaseError) {
+			switch (err.code) {
+				case "auth/wrong-password":
+				case "auth/invalid-credential":
+					return "Your current password is incorrect.";
+				case "auth/weak-password":
+					return "That new password is too weak.";
+				case "auth/too-many-requests":
+					return "Too many attempts. Please wait a moment and try again.";
+				case "auth/requires-recent-login":
+					return "For security, please sign out and back in, then try again.";
+				default:
+					return "Couldn’t update your password. Please try again.";
+			}
+		}
+		return "Couldn’t update your password. Please try again.";
+	}
+
+	async function handleChangePassword() {
+		setPwMsg(null);
+		if (!curPw) {
+			setPwMsg({ ok: false, text: "Enter your current password." });
+			return;
+		}
+		const parsed = passwordSchema.safeParse(newPw);
+		if (!parsed.success) {
+			setPwMsg({ ok: false, text: parsed.error.issues[0]?.message ?? "Choose a stronger password." });
+			return;
+		}
+		if (newPw !== confirmPw) {
+			setPwMsg({ ok: false, text: "New passwords don’t match." });
+			return;
+		}
+		if (newPw === curPw) {
+			setPwMsg({ ok: false, text: "Choose a different password from your current one." });
+			return;
+		}
+		setPwSaving(true);
+		try {
+			await changePassword(curPw, newPw);
+			setPwMsg({ ok: true, text: "Password updated." });
+			setCurPw("");
+			setNewPw("");
+			setConfirmPw("");
+		} catch (err) {
+			setPwMsg({ ok: false, text: pwError(err) });
+		} finally {
+			setPwSaving(false);
 		}
 	}
 
@@ -140,6 +200,41 @@ export default function SettingsPage() {
 							{t.label}
 						</button>
 					))}
+				</div>
+			</section>
+
+			{/* Security */}
+			<section className="space-y-4 rounded-2xl border border-line bg-surface p-5 shadow-soft">
+				<div>
+					<h2 className="font-semibold text-ink">Password</h2>
+					<p className="mt-0.5 text-sm text-muted">Use at least 8 characters, with a letter and a number.</p>
+				</div>
+				<TextField
+					label="Current password"
+					type="password"
+					autoComplete="current-password"
+					value={curPw}
+					onChange={(e) => setCurPw(e.target.value)}
+				/>
+				<TextField
+					label="New password"
+					type="password"
+					autoComplete="new-password"
+					value={newPw}
+					onChange={(e) => setNewPw(e.target.value)}
+				/>
+				<TextField
+					label="Confirm new password"
+					type="password"
+					autoComplete="new-password"
+					value={confirmPw}
+					onChange={(e) => setConfirmPw(e.target.value)}
+				/>
+				<div className="flex items-center gap-3">
+					<Button onClick={handleChangePassword} loading={pwSaving}>
+						Update password
+					</Button>
+					{pwMsg && <span className={`text-sm ${pwMsg.ok ? "text-muted" : "text-coral"}`}>{pwMsg.text}</span>}
 				</div>
 			</section>
 

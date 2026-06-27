@@ -48,9 +48,12 @@ export const createCommunity = callable<
 >("createCommunity");
 
 // ---- search (community search + grounded curated answer) ----
-import type { SearchResults } from "../types/models";
+import type { SearchResults, PlatformStats } from "../types/models";
 
 export const searchContent = callable<{ query: string; ai?: boolean }, SearchResults>("searchContent");
+
+// ---- admin (usage analytics + cost estimate) ----
+export const getPlatformStats = callable<Record<string, never>, PlatformStats>("getPlatformStats");
 
 // ---- posts ----
 export const createPost = callable<
