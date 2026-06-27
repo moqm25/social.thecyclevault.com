@@ -89,6 +89,15 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
 						<span className="truncate">{c.name}</span>
 					</NavLink>
 				))}
+				<Link
+					to="/circles"
+					onClick={onNavigate}
+					className="mt-0.5 flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-muted transition-colors hover:bg-bg-2 hover:text-coral">
+					<span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-line">
+						<CirclesIcon size={13} />
+					</span>
+					<span>Browse all Circles</span>
+				</Link>
 				{user && (
 					<Link
 						to="/circles/new"

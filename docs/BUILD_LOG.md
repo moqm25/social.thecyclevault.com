@@ -43,6 +43,34 @@ guest name-blur + legal pages.** All browser-validated. Sensible next steps:
 
 ---
 
+## ✅ Done since last entry (2026-06-27, session 5)
+
+**Google-AI semantic search + security hardening** (`f31ccbd`): upgraded search to
+real Google AI and closed audit-found gaps. Keyless via the function's own service
+account (ADC) — no API key to leak.
+
+- **Indexing**: `embedPostOnWrite` trigger embeds every post with Vertex AI
+  `text-embedding-005` (768-dim) into a Firestore **vector**; sha256 `embeddingHash`
+  = idempotency + loop guard. `reindexSearchEmbeddings` admin callable backfills.
+- **Retrieval**: `searchContent` embeds the query and runs Firestore `findNearest`
+  (KNN, COSINE, pre-filtered to active) + lexical boost; falls back to keyword
+  ranking when vectors are unavailable. Vector index added to `firestore.indexes.json`.
+- **Answer**: Gemini (`gemini-2.5-flash`, thinkingBudget 0) first, OpenAI fallback
+  second; one grounded, non-medical, citation-style prompt.
+- **Security** (from a subagent audit): guest searches now rate-limited by **hashed
+  IP** (DoS/cost guard); **prompt-injection hardening** (sanitize + tag query/bodies,
+  system prompt treats tags as data only); OpenAI key moved to **Secret Manager**
+  (`defineSecret`); `setUserRole`/`dismissReport`/`unbanUser` now use zod `parseInput`.
+- **Scale/UX**: communities cached 5 min in-memory; `PostCard` shows the friendly
+  Circle **name** (not the slug).
+- **Ops**: enabled Vertex AI API, granted the SA `roles/aiplatform.user`, stored
+  `SEARCH_AI_KEY` secret, deployed all functions + the vector index. Verified the
+  Vertex embedding (200/768-dim) and Gemini answer paths via direct API; emulator
+  falls back to keyword+snapshot (browser-tested). typecheck + lint + 21 tests clean.
+  **Action: rotate the OpenAI key** (it was shared in chat) and update the secret.
+
+---
+
 ## ✅ Done since last entry (2026-06-27, session 4)
 
 **Community search + grounded AI curated answer** (`3aeb2e8`): a Reddit-style

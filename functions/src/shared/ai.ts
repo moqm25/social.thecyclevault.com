@@ -75,8 +75,10 @@ async function vertexPredict(model: string, verb: "predict" | "generateContent",
 		timeoutMs,
 	);
 	if (!res.ok) {
-		const detail = await res.text().catch(() => "");
-		throw new Error(`vertex_${verb}_${res.status}:${detail.slice(0, 200)}`);
+		// Surface only the status code. The response body can echo the request
+		// (query/excerpt) or safety details, so we never put it in a thrown/logged
+		// message — keeps logs free of user content (privacy).
+		throw new Error(`vertex_${verb}_${res.status}`);
 	}
 	return res.json();
 }

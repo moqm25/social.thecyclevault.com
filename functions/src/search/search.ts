@@ -310,8 +310,12 @@ async function retrievePosts(query: string, tokens: string[], phrase: string): P
 /** Privacy-preserving rate-limit key for an unauthenticated caller (hashed IP). */
 function guestKey(request: CallableRequest): string {
 	const raw = request.rawRequest;
-	const fwd = (raw?.headers?.["x-forwarded-for"] as string | undefined) ?? "";
-	const ip = (fwd.split(",")[0] || raw?.ip || "unknown").trim();
+	// Prefer the infrastructure-set connection IP (`raw.ip`) — it is NOT client
+	// spoofable. Only fall back to the LAST `x-forwarded-for` hop (appended by
+	// Google's front end), never the first/left entry, which the client controls
+	// and could rotate to evade the limit.
+	const xff = (raw?.headers?.["x-forwarded-for"] as string | undefined) ?? "";
+	const ip = (raw?.ip || xff.split(",").map((s) => s.trim()).filter(Boolean).pop() || "unknown").trim();
 	return `ipguest:${createHash("sha256").update(ip).digest("hex").slice(0, 24)}`;
 }
 

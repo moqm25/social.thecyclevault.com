@@ -12,6 +12,7 @@ import SettingsPage from "./pages/SettingsPage";
 import SupporterPage from "./pages/SupporterPage";
 import ShopPage from "./pages/ShopPage";
 import SearchPage from "./pages/SearchPage";
+import CirclesPage from "./pages/CirclesPage";
 import CreateCirclePage from "./pages/CreateCirclePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import ModDashboard from "./pages/ModDashboard";
@@ -45,6 +46,7 @@ export default function App() {
 				<Route path="/supporter" element={<SupporterPage />} />
 				<Route path="/shop" element={<ShopPage />} />
 				<Route path="/search" element={<SearchPage />} />
+				<Route path="/circles" element={<CirclesPage />} />
 				<Route path="/post/:postId" element={<PostDetailPage />} />
 				<Route path="/u/:username" element={<ProfilePage />} />
 				<Route path="/privacy" element={<PrivacyPage />} />

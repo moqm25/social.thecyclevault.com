@@ -8,6 +8,18 @@ import { SearchIcon, SparkIcon } from "../components/layout/icons";
 import type { SearchAnswer } from "../types/models";
 
 /**
+ * Phrases that suggest someone may be in crisis. We keep this intentionally small
+ * and high-signal (whole-word matched) so we surface support when it matters
+ * without crying wolf. Not a diagnosis — just a gentle, always-available off-ramp.
+ */
+const CRISIS_PATTERN =
+	/\b(suicid\w*|kill myself|killing myself|end my life|want to die|self[\s-]?harm|hurt myself|hurting myself|overdose|abuse|abused|assault|rape|raped)\b/i;
+
+function isCrisisQuery(q: string): boolean {
+	return CRISIS_PATTERN.test(q);
+}
+
+/**
  * Search results surface (/search?q=…). Shows a curated answer (AI when configured,
  * otherwise a grounded community snapshot), matching Circles, and post results.
  * Privacy: search is stateless server-side; nothing is stored or tied to you.
@@ -78,6 +90,7 @@ export default function SearchPage() {
 			{/* Query → results */}
 			{q && (
 				<section className="space-y-5">
+					{isCrisisQuery(q) && <CrisisBanner />}
 					<div>
 						<h1 className="font-serif text-xl font-semibold text-ink">
 							Results for <span className="text-coral">“{q}”</span>
@@ -199,3 +212,52 @@ function AnswerCard({ answer, aiAvailable }: { answer: SearchAnswer; aiAvailable
 		</section>
 	);
 }
+
+/**
+ * Calm, non-alarmist crisis-support banner shown above results when a search looks
+ * like someone may be struggling. Always offers a real, human off-ramp (988 in the
+ * US / 911 for emergencies) without being preachy. Surfacing care here matters more
+ * than search results.
+ */
+function CrisisBanner() {
+	return (
+		<section
+			role="note"
+			className="rounded-2xl border border-coral-soft/60 bg-coral-wash/40 p-4 sm:p-5">
+			<p className="text-sm font-semibold text-ink">If you’re going through something hard, you’re not alone.</p>
+			<p className="mt-1 text-sm text-ink-2">
+				If you might be in danger or thinking about harming yourself, please reach out — talking to someone helps.
+			</p>
+			<ul className="mt-3 space-y-1.5 text-sm text-ink-2">
+				<li>
+					<span className="font-medium">US:</span> call or text{" "}
+					<a href="tel:988" className="font-semibold text-coral hover:underline">
+						988
+					</a>{" "}
+					(Suicide &amp; Crisis Lifeline, 24/7)
+				</li>
+				<li>
+					<span className="font-medium">Emergency:</span> call{" "}
+					<a href="tel:911" className="font-semibold text-coral hover:underline">
+						911
+					</a>{" "}
+					or your local emergency number
+				</li>
+				<li>
+					Outside the US:{" "}
+					<a
+						href="https://findahelpline.com"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="font-semibold text-coral hover:underline">
+						findahelpline.com
+					</a>
+				</li>
+			</ul>
+			<p className="mt-3 text-[12px] text-muted-2">
+				The CycleVault is a peer community, not a crisis or medical service.
+			</p>
+		</section>
+	);
+}
+

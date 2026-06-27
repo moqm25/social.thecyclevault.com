@@ -214,5 +214,23 @@
 			]
 		}
 	],
-	"fieldOverrides": []
+	"fieldOverrides": [
+		{
+			"//": "Exempt the embedding vector from automatic single-field indexing — it's only queried via the explicit KNN vector index above. Auto-indexing a 768-float array per doc wastes storage and adds write latency (Firestore best-practices: large arrays / reduce index fanout).",
+			"collectionGroup": "posts",
+			"fieldPath": "embedding",
+			"indexes": []
+		},
+		{
+			"//": "Large content/derived fields we never query on — exempt to cut write latency + storage (best-practices: large string fields).",
+			"collectionGroup": "posts",
+			"fieldPath": "body",
+			"indexes": []
+		},
+		{
+			"collectionGroup": "posts",
+			"fieldPath": "embeddingHash",
+			"indexes": []
+		}
+	]
 }

@@ -41,6 +41,11 @@ export function AppLayout() {
 
 	return (
 		<div className="min-h-full">
+			<a
+				href="#main-content"
+				className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-50 focus:rounded-full focus:bg-coral focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lift">
+				Skip to content
+			</a>
 			<AnnouncementBanner />
 
 			<header className="sticky top-0 z-30 border-b border-line bg-bg/85 backdrop-blur">
@@ -76,7 +81,7 @@ export function AppLayout() {
 				</aside>
 
 				{/* Content */}
-				<main className="min-w-0">
+				<main id="main-content" className="min-w-0">
 					<Outlet />
 				</main>
 
