@@ -15,9 +15,9 @@
 
 ## ▶ Next action
 
-Retry Firestore DB creation (API was still propagating):
-`firebase firestore:databases:create "(default)" --location=us-central1`
-Then continue Phase B (frontend scaffold in `web/`).
+Scaffold the **`functions/`** TypeScript backend (Phase C) implementing
+`docs/API_CONTRACT.md` (auth/profile first: `createUserProfile`, `reserveUsername`),
+so signup works end-to-end against the emulator. Install Java first for emulators.
 
 ---
 
@@ -71,20 +71,25 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 - [x] Enabled GCP APIs via Service Usage REST (Firebase CLI token): firestore,
       cloudfunctions, firebasestorage, identitytoolkit ✅. cloudbuild +
       artifactregistry returned **needs-billing** → deferred to Phase F (Blaze).
-- [ ] `firebase firestore:databases:create "(default)" --location=us-central1`
-      — **pending**: API still propagating; retry shortly.
+- [x] `firebase firestore:databases:create "(default)" --location=us-central1` ✅
 - [ ] (Console, manual) Enable Auth → Email/Password provider (Identity Toolkit API
       already on; provider toggle done at go-live or via REST)
 
 ## Phase B — Frontend scaffold ⏳
 
-- [ ] Vite + React + TypeScript (strict) app in repo root (`src/`, `public/`)
-- [ ] Tailwind + brand tokens from `thecyclevault.com/site.css`
-- [ ] React Router routes (`docs/UI_REQUIREMENTS.md §3`)
-- [ ] TanStack Query + Zod + React Hook Form wired
-- [ ] `lib/firebase` (SDK init + emulator switch) and `lib/api` (typed callables)
-- [ ] App shell, theme toggle (light/dark), skeleton/empty/error states
-- [ ] Auth feature (email/password, signup w/ username), protected routes
+- [x] Vite + React + TypeScript (strict) app in `web/` (`src/`)
+- [x] Tailwind + brand tokens from `thecyclevault.com/site.css`; light/dark theming
+- [x] React Router routes (`docs/UI_REQUIREMENTS.md §3`); Home + 404 + placeholders
+- [x] TanStack Query + Zod + React Hook Form wired
+- [x] `lib/firebase` (SDK init + emulator switch), `lib/env` (zod-validated),
+      `lib/api` (typed callables), `types/models`
+- [x] App shell (top bar, theme toggle, user menu, disclaimer footer), brand wordmark
+- [x] Auth feature: email/password sign-in + sign-up (username reservation),
+      `AuthProvider`, `ProtectedRoute` (role-aware), reusable Button/TextField
+- [x] Build green: split bundles — app 37KB / react 53KB / firebase 112KB gz
+      (~203KB total, < 300KB budget); lint clean; 2 tests pass
+- Note: signup's `createUserProfile` call needs the backend (Phase C) live in the
+  emulator to fully work end-to-end.
 
 ## Phase C — Backend (Cloud Functions, TypeScript) ⏳
 
@@ -127,3 +132,9 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
   `web/.env.local`. Enabled core GCP APIs via Service Usage REST using the Firebase
   CLI access token (no secret printed). Firestore DB create deferred (API propagating).
 - `2026-06-26` — SPA placed in `web/` to protect live Coming-soon `index.html`.
+- `2026-06-26` — Firestore DB `(default)` created in `us-central1`. Web prod deps:
+  0 vulnerabilities (5 dev-only, non-shipping).
+- `2026-06-26` — frontend foundation committed (`65fe88b`): Vite+React+TS+Tailwind,
+  brand tokens, routing, ThemeProvider.
+- `2026-06-26` — firebase client lib + auth (sign-in/up, profile, protected routes)
+  built; vendor chunk-split; lint clean.

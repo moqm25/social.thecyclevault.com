@@ -11,6 +11,15 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     target: 'es2020',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split heavy vendors so the app shell caches independently of them.
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/functions', 'firebase/storage'],
+          react: ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
+    },
   },
   server: {
     port: 5173,

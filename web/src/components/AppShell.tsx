@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { BrandWordmark } from './BrandWordmark';
 import { ThemeToggle } from './ThemeToggle';
+import { UserMenu } from './UserMenu';
 
 /**
  * App shell: calm top bar + centered content column. Mobile-first.
@@ -16,13 +17,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             <BrandWordmark />
           </Link>
           <div className="flex items-center gap-2">
-            <a
-              href="https://thecyclevault.com"
-              className="hidden rounded-full px-3 py-1.5 text-sm text-muted transition-colors hover:text-coral sm:block"
-            >
-              The app
-            </a>
             <ThemeToggle />
+            <UserMenu />
           </div>
         </div>
       </header>
