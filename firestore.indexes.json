@@ -2,6 +2,15 @@
 	"//": "The CycleVault Social — Firestore composite indexes. Source: docs/DATA_MODEL.md §14. Feed/comment queries always filter status=='active' to satisfy security rules, so status is part of these indexes. Single-field indexes are auto-created. Review/prune after real usage.",
 	"indexes": [
 		{
+			"//": "Semantic search: KNN vector index over post embeddings, pre-filtered by status=='active'. Powers searchContent's findNearest (docs/SEARCH.md). 768 dims = Vertex text-embedding-005.",
+			"collectionGroup": "posts",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "embedding", "vectorConfig": { "dimension": 768, "flat": {} } }
+			]
+		},
+		{
 			"collectionGroup": "posts",
 			"queryScope": "COLLECTION",
 			"fields": [

@@ -13,6 +13,9 @@ import {
 	banUserSchema,
 	reviewContentSchema,
 	clearStrikesSchema,
+	setUserRoleSchema,
+	dismissReportSchema,
+	unbanUserSchema,
 } from "../shared/schemas.js";
 
 const MOD_MAX_SUSPEND_HOURS = 168; // 7 days; admins may exceed
@@ -300,8 +303,7 @@ export const banUser = onCall(async (request) => {
 export const dismissReport = onCall(async (request) => {
 	const { auth, profile } = await requireActiveUser(request);
 	requireRole(profile, "moderator");
-	const reportId = String((request.data as { reportId?: unknown })?.reportId ?? "");
-	if (!reportId) throw new HttpsError("invalid-argument", "reportId is required.");
+	const { reportId } = parseInput(dismissReportSchema, request.data);
 
 	await db.collection(COL.reports).doc(reportId).update({
 		status: "dismissed",
@@ -323,12 +325,7 @@ export const dismissReport = onCall(async (request) => {
 export const setUserRole = onCall(async (request) => {
 	const { auth, profile } = await requireActiveUser(request);
 	requireRole(profile, "superadmin");
-	const data = request.data as { uid?: unknown; role?: unknown };
-	const uid = String(data?.uid ?? "");
-	const role = String(data?.role ?? "");
-	if (!uid || !["user", "moderator", "admin", "superadmin"].includes(role)) {
-		throw new HttpsError("invalid-argument", "Valid uid and role are required.");
-	}
+	const { uid, role } = parseInput(setUserRoleSchema, request.data);
 
 	await db.collection(COL.users).doc(uid).update({
 		role,
@@ -357,8 +354,7 @@ export const unbanUser = onCall(async (request) => {
 	const auth = requireAuth(request);
 	const profile = await getProfile(auth.uid);
 	requireRole(profile, "admin");
-	const uid = String((request.data as { uid?: unknown })?.uid ?? "");
-	if (!uid) throw new HttpsError("invalid-argument", "uid is required.");
+	const { uid } = parseInput(unbanUserSchema, request.data);
 
 	const bans = await db.collection(COL.bans).where("uid", "==", uid).where("active", "==", true).get();
 	const batch = db.batch();

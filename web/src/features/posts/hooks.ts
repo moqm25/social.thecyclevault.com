@@ -8,6 +8,12 @@ export function useCommunities() {
 	return useQuery({ queryKey: ["communities"], queryFn: listCommunities, staleTime: 5 * 60_000 });
 }
 
+/** Resolve a community slug to its display name (falls back to the slug). */
+export function useCommunityName(slug: string): string {
+	const { data } = useCommunities();
+	return data?.find((c) => c.slug === slug)?.name ?? slug;
+}
+
 export function useCommunity(slug: string | undefined) {
 	return useQuery({
 		queryKey: ["community", slug],
@@ -81,7 +87,6 @@ export function useDeletePost() {
 /** Report a post or comment for moderator review. */
 export function useReportContent() {
 	return useMutation({
-		mutationFn: (vars: { targetType: "post" | "comment"; targetId: string; reason: ReportReason; details?: string }) =>
-			reportContent(vars),
+		mutationFn: (vars: { targetType: "post" | "comment"; targetId: string; reason: ReportReason; details?: string }) => reportContent(vars),
 	});
 }

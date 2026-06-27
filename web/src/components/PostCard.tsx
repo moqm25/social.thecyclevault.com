@@ -4,12 +4,13 @@ import { VoteControl } from "./VoteControl";
 import { AuthorName } from "./AuthorName";
 import { ContentMenu } from "./ContentMenu";
 import { relativeTime } from "../lib/time";
-import { useVotePost, useDeletePost } from "../features/posts/hooks";
+import { useVotePost, useDeletePost, useCommunityName } from "../features/posts/hooks";
 
 /** A single post in a feed: vote rail + title + meta + comment count. */
 export function PostCard({ post }: { post: Post }) {
 	const vote = useVotePost(post.id);
 	const del = useDeletePost();
+	const communityName = useCommunityName(post.communityId);
 
 	return (
 		<article className="flex gap-3 rounded-xl border border-line bg-surface p-4 transition-shadow hover:shadow-soft">
@@ -20,7 +21,7 @@ export function PostCard({ post }: { post: Post }) {
 			<div className="min-w-0 flex-1">
 				<div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted">
 					<Link to={`/c/${post.communityId}`} className="font-medium text-lav hover:underline">
-						{post.communityId}
+						{communityName}
 					</Link>
 					<span aria-hidden="true">·</span>
 					<AuthorName username={post.authorUsername} badges={post.authorBadges} supporter={post.authorSupporter} maxBadges={1} />

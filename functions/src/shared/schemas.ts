@@ -193,3 +193,17 @@ export const searchContentSchema = z.object({
 	// grounded community snapshot). Defaults on.
 	ai: z.boolean().optional(),
 });
+
+// ---- admin/mod action schemas (defense-in-depth on top of role checks) ----
+export const setUserRoleSchema = z.object({
+	uid: z.string().min(1).max(128),
+	role: z.enum(["user", "moderator", "admin", "superadmin"]),
+});
+
+export const dismissReportSchema = z.object({
+	reportId: z.string().min(1).max(128),
+});
+
+export const unbanUserSchema = z.object({
+	uid: z.string().min(1).max(128),
+});

@@ -15,6 +15,7 @@ export { createCommunity } from "./communities/communities.js";
 
 // ---- search (community search + grounded curated answer) ----
 export { searchContent } from "./search/search.js";
+export { embedPostOnWrite, reindexSearchEmbeddings } from "./search/embeddings.js";
 
 // ---- posts ----
 export { createPost, updatePost, deletePostSoft, lockPost } from "./posts/posts.js";

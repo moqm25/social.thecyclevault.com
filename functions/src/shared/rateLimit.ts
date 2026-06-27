@@ -41,4 +41,7 @@ export const RATE = {
 	createCommunity: { limit: 3, windowMs: 24 * 60 * 60 * 1000 },
 	search: { limit: 90, windowMs: 60 * 60 * 1000 },
 	searchAI: { limit: 25, windowMs: 60 * 60 * 1000 },
+	// Guests (unauthenticated) are limited by hashed IP — a tighter budget since
+	// each guest search can trigger a Vertex embedding call (cost + abuse guard).
+	searchGuest: { limit: 40, windowMs: 60 * 60 * 1000 },
 } as const;
