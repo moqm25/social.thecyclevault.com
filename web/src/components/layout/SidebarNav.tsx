@@ -1,9 +1,10 @@
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../../features/auth/AuthProvider";
 import { useCommunities } from "../../features/posts/hooks";
+import { useReportIssue } from "../../features/support/ReportIssueProvider";
 import { SignInLink } from "../SignInLink";
 import { AdminViewToggle } from "../AdminViewToggle";
-import { HomeIcon, ShopIcon, HeartIcon, BellIcon, UserIcon, SettingsIcon, ShieldIcon, PlusIcon, CirclesIcon, SearchIcon } from "./icons";
+import { HomeIcon, ShopIcon, HeartIcon, BellIcon, UserIcon, SettingsIcon, ShieldIcon, PlusIcon, CirclesIcon, SearchIcon, LifeBuoyIcon } from "./icons";
 import type { ComponentType, SVGProps } from "react";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
@@ -16,6 +17,7 @@ type IconType = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
  */
 export function SidebarNav({ onNavigate, mobile = false }: { onNavigate?: () => void; mobile?: boolean }) {
 	const { user, profile } = useAuth();
+	const { openReportIssue } = useReportIssue();
 	const communities = useCommunities();
 	const role = profile?.role;
 	const isMod = role === "moderator" || role === "admin" || role === "superadmin";
@@ -113,6 +115,19 @@ export function SidebarNav({ onNavigate, mobile = false }: { onNavigate?: () => 
 						to start one.
 					</p>
 				)}
+			</Section>
+
+			<Section label="Help">
+				<button
+					type="button"
+					onClick={() => {
+						onNavigate?.();
+						openReportIssue();
+					}}
+					className="flex items-center gap-3 rounded-xl px-3 py-2 text-left text-ink-2 transition-colors hover:bg-bg-2 hover:text-coral">
+					<LifeBuoyIcon size={20} className="shrink-0" />
+					<span className="truncate">Report a problem</span>
+				</button>
 			</Section>
 		</nav>
 	);

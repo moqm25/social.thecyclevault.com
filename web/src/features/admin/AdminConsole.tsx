@@ -7,10 +7,11 @@ import { SponsoredProductsAdmin } from "./SponsoredProductsAdmin";
 import { AnnouncementAdmin } from "./AnnouncementAdmin";
 import { UserAdmin } from "./UserAdmin";
 import { InsightsPanel } from "./InsightsPanel";
+import { IssuesQueue } from "./IssuesQueue";
 import { useAdminStats } from "./useAdminStats";
 
 type Scope = "admin" | "mod";
-type TabId = "overview" | "insights" | "content" | "reports" | "users" | "removed" | "shop" | "announcement";
+type TabId = "overview" | "insights" | "content" | "reports" | "users" | "removed" | "issues" | "shop" | "announcement";
 
 interface TabDef {
 	id: TabId;
@@ -25,6 +26,7 @@ const TABS: TabDef[] = [
 	{ id: "reports", label: "Reports", scopes: ["admin", "mod"] },
 	{ id: "users", label: "Users", scopes: ["admin"] },
 	{ id: "removed", label: "Removed", scopes: ["admin", "mod"] },
+	{ id: "issues", label: "Issues", scopes: ["admin"] },
 	{ id: "shop", label: "Shop", scopes: ["admin"] },
 	{ id: "announcement", label: "Announcement", scopes: ["admin"] },
 ];
@@ -94,6 +96,7 @@ export function AdminConsole({ scope }: { scope: Scope }) {
 					</div>
 				)}
 				{active === "removed" && <RemovedContentQueue />}
+				{active === "issues" && scope === "admin" && <IssuesQueue />}
 				{active === "shop" && scope === "admin" && <SponsoredProductsAdmin />}
 				{active === "announcement" && scope === "admin" && <AnnouncementAdmin />}
 			</div>

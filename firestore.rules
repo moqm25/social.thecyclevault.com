@@ -139,6 +139,23 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ------------------------- issueReports -----------------------------------
+    // "Report a problem" submissions (bug/issue reports — NOT user flags). May
+    // contain a contact email + a screenshot the reporter chose to attach, so the
+    // collection is function-only end-to-end: written via submitIssueReport (open
+    // to everyone, rate-limited) and read by admins ONLY through admin callables.
+    // No client read access at all — fail closed.
+    match /issueReports/{id} {
+      allow read, write: if false;
+    }
+
+    // ------------------------------- mail -------------------------------------
+    // Optional outbound queue for the Firebase "Trigger Email" extension. Written
+    // server-side only; never client-readable.
+    match /mail/{id} {
+      allow read, write: if false;
+    }
+
     // --------------------------- default deny --------------------------------
     match /{document=**} {
       allow read, write: if false;

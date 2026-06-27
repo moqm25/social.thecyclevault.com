@@ -29,4 +29,7 @@ export const COL = {
 	moderationQueue: "moderationQueue",
 	sponsoredProducts: "sponsoredProducts",
 	userModeration: "userModeration",
+	issueReports: "issueReports",
+	/** Firebase "Trigger Email" extension source collection (optional delivery). */
+	mail: "mail",
 } as const;

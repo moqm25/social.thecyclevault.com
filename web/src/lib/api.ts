@@ -158,3 +158,17 @@ export const broadcastAnnouncement = callable<{ title?: string; body?: string; l
 );
 
 export const grantBadge = callable<{ uid: string; badge: BadgeKind; grant?: boolean }, { ok: true }>("grantBadge");
+
+// ---- support ("Report a problem" — open to everyone, including guests) ----
+import type { IssueCategory, IssueReport } from "../types/models";
+
+export const submitIssueReport = callable<
+	{ message: string; category: IssueCategory; email?: string; context?: string; screenshot?: string },
+	{ ok: true; id: string }
+>("submitIssueReport");
+
+export const listIssueReports = callable<{ status?: "open" | "resolved" | "all" }, { items: IssueReport[] }>("listIssueReports");
+
+export const getIssueReportScreenshot = callable<{ id: string }, { screenshot: string | null }>("getIssueReportScreenshot");
+
+export const resolveIssueReport = callable<{ id: string; status: "open" | "resolved" }, { ok: true }>("resolveIssueReport");

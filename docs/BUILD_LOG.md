@@ -363,3 +363,21 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
   rules+indexes; deployed **all 20 Cloud Functions** (us-central1, prod); seeded 6
   communities (REST seed script). Smoke test: unauth callable → 401 UNAUTHENTICATED.
   Removed unused `isActive` rules helper. Remaining: founder Auth-init console click.
+- `2026-06-27` — **Admin view toggle revamp + Report a problem** (commits `c7c2f3e`
+  then issue-report commit). (A) Replaced the single ambiguous admin/member button
+  with a two-state **segmented toggle** (`AdminViewToggle`, `variant="bar"` top bar +
+  `variant="panel"` in the mobile drawer); added an unmistakable coral **Admin-view
+  ribbon** (`AdminModeRibbon`) with a Debug button + tinted sticky header; new
+  `lib/debugInfo.ts` collector and a reusable accessible `Modal` primitive; new
+  `AdminDebugPanel` (build/env/project/identity/route/viewport/etc + copy). (B)
+  Universal **"Report a problem"** for everyone incl. guests: `support/issues.ts`
+  (`submitIssueReport` rate-limited guest-by-hashed-IP, `listIssueReports`/
+  `getIssueReportScreenshot`/`resolveIssueReport` admin-gated), `issueReports` + `mail`
+  collections fail-closed (function-only), composite index status+createdAt, schemas,
+  `ReportIssueModal`/`Provider` wired app-wide (sidebar Help link), `lib/screenshot.ts`
+  (capture/upload → compressed JPEG under doc cap), admin **Issues** tab
+  (`IssuesQueue`, open/resolved/all, screenshot on-demand, mark resolved/reopen).
+  Goes to support@thecyclevault.com (optional Trigger-Email handoff via
+  `ISSUE_REPORT_EMAILS=on`; default off — always visible in admin console). Browser-
+  validated on emulator: guest submit→thank-you, admin queue list + technical context
+  + resolve→reopen lifecycle. typecheck/lint/test/build all clean; deployed to prod.

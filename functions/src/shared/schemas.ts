@@ -207,3 +207,41 @@ export const dismissReportSchema = z.object({
 export const unbanUserSchema = z.object({
 	uid: z.string().min(1).max(128),
 });
+
+// ---- support: "Report a problem" (available to anyone, including guests) ----
+/**
+ * Categories shown in the issue dialog. This flow is about the platform/experience
+ * (a bug, something broken) — it is NOT a way to flag a user; that's the separate
+ * confidential content/user report flow.
+ */
+export const issueCategories = ["bug", "visual", "broken", "account", "performance", "other"] as const;
+
+export const submitIssueReportSchema = z.object({
+	message: z.string().trim().min(1).max(5000),
+	category: z.enum(issueCategories).default("other"),
+	/** Optional contact email — used for guests; signed-in reporters' account email
+	 *  is taken from their verified token server-side, never trusted from the client. */
+	email: z.string().email().max(200).optional(),
+	/** Client debug snapshot as a JSON string (see web lib/debugInfo). Size-bounded. */
+	context: z.string().max(8000).optional(),
+	/** Optional screenshot as a compressed data URL. Capped well under Firestore's
+	 *  1 MiB document limit (the client downscales/recompresses to fit). */
+	screenshot: z
+		.string()
+		.max(900_000)
+		.regex(/^data:image\/(png|jpeg);base64,/, "Unsupported image format.")
+		.optional(),
+});
+
+export const listIssueReportsSchema = z.object({
+	status: z.enum(["open", "resolved", "all"]).default("open"),
+});
+
+export const issueReportIdSchema = z.object({
+	id: z.string().min(1).max(128),
+});
+
+export const resolveIssueReportSchema = z.object({
+	id: z.string().min(1).max(128),
+	status: z.enum(["open", "resolved"]),
+});

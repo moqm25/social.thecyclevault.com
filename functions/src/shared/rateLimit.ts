@@ -44,4 +44,8 @@ export const RATE = {
 	// Guests (unauthenticated) are limited by hashed IP — a tighter budget since
 	// each guest search can trigger a Vertex embedding call (cost + abuse guard).
 	searchGuest: { limit: 40, windowMs: 60 * 60 * 1000 },
+	// "Report a problem" — generous enough for genuine follow-ups, tight enough to
+	// blunt spam. Guests (hashed IP) get a smaller budget.
+	issueReport: { limit: 10, windowMs: 60 * 60 * 1000 },
+	issueReportGuest: { limit: 5, windowMs: 60 * 60 * 1000 },
 } as const;

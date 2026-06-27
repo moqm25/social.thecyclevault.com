@@ -11,6 +11,15 @@
 			]
 		},
 		{
+			"//": "Admin Issues queue: list 'Report a problem' submissions filtered by status, newest first (listIssueReports).",
+			"collectionGroup": "issueReports",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "status", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
+		},
+		{
 			"collectionGroup": "posts",
 			"queryScope": "COLLECTION",
 			"fields": [

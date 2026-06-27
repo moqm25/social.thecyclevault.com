@@ -6,6 +6,7 @@ import App from "./App.tsx";
 import { ThemeProvider } from "./app/ThemeProvider.tsx";
 import { AuthProvider } from "./features/auth/AuthProvider.tsx";
 import { AdminViewProvider } from "./features/admin/AdminViewContext.tsx";
+import { ReportIssueProvider } from "./features/support/ReportIssueProvider.tsx";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -28,7 +29,9 @@ createRoot(document.getElementById("root")!).render(
 				<BrowserRouter>
 					<AuthProvider>
 						<AdminViewProvider>
-							<App />
+							<ReportIssueProvider>
+								<App />
+							</ReportIssueProvider>
 						</AdminViewProvider>
 					</AuthProvider>
 				</BrowserRouter>

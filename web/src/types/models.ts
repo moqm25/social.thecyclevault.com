@@ -324,3 +324,28 @@ export interface UserActivityReport {
 	};
 	counts: { posts: number; comments: number; removedPosts: number; removedComments: number };
 }
+
+/** "Report a problem" categories — about the platform/experience, not a user. */
+export type IssueCategory = "bug" | "visual" | "broken" | "account" | "performance" | "other";
+
+export type IssueReportStatus = "open" | "resolved";
+
+/** A bug/issue report submitted by anyone (admin console view; screenshot fetched
+ *  separately on demand). */
+export interface IssueReport {
+	id: string;
+	message: string;
+	category: string;
+	email: string | null;
+	context: string | null;
+	hasScreenshot: boolean;
+	reporterUid: string | null;
+	reporterUsername: string | null;
+	reporterRole: string | null;
+	serverUserAgent: string | null;
+	source: string;
+	status: IssueReportStatus;
+	createdAt: number | null;
+	resolvedAt: number | null;
+	resolvedBy: string | null;
+}
