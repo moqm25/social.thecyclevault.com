@@ -37,7 +37,8 @@ function friendlyAuthError(err: unknown): string {
 export default function LoginPage() {
 	const [mode, setMode] = useState<Mode>("signin");
 	const [formError, setFormError] = useState<string | null>(null);
-	const { signIn, signUp } = useAuth();
+	const [resetMsg, setResetMsg] = useState<string | null>(null);
+	const { signIn, signUp, resetPassword } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const from = (location.state as { from?: string } | null)?.from ?? "/";
@@ -54,6 +55,23 @@ export default function LoginPage() {
 			setFormError(friendlyAuthError(err));
 		}
 	});
+
+	async function onForgotPassword() {
+		setFormError(null);
+		setResetMsg(null);
+		const email = signInForm.getValues("email");
+		if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+			signInForm.setError("email", { message: "Enter your email above first" });
+			return;
+		}
+		try {
+			await resetPassword(email);
+		} catch {
+			// Intentionally ignore — never reveal whether an email exists
+			// (email-enumeration protection). Always show the neutral message.
+		}
+		setResetMsg("If an account exists for that email, a reset link is on its way.");
+	}
 
 	const onSignUp = signUpForm.handleSubmit(async (values) => {
 		setFormError(null);
@@ -97,6 +115,15 @@ export default function LoginPage() {
 							{...signInForm.register("password")}
 							error={signInForm.formState.errors.password?.message}
 						/>
+						<div className="text-right">
+							<button
+								type="button"
+								onClick={onForgotPassword}
+								className="text-sm font-medium text-lav hover:underline">
+								Forgot password?
+							</button>
+						</div>
+						{resetMsg && <p className="text-sm text-muted">{resetMsg}</p>}
 						{formError && <p className="text-sm text-coral">{formError}</p>}
 						<Button type="submit" className="w-full" loading={signInForm.formState.isSubmitting}>
 							Sign in

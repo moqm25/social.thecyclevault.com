@@ -32,6 +32,8 @@ export const createUserProfile = onCall(async (request) => {
 	const input = parseInput(createUserProfileSchema, request.data);
 	const usernameLower = input.username.toLowerCase();
 
+	await enforceRateLimit(auth.uid, "createProfile", RATE.createProfile.limit, RATE.createProfile.windowMs);
+
 	if (RESERVED_USERNAMES.has(usernameLower)) {
 		throw new HttpsError("already-exists", "That username is not available.");
 	}

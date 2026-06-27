@@ -30,11 +30,16 @@ service cloud.firestore {
     // ------------------------------ users ------------------------------------
     match /users/{userId} {
       allow read: if true; // public pseudonymous profile
+      // Clients may only edit displayName + bio on their own doc. avatarUrl is
+      // function-only (set by the validated upload flow, Phase 2) to avoid a
+      // crafted-URL vector. Type guards prevent confusing non-string writes.
       allow update: if isSignedIn() && userId == uid()
-        && changedKeysWithin(['displayName', 'avatarUrl', 'bio', 'updatedAt'])
+        && changedKeysWithin(['displayName', 'bio', 'updatedAt'])
+        && request.resource.data.bio is string
         && request.resource.data.bio.size() <= 300
         && (request.resource.data.displayName == null
-          || request.resource.data.displayName.size() <= 50);
+          || (request.resource.data.displayName is string
+            && request.resource.data.displayName.size() <= 50));
       allow create, delete: if false; // functions only
     }
 

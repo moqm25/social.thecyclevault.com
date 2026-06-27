@@ -31,6 +31,7 @@ export async function enforceRateLimit(uid: string, action: string, limit: numbe
 }
 
 export const RATE = {
+	createProfile: { limit: 5, windowMs: 60 * 60 * 1000 },
 	createPost: { limit: 5, windowMs: 60 * 60 * 1000 },
 	createPostDaily: { limit: 20, windowMs: 24 * 60 * 60 * 1000 },
 	createComment: { limit: 30, windowMs: 60 * 60 * 1000 },

@@ -5,6 +5,7 @@ import {
 	createUserWithEmailAndPassword,
 	signOut as fbSignOut,
 	sendEmailVerification,
+	sendPasswordResetEmail,
 	type User,
 } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
@@ -22,6 +23,7 @@ interface AuthContextValue {
 	signUp: (email: string, password: string) => Promise<User>;
 	signOutUser: () => Promise<void>;
 	sendVerification: () => Promise<void>;
+	resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -68,6 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			},
 			sendVerification: async () => {
 				if (auth.currentUser) await sendEmailVerification(auth.currentUser);
+			},
+			resetPassword: async (email) => {
+				await sendPasswordResetEmail(auth, email);
 			},
 		}),
 		[user, profile, loading],

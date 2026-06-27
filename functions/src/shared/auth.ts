@@ -18,6 +18,13 @@ export interface AuthedUser {
 
 /** Require an authenticated caller. */
 export function requireAuth(request: CallableRequest): AuthedUser {
+	// App Check (defense-in-depth): when ENFORCE_APP_CHECK is set, reject calls
+	// that don't carry a verified App Check token (i.e. not from our real app).
+	// Centralized here so every callable inherits it. Off by default so local/
+	// emulator and pre-key prod are unaffected (see SECURITY_AUDIT.md).
+	if (process.env.ENFORCE_APP_CHECK === "true" && !request.app) {
+		throw new HttpsError("failed-precondition", "App verification failed. Please reload and try again.");
+	}
 	const auth = request.auth;
 	if (!auth) {
 		throw new HttpsError("unauthenticated", "You must be signed in.");
