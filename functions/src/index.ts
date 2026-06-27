@@ -57,3 +57,4 @@ export {
 
 // ---- admin (usage analytics + cost estimate) ----
 export { getPlatformStats } from "./admin/stats.js";
+export { getUserActivityReport } from "./admin/userReport.js";

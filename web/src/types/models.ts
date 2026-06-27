@@ -273,3 +273,54 @@ export interface PlatformStats {
 		withinFreeTier: boolean;
 	};
 }
+
+/** Admin accountability dossier for a single member (download/generate). */
+export interface UserActivityReport {
+	generatedAt: number;
+	generatedBy: string;
+	user: {
+		uid: string;
+		username: string;
+		displayName: string | null;
+		status: string;
+		role: string;
+		badges: string[];
+		supporter: boolean;
+		postCount: number;
+		commentCount: number;
+		karma: number;
+		createdAt: number | null;
+	};
+	standing: {
+		strikeCount: number;
+		strikeTotal: number;
+		needsAdminReview: boolean;
+		lastReason: string | null;
+		lastStrikeAt: number | null;
+	};
+	strikes: { id: string; reason: string; severity: string; createdAt: number | null }[];
+	bans: {
+		id: string;
+		active: boolean;
+		scope: string;
+		reason: string;
+		permanent: boolean;
+		bannedBy: string;
+		createdAt: number | null;
+		expiresAt: number | null;
+	}[];
+	moderationActions: {
+		id: string;
+		actionType: string;
+		reason: string;
+		actorId: string;
+		metadata: Record<string, unknown>;
+		createdAt: number | null;
+	}[];
+	reportsAbout: { id: string; reason: string; details: string; status: string; createdAt: number | null }[];
+	content: {
+		posts: { id: string; communityId: string; title: string; body: string; status: string; score: number; commentCount: number; createdAt: number | null }[];
+		comments: { id: string; postId: string; body: string; status: string; score: number; createdAt: number | null }[];
+	};
+	counts: { posts: number; comments: number; removedPosts: number; removedComments: number };
+}

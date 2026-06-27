@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { FirebaseError } from "firebase/app";
 import { getUserByUsername, getUserModeration } from "../../lib/firestore";
-import { grantBadge, suspendUser, banUser, unbanUser, clearUserStrikes, setUserRole } from "../../lib/api";
+import { grantBadge, suspendUser, banUser, unbanUser, clearUserStrikes, setUserRole, getUserActivityReport } from "../../lib/api";
 import { useAuth } from "../auth/AuthProvider";
 import { UserBadges } from "../../components/Badge";
 import { relativeTime } from "../../lib/time";
@@ -93,6 +93,29 @@ export function UserAdmin() {
 	}
 
 	const hasBadge = (k: BadgeKind) => user?.badges?.includes(k) ?? false;
+
+	async function downloadReport() {
+		if (!user) return;
+		setBusy("report");
+		setError(null);
+		setOkMsg(null);
+		try {
+			const report = await getUserActivityReport({ uid: user.uid });
+			const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement("a");
+			const stamp = new Date().toISOString().slice(0, 10);
+			a.href = url;
+			a.download = `cyclevault-user-report-${user.username}-${stamp}.json`;
+			a.click();
+			URL.revokeObjectURL(url);
+			setOkMsg("Report downloaded.");
+		} catch (err) {
+			setError(friendly(err));
+		} finally {
+			setBusy(null);
+		}
+	}
 
 	return (
 		<div className="space-y-5">
@@ -238,7 +261,23 @@ export function UserAdmin() {
 
 					{error && <p className="text-sm text-coral">{error}</p>}
 					{okMsg && <p className="text-sm text-lav">{okMsg}</p>}
-					<p className="text-[12px] text-muted-2">Every action here is written to the append-only audit log.</p>
+
+					{/* Accountability */}
+					<ActionGroup label="Accountability">
+						<button
+							disabled={busy !== null}
+							onClick={downloadReport}
+							className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 transition-colors hover:text-coral disabled:opacity-50">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+								<path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+							</svg>
+							{busy === "report" ? "Generating…" : "Download activity report"}
+						</button>
+					</ActionGroup>
+					<p className="text-[12px] text-muted-2">
+						A full record — profile, strikes, bans, moderation actions, reports, and everything they posted — for disputes or appeals. Generating
+						it is itself logged.
+					</p>
 				</div>
 			)}
 		</div>
