@@ -15,9 +15,9 @@
 
 ## ▶ Next action
 
-Scaffold the **`functions/`** TypeScript backend (Phase C) implementing
-`docs/API_CONTRACT.md` (auth/profile first: `createUserProfile`, `reserveUsername`),
-so signup works end-to-end against the emulator. Install Java first for emulators.
+Install a JDK (`brew install temurin`) so the Firebase Emulator Suite + rules
+tests can run, then write Phase D tests (rules tests + function tests) and run the
+full stack against the emulator end-to-end.
 
 ---
 
@@ -93,11 +93,17 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 
 ## Phase C — Backend (Cloud Functions, TypeScript) ⏳
 
-- [ ] `functions/` package (2nd gen, region us-central1)
-- [ ] Zod schemas + shared helpers (rate limit, auth guards, audit)
-- [ ] Implement `docs/API_CONTRACT.md`: auth/profile, posts, comments, voting,
-      moderation, notifications, plus export/delete-account
-- [ ] Seed script for the 6 communities
+- [x] `functions/` package (2nd gen, Node 20, region us-central1, maxInstances 10)
+- [x] Zod schemas + shared helpers (admin, auth guards, rate limit, audit, ranking,
+      notify, validate)
+- [x] Implemented `docs/API_CONTRACT.md`: createUserProfile, reserveUsername;
+      createPost/updatePost/deletePostSoft/lockPost; createComment/updateComment/
+      deleteCommentSoft; voteOnPost/voteOnComment (transactional); reportContent/
+      removeContent/restoreContent/suspendUser/banUser/unbanUser/dismissReport/
+      setUserRole; markNotificationRead; exportMyData/deleteMyAccount
+- [x] `functions/scripts/seedCommunities.mjs` (idempotent, emulator + prod)
+- [x] tsc build clean + eslint clean
+- [ ] firebase.json updated with functions config ✅ (predeploy lint+build)
 
 ## Phase D — Testing ⏳ (needs Java for emulators)
 
@@ -138,3 +144,6 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
   brand tokens, routing, ThemeProvider.
 - `2026-06-26` — firebase client lib + auth (sign-in/up, profile, protected routes)
   built; vendor chunk-split; lint clean.
+- `2026-06-26` — Cloud Functions backend implemented (20 callables across auth,
+  posts, comments, votes, moderation, notifications, account) + seed script. tsc +
+  eslint clean. Emulator E2E pending Java install.
