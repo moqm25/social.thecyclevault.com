@@ -32,8 +32,16 @@ export function ProtectedRoute({ children, minRole = "user" }: { children: React
 	}
 
 	if (minRole !== "user") {
-		const rank = profile ? ROLE_RANK[profile.role] : 0;
-		if (rank < ROLE_RANK[minRole]) {
+		// Role lives on the profile doc, which loads after auth. Wait for it before
+		// deciding, otherwise a hard refresh would bounce a real admin/mod home.
+		if (profile === null) {
+			return (
+				<div className="grid place-items-center py-20">
+					<div className="h-6 w-6 animate-spin rounded-full border-2 border-lav border-t-transparent" />
+				</div>
+			);
+		}
+		if (ROLE_RANK[profile.role] < ROLE_RANK[minRole]) {
 			return <Navigate to="/" replace />;
 		}
 	}
