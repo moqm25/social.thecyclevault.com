@@ -2,6 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
+import CommunityPage from "./pages/CommunityPage";
+import NewPostPage from "./pages/NewPostPage";
+import PostDetailPage from "./pages/PostDetailPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import LoginPage from "./features/auth/LoginPage";
@@ -17,16 +20,16 @@ export default function App() {
 			<Routes>
 				<Route path="/" element={<HomePage />} />
 				<Route path="/login" element={<LoginPage />} />
-				<Route path="/c/:communitySlug" element={<PlaceholderPage title="Community" />} />
+				<Route path="/c/:communitySlug" element={<CommunityPage />} />
 				<Route
 					path="/post/new"
 					element={
 						<ProtectedRoute>
-							<PlaceholderPage title="New post" />
+							<NewPostPage />
 						</ProtectedRoute>
 					}
 				/>
-				<Route path="/post/:postId" element={<PlaceholderPage title="Post" />} />
+				<Route path="/post/:postId" element={<PostDetailPage />} />
 				<Route path="/u/:username" element={<PlaceholderPage title="Profile" />} />
 				<Route
 					path="/settings"

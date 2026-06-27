@@ -31,11 +31,12 @@ forum UI build does not depend on this (it uses the local emulator).
 
 ## ▶ Next action
 
-**Building the forum UI (Phase G).** Backend is deployed + verified in prod; the
-only backend gap is the founder's one-click Auth init (note at top). Build order:
-feed + community pages → post detail + comments + composer → voting (optimistic) →
-profile/notifications/settings → mod/admin. All against the local emulator, wired
-to the live callables. Public cutover (Part B) stays deferred until the UI is ready.
+**Forum UI — read + write paths are built and green** (feed, community, post detail,
+composer, voting, threaded comments). Remaining UI: profile page, notifications
+inbox, settings, mod/admin dashboards. Then Part B public cutover (gated). Backend
+gap still open: founder's one-click Auth init (note at top).
+
+---
 
 ---
 
@@ -167,9 +168,20 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 
 ## Phase G — Forum UI (in progress)
 
-- [ ] Feed (Hot/New/Top) + community pages, PostCard + VoteControl (optimistic)
-- [ ] Post detail + threaded comments + composer
-- [ ] Profile, notifications, settings; mod/admin dashboards
+- [x] Read layer: `lib/firestore.ts` (status-filtered feed/comment queries +
+      Timestamp normalize), `lib/time.ts` (relative time, unit-tested)
+- [x] Query hooks (TanStack Query): communities, feed (infinite), post, comments,
+      optimistic vote mutations
+- [x] Components: PostCard, VoteControl (optimistic, guest-nudge), loading/empty/
+      error states, Button/TextField reused
+- [x] Feed (Hot/New/Top, infinite "Load more") — home (global) + community pages
+- [x] Composer (`/post/new`, community preselect via ?c=) → createPost
+- [x] Post detail (`/post/:id`) + threaded comments (depth, replies) + comment
+      composer → createComment; locked-post handling
+- [x] Verified: web typecheck/lint/build green, 5 web unit tests, rules + e2e green
+- [ ] Profile (`/u/:username`), notifications inbox, settings, mod/admin dashboards
+- [ ] **Composite indexes revised**: feed/comment queries filter status=='active',
+      so indexes now include status (18 total); redeployed to prod.
 - Built against the local emulator; wired to the live callables in `lib/api.ts`.
 
 ---
