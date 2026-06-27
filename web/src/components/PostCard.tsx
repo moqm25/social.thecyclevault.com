@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import type { Post } from "../types/models";
 import { VoteControl } from "./VoteControl";
+import { UserBadges } from "./Badge";
+import { ContentMenu } from "./ContentMenu";
 import { relativeTime } from "../lib/time";
-import { useVotePost } from "../features/posts/hooks";
+import { useVotePost, useDeletePost } from "../features/posts/hooks";
 
 /** A single post in a feed: vote rail + title + meta + comment count. */
 export function PostCard({ post }: { post: Post }) {
 	const vote = useVotePost(post.id);
+	const del = useDeletePost();
 
 	return (
 		<article className="flex gap-3 rounded-xl border border-line bg-surface p-4 transition-shadow hover:shadow-soft">
@@ -23,9 +26,13 @@ export function PostCard({ post }: { post: Post }) {
 					<Link to={`/u/${post.authorUsername}`} className="hover:underline">
 						{post.authorUsername}
 					</Link>
+					<UserBadges badges={post.authorBadges} supporter={post.authorSupporter} max={1} />
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(post.createdAt)}</span>
 					{post.edited && <span className="italic">(edited)</span>}
+					<div className="ml-auto">
+						<ContentMenu targetType="post" targetId={post.id} authorId={post.authorId} onDelete={() => del.mutateAsync(post.id)} />
+					</div>
 				</div>
 
 				<Link to={`/post/${post.id}`} className="mt-1 block">

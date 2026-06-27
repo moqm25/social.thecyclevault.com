@@ -35,6 +35,10 @@ export const createPost = onCall(async (request) => {
 	batch.set(postRef, {
 		authorId: auth.uid,
 		authorUsername: profile.username,
+		// Denormalized author flair snapshot (docs/MONETIZATION.md). Lets badges
+		// render in feeds with zero extra reads. It's a snapshot at post time.
+		authorBadges: profile.badges,
+		authorSupporter: profile.supporter,
 		communityId: input.communityId,
 		title: input.title,
 		body: input.body,

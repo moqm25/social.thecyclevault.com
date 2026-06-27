@@ -55,6 +55,9 @@ export interface Post {
 	id: string;
 	authorId: string;
 	authorUsername: string;
+	/** Denormalized author flair snapshot at post time (badges in feeds, no extra reads). */
+	authorBadges?: BadgeKind[];
+	authorSupporter?: boolean;
 	communityId: string;
 	title: string;
 	body: string;
@@ -79,6 +82,9 @@ export interface Comment {
 	communityId: string;
 	authorId: string;
 	authorUsername: string;
+	/** Denormalized author flair snapshot at comment time. */
+	authorBadges?: BadgeKind[];
+	authorSupporter?: boolean;
 	body: string;
 	depth: number;
 	score: number;

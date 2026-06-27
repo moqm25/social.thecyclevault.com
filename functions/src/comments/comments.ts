@@ -57,6 +57,9 @@ export const createComment = onCall(async (request) => {
 			communityId: post.communityId,
 			authorId: auth.uid,
 			authorUsername: profile.username,
+			// Denormalized author flair snapshot (badges render with zero extra reads).
+			authorBadges: profile.badges,
+			authorSupporter: profile.supporter,
 			body: input.body,
 			depth,
 			score: 0,

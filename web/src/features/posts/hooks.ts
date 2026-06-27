@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useQuery, useMutation } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { listPosts, getPost, listComments, listCommunities, getCommunity, type FeedSort } from "../../lib/firestore";
-import { voteOnPost, voteOnComment } from "../../lib/api";
-import type { VoteValue } from "../../types/models";
+import { voteOnPost, voteOnComment, deletePostSoft, reportContent } from "../../lib/api";
+import type { VoteValue, ReportReason } from "../../types/models";
 
 /** Communities (small, cached long). */
 export function useCommunities() {
@@ -63,5 +63,25 @@ export function useVoteComment(_postId: string) {
 	return useMutation({
 		mutationFn: ({ commentId, next }: { commentId: string; next: VoteValue | 0; prev: VoteValue | 0 }) =>
 			voteOnComment({ commentId, value: next }),
+	});
+}
+
+/** Delete your own post (soft delete) and refresh the feed + post view. */
+export function useDeletePost() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (postId: string) => deletePostSoft({ postId }),
+		onSuccess: (_d, postId) => {
+			qc.invalidateQueries({ queryKey: ["feed"] });
+			qc.invalidateQueries({ queryKey: ["post", postId] });
+		},
+	});
+}
+
+/** Report a post or comment for moderator review. */
+export function useReportContent() {
+	return useMutation({
+		mutationFn: (vars: { targetType: "post" | "comment"; targetId: string; reason: ReportReason; details?: string }) =>
+			reportContent(vars),
 	});
 }

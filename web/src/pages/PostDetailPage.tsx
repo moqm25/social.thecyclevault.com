@@ -1,9 +1,11 @@
-import { useParams, Link } from "react-router-dom";
-import { usePost, useComments, useVotePost } from "../features/posts/hooks";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { usePost, useComments, useVotePost, useDeletePost } from "../features/posts/hooks";
 import { useCreateComment } from "../features/comments/hooks";
 import { CommentThread } from "../features/comments/CommentThread";
 import { CommentComposer } from "../features/comments/CommentComposer";
 import { VoteControl } from "../components/VoteControl";
+import { UserBadges } from "../components/Badge";
+import { ContentMenu } from "../components/ContentMenu";
 import { Skeleton, ErrorState } from "../components/states";
 import { relativeTime } from "../lib/time";
 import { useAuth } from "../features/auth/AuthProvider";
@@ -11,11 +13,13 @@ import { useAuth } from "../features/auth/AuthProvider";
 /** Full post view: post body + vote + comment composer + threaded comments. */
 export default function PostDetailPage() {
 	const { postId } = useParams<{ postId: string }>();
+	const navigate = useNavigate();
 	const { user } = useAuth();
 	const post = usePost(postId);
 	const comments = useComments(postId);
 	const votePost = useVotePost(postId ?? "");
 	const createComment = useCreateComment(postId ?? "");
+	const deletePost = useDeletePost();
 
 	if (post.isPending) {
 		return (
@@ -63,9 +67,21 @@ export default function PostDetailPage() {
 					<Link to={`/u/${p.authorUsername}`} className="hover:underline">
 						{p.authorUsername}
 					</Link>
+					<UserBadges badges={p.authorBadges} supporter={p.authorSupporter} max={2} />
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(p.createdAt)}</span>
 					{p.edited && <span className="italic">(edited)</span>}
+					<div className="ml-auto">
+						<ContentMenu
+							targetType="post"
+							targetId={p.id}
+							authorId={p.authorId}
+							onDelete={async () => {
+								await deletePost.mutateAsync(p.id);
+								navigate("/");
+							}}
+						/>
+					</div>
 				</div>
 
 				<h1 className="mt-2 text-2xl font-semibold leading-tight text-ink">{p.title}</h1>

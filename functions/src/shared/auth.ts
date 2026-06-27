@@ -3,6 +3,7 @@ import { db, COL } from "./admin.js";
 
 export type UserRole = "user" | "moderator" | "admin" | "superadmin";
 export type UserStatus = "active" | "suspended" | "banned" | "deleted";
+export type BadgeKind = "supporter" | "founding_supporter" | "clinician" | "org";
 
 const ROLE_RANK: Record<UserRole, number> = {
 	user: 0,
@@ -42,6 +43,8 @@ export interface ProfileSnapshot {
 	status: UserStatus;
 	moderatorOf: string[];
 	suspendedUntil?: number | null;
+	badges: BadgeKind[];
+	supporter: boolean;
 }
 
 /** Load the caller's profile doc, or throw if missing. */
@@ -58,6 +61,8 @@ export async function getProfile(uid: string): Promise<ProfileSnapshot> {
 		status: (d.status as UserStatus) ?? "active",
 		moderatorOf: (d.moderatorOf as string[]) ?? [],
 		suspendedUntil: (d.suspendedUntil as number | null) ?? null,
+		badges: (d.badges as BadgeKind[]) ?? [],
+		supporter: d.supporter === true,
 	};
 }
 

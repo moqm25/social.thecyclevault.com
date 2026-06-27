@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import type { Comment } from "../../types/models";
 import { relativeTime } from "../../lib/time";
 import { VoteControl } from "../../components/VoteControl";
+import { UserBadges } from "../../components/Badge";
+import { ContentMenu } from "../../components/ContentMenu";
 import { useAuth } from "../auth/AuthProvider";
 import { useVoteComment } from "../posts/hooks";
-import { useCreateComment } from "./hooks";
+import { useCreateComment, useDeleteComment } from "./hooks";
 import { CommentComposer } from "./CommentComposer";
 
 interface TreeNode extends Comment {
@@ -30,6 +32,7 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 	const { user } = useAuth();
 	const voteComment = useVoteComment(postId);
 	const createComment = useCreateComment(postId);
+	const deleteComment = useDeleteComment(postId);
 	const [replying, setReplying] = useState(false);
 
 	return (
@@ -39,9 +42,18 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 					<Link to={`/u/${node.authorUsername}`} className="font-medium text-ink-2 hover:underline">
 						{node.authorUsername}
 					</Link>
+					<UserBadges badges={node.authorBadges} supporter={node.authorSupporter} max={1} />
 					<span aria-hidden="true">·</span>
 					<span>{relativeTime(node.createdAt)}</span>
 					{node.edited && <span className="italic">(edited)</span>}
+					<div className="ml-auto">
+						<ContentMenu
+							targetType="comment"
+							targetId={node.id}
+							authorId={node.authorId}
+							onDelete={() => deleteComment.mutateAsync(node.id)}
+						/>
+					</div>
 				</div>
 
 				<p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{node.body}</p>
