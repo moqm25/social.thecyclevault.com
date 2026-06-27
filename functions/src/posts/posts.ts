@@ -5,6 +5,9 @@ import { parseInput } from "../shared/validate.js";
 import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordModerationAction } from "../shared/audit.js";
 import { hotRank } from "../shared/ranking.js";
+import { moderateNewContent } from "../shared/moderation.js";
+import { enqueueModeration } from "../shared/moderationQueue.js";
+import { createNotification } from "../shared/notify.js";
 import { createPostSchema, updatePostSchema, postIdSchema, lockPostSchema } from "../shared/schemas.js";
 
 /** createPost — server-authoritative create with denormalized author + counters. */
@@ -22,6 +25,10 @@ export const createPost = onCall(async (request) => {
 		throw new HttpsError("not-found", "That community does not exist.");
 	}
 
+	// Moderation pipeline (docs/MODERATION_AI.md): clean → active; flagged → AI →
+	// active or held (pending).
+	const mod = await moderateNewContent(input.title, input.body ?? "");
+
 	const now = Date.now();
 	const postRef = db.collection(COL.posts).doc();
 	const batch = db.batch();
@@ -37,7 +44,14 @@ export const createPost = onCall(async (request) => {
 		downvoteCount: 0,
 		commentCount: 0,
 		hotRank: hotRank(0, now),
-		status: "active",
+		status: mod.status,
+		moderation: {
+			state: mod.state,
+			score: mod.tier1.score,
+			severity: mod.tier1.severity,
+			flags: mod.tier1.flags,
+			safeConfidence: mod.tier2?.safeConfidence ?? null,
+		},
 		locked: false,
 		edited: false,
 		createdAt: FieldValue.serverTimestamp(),
@@ -49,7 +63,34 @@ export const createPost = onCall(async (request) => {
 	batch.update(communityRef, { postCount: FieldValue.increment(1) });
 	await batch.commit();
 
-	return { postId: postRef.id };
+	// Full audit stream + author notification when held.
+	await enqueueModeration({
+		contentType: "post",
+		contentId: postRef.id,
+		communityId: input.communityId,
+		postId: postRef.id,
+		authorId: auth.uid,
+		authorUsername: profile.username,
+		excerpt: `${input.title} ${input.body}`,
+		state: mod.state,
+		tier1: mod.tier1,
+		tier2: mod.tier2,
+		decidedBy: mod.decidedBy,
+	});
+	if (mod.status === "pending") {
+		const supportive = mod.tier1.flags.includes("self_harm");
+		await createNotification({
+			recipientId: auth.uid,
+			type: "mod_action",
+			title: "Your post is being reviewed",
+			body: supportive
+				? "Thank you for sharing. A person will review this with care shortly. If you’re in crisis, please reach out to a local helpline."
+				: "Just a quick check before it goes live — a moderator will review it shortly.",
+			link: `/post/${postRef.id}`,
+		});
+	}
+
+	return { postId: postRef.id, status: mod.status };
 });
 
 /** updatePost — author-only edit of an active post. */

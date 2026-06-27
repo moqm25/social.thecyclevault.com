@@ -17,11 +17,13 @@ export default function HomePage() {
 						A calmer place to talk about <span className="brand-serif text-coral">your cycle</span>.
 					</h1>
 					<p className="mt-3 max-w-prose text-muted">
-						Ask questions, share what you’ve noticed, and learn from others — without accounts following you around or noise designed to keep
-						you scrolling.
+						Ask questions, share what you’ve noticed, and learn from others — without accounts following you around or noise designed to
+						keep you scrolling.
 					</p>
 					<div className="mt-5">
-						<Link to="/login" className="inline-block rounded-full bg-coral px-5 py-2.5 font-medium text-white transition-transform hover:scale-[1.02]">
+						<Link
+							to="/login"
+							className="inline-block rounded-full bg-coral px-5 py-2.5 font-medium text-white transition-transform hover:scale-[1.02]">
 							Join the community
 						</Link>
 					</div>

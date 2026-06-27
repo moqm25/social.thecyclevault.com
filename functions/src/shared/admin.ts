@@ -26,4 +26,5 @@ export const COL = {
 	bans: "bans",
 	settings: "settings",
 	rateLimits: "rateLimits",
+	moderationQueue: "moderationQueue",
 } as const;

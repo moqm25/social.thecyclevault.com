@@ -43,6 +43,17 @@ export default function PostDetailPage() {
 
 	return (
 		<div className="space-y-6">
+			{p.status === "pending" && (
+				<div className="rounded-xl border border-lav-soft bg-lav-wash px-4 py-3 text-sm text-ink-2">
+					<strong className="text-ink">Under review.</strong> This is visible only to you while a moderator checks
+					it. You’ll be notified once it’s approved.
+				</div>
+			)}
+			{p.status === "removed" && (
+				<div className="rounded-xl border border-coral-soft bg-coral-wash px-4 py-3 text-sm text-ink-2">
+					<strong className="text-ink">Removed.</strong> This content wasn’t approved and isn’t visible to others.
+				</div>
+			)}
 			<article className="rounded-2xl border border-line bg-surface p-5 shadow-soft">
 				<div className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
 					<Link to={`/c/${p.communityId}`} className="font-medium text-lav hover:underline">
@@ -61,11 +72,7 @@ export default function PostDetailPage() {
 				{p.body && <p className="mt-3 whitespace-pre-wrap leading-relaxed text-ink-2">{p.body}</p>}
 
 				<div className="mt-4 flex items-center gap-4">
-					<VoteControl
-						baseScore={p.score}
-						orientation="horizontal"
-						onVote={(next, prev) => votePost.mutateAsync({ next, prev })}
-					/>
+					<VoteControl baseScore={p.score} orientation="horizontal" onVote={(next, prev) => votePost.mutateAsync({ next, prev })} />
 					<span className="text-sm text-muted">
 						{p.commentCount} {p.commentCount === 1 ? "comment" : "comments"}
 					</span>

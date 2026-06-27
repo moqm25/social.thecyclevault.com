@@ -1,57 +1,45 @@
-import {
-  useInfiniteQuery,
-  useQuery,
-  useMutation,
-} from '@tanstack/react-query';
-import {
-  listPosts,
-  getPost,
-  listComments,
-  listCommunities,
-  getCommunity,
-  type FeedSort,
-} from '../../lib/firestore';
-import { voteOnPost, voteOnComment } from '../../lib/api';
-import type { VoteValue } from '../../types/models';
+import { useInfiniteQuery, useQuery, useMutation } from "@tanstack/react-query";
+import { listPosts, getPost, listComments, listCommunities, getCommunity, type FeedSort } from "../../lib/firestore";
+import { voteOnPost, voteOnComment } from "../../lib/api";
+import type { VoteValue } from "../../types/models";
 
 /** Communities (small, cached long). */
 export function useCommunities() {
-  return useQuery({ queryKey: ['communities'], queryFn: listCommunities, staleTime: 5 * 60_000 });
+	return useQuery({ queryKey: ["communities"], queryFn: listCommunities, staleTime: 5 * 60_000 });
 }
 
 export function useCommunity(slug: string | undefined) {
-  return useQuery({
-    queryKey: ['community', slug],
-    queryFn: () => getCommunity(slug!),
-    enabled: !!slug,
-  });
+	return useQuery({
+		queryKey: ["community", slug],
+		queryFn: () => getCommunity(slug!),
+		enabled: !!slug,
+	});
 }
 
 /** Paginated feed — global or per-community, by sort. */
 export function useFeed(opts: { communityId?: string; sort: FeedSort }) {
-  return useInfiniteQuery({
-    queryKey: ['feed', opts.communityId ?? 'all', opts.sort],
-    queryFn: ({ pageParam }) =>
-      listPosts({ communityId: opts.communityId, sort: opts.sort, cursor: pageParam }),
-    initialPageParam: null as Awaited<ReturnType<typeof listPosts>>['cursor'],
-    getNextPageParam: (last) => last.cursor,
-  });
+	return useInfiniteQuery({
+		queryKey: ["feed", opts.communityId ?? "all", opts.sort],
+		queryFn: ({ pageParam }) => listPosts({ communityId: opts.communityId, sort: opts.sort, cursor: pageParam }),
+		initialPageParam: null as Awaited<ReturnType<typeof listPosts>>["cursor"],
+		getNextPageParam: (last) => last.cursor,
+	});
 }
 
 export function usePost(id: string | undefined) {
-  return useQuery({
-    queryKey: ['post', id],
-    queryFn: () => getPost(id!),
-    enabled: !!id,
-  });
+	return useQuery({
+		queryKey: ["post", id],
+		queryFn: () => getPost(id!),
+		enabled: !!id,
+	});
 }
 
 export function useComments(postId: string | undefined) {
-  return useQuery({
-    queryKey: ['comments', postId],
-    queryFn: () => listComments(postId!),
-    enabled: !!postId,
-  });
+	return useQuery({
+		queryKey: ["comments", postId],
+		queryFn: () => listComments(postId!),
+		enabled: !!postId,
+	});
 }
 
 /**
@@ -66,15 +54,14 @@ export function useComments(postId: string | undefined) {
  * true score from the server.
  */
 export function useVotePost(postId: string) {
-  return useMutation({
-    mutationFn: ({ next }: { next: VoteValue | 0; prev: VoteValue | 0 }) =>
-      voteOnPost({ postId, value: next }),
-  });
+	return useMutation({
+		mutationFn: ({ next }: { next: VoteValue | 0; prev: VoteValue | 0 }) => voteOnPost({ postId, value: next }),
+	});
 }
 
 export function useVoteComment(_postId: string) {
-  return useMutation({
-    mutationFn: ({ commentId, next }: { commentId: string; next: VoteValue | 0; prev: VoteValue | 0 }) =>
-      voteOnComment({ commentId, value: next }),
-  });
+	return useMutation({
+		mutationFn: ({ commentId, next }: { commentId: string; next: VoteValue | 0; prev: VoteValue | 0 }) =>
+			voteOnComment({ commentId, value: next }),
+	});
 }

@@ -108,3 +108,10 @@ export const banUserSchema = z.object({
 });
 
 export const markNotificationReadSchema = z.union([z.object({ notificationId: z.string().min(1) }), z.object({ all: z.literal(true) })]);
+
+export const reviewContentSchema = z.object({
+	contentType: z.enum(["post", "comment"]),
+	contentId: z.string().min(1),
+	decision: z.enum(["approve", "reject"]),
+	reason: z.string().max(500).optional(),
+});

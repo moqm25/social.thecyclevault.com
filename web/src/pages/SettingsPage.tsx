@@ -158,8 +158,8 @@ export default function SettingsPage() {
 			<section className="space-y-3 rounded-2xl border border-coral-soft bg-coral-wash p-5">
 				<h2 className="font-semibold text-ink">Delete account</h2>
 				<p className="text-sm text-ink-2">
-					This permanently removes your account and anonymizes your posts and comments. This can’t be undone.
-					To confirm, type your username <strong>{profile.username}</strong> below.
+					This permanently removes your account and anonymizes your posts and comments. This can’t be undone. To confirm, type your username{" "}
+					<strong>{profile.username}</strong> below.
 				</p>
 				<TextField
 					label="Confirm username"

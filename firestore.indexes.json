@@ -154,6 +154,14 @@
 				{ "fieldPath": "uid", "order": "ASCENDING" },
 				{ "fieldPath": "active", "order": "ASCENDING" }
 			]
+		},
+		{
+			"collectionGroup": "moderationQueue",
+			"queryScope": "COLLECTION",
+			"fields": [
+				{ "fieldPath": "state", "order": "ASCENDING" },
+				{ "fieldPath": "createdAt", "order": "DESCENDING" }
+			]
 		}
 	],
 	"fieldOverrides": []

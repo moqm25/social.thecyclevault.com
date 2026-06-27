@@ -27,6 +27,7 @@ optional/off.)
 composer, voting, comments, profile, settings, notifications, mod/admin). Security
 hardened (App Check wired, password policy, email-enumeration protection). Auth
 provider enabled by founder. Sensible next steps:
+
 - **Part B public cutover (gated):** set repo Variables `VITE_FIREBASE_*` (+
   optional `VITE_RECAPTCHA_SITE_KEY`), switch Pages source → GitHub Actions (this
   replaces the live "Coming soon" page), publish forum privacy + terms.
@@ -210,6 +211,7 @@ At go-live, GitHub Pages source switches to **GitHub Actions** which builds
 ---
 
 ## Command journal
+
 > Append every meaningful command + outcome here, newest last.
 
 - `2026-06-26` — verified env (node/npm/firebase/gh), `firebase login:list` →

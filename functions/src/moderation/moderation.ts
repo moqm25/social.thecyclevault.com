@@ -5,9 +5,83 @@ import { parseInput } from "../shared/validate.js";
 import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordModerationAction, recordAuditLog } from "../shared/audit.js";
 import { createNotification } from "../shared/notify.js";
-import { reportContentSchema, removeContentSchema, suspendUserSchema, banUserSchema } from "../shared/schemas.js";
+import { reportContentSchema, removeContentSchema, suspendUserSchema, banUserSchema, reviewContentSchema } from "../shared/schemas.js";
 
 const MOD_MAX_SUSPEND_HOURS = 168; // 7 days; admins may exceed
+
+/**
+ * reviewContent — human approve/reject of moderation-held content (docs/MODERATION_AI.md §4).
+ * Approve: pending → active (publishes), notify author. Reject: → removed, notify
+ * author. Updates the moderationQueue entry and writes a moderationAction.
+ */
+export const reviewContent = onCall(async (request) => {
+	const { auth, profile } = await requireActiveUser(request);
+	const input = parseInput(reviewContentSchema, request.data);
+
+	const col = input.contentType === "post" ? COL.posts : COL.comments;
+	const ref = db.collection(col).doc(input.contentId);
+	const snap = await ref.get();
+	if (!snap.exists) throw new HttpsError("not-found", "Content not found.");
+	const content = snap.data() as Record<string, unknown>;
+	requireModeratorOf(profile, String(content.communityId));
+
+	const approve = input.decision === "approve";
+	const newStatus = approve ? "active" : "removed";
+
+	const batch = db.batch();
+	batch.update(ref, {
+		status: newStatus,
+		"moderation.state": approve ? "human_approved" : "human_removed",
+		updatedAt: FieldValue.serverTimestamp(),
+	});
+	// If rejecting content that had been counted, decrement the relevant counter.
+	if (!approve) {
+		if (input.contentType === "post") {
+			batch.update(db.collection(COL.communities).doc(String(content.communityId)), {
+				postCount: FieldValue.increment(-1),
+			});
+		} else {
+			batch.update(db.collection(COL.posts).doc(String(content.postId)), {
+				commentCount: FieldValue.increment(-1),
+			});
+		}
+	}
+	// Resolve the queue entry/entries for this content.
+	const queue = await db
+		.collection(COL.moderationQueue)
+		.where("contentId", "==", input.contentId)
+		.limit(5)
+		.get();
+	queue.forEach((q) =>
+		batch.update(q.ref, {
+			state: approve ? "human_approved" : "human_removed",
+			decidedBy: auth.uid,
+			reason: input.reason ?? null,
+			decidedAt: FieldValue.serverTimestamp(),
+		}),
+	);
+	await batch.commit();
+
+	await recordModerationAction({
+		actorId: auth.uid,
+		actionType: approve ? "restore_content" : input.contentType === "post" ? "remove_post" : "remove_comment",
+		targetType: input.contentType,
+		targetId: input.contentId,
+		communityId: String(content.communityId),
+		reason: input.reason ?? (approve ? "Approved after review" : "Removed after review"),
+	});
+	await createNotification({
+		recipientId: String(content.authorId),
+		type: "mod_action",
+		title: approve ? "Your post is now live" : "Your content wasn’t approved",
+		body: approve
+			? "Thanks for your patience — it passed review and is now visible."
+			: `After review, this wasn’t approved.${input.reason ? ` Reason: ${input.reason}` : ""}`,
+		link: input.contentType === "post" ? `/post/${input.contentId}` : `/post/${content.postId}`,
+	});
+
+	return { ok: true as const };
+});
 
 /** reportContent — any active user can flag content/users; deduped per reporter. */
 export const reportContent = onCall(async (request) => {

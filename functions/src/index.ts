@@ -24,6 +24,7 @@ export {
 	reportContent,
 	removeContent,
 	restoreContent,
+	reviewContent,
 	suspendUser,
 	banUser,
 	unbanUser,

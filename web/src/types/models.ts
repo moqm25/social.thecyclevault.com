@@ -49,7 +49,7 @@ export interface Community {
 	updatedAt: number;
 }
 
-export type ContentStatus = "active" | "removed" | "deleted" | "locked";
+export type ContentStatus = "active" | "pending" | "removed" | "deleted" | "locked";
 
 export interface Post {
 	id: string;
@@ -65,6 +65,7 @@ export interface Post {
 	commentCount: number;
 	hotRank: number;
 	status: ContentStatus;
+	moderation?: ContentModeration;
 	locked: boolean;
 	edited: boolean;
 	createdAt: number;
@@ -84,7 +85,8 @@ export interface Comment {
 	upvoteCount: number;
 	downvoteCount: number;
 	replyCount: number;
-	status: "active" | "removed" | "deleted";
+	status: "active" | "pending" | "removed" | "deleted";
+	moderation?: ContentModeration;
 	edited: boolean;
 	createdAt: number;
 	updatedAt: number;
@@ -132,4 +134,38 @@ export interface Report {
 	handledBy?: string | null;
 	createdAt: number;
 	updatedAt: number;
+}
+
+export type ModerationState =
+	| "auto_approved"
+	| "ai_approved"
+	| "awaiting_human"
+	| "human_approved"
+	| "human_removed";
+
+export interface ModerationQueueItem {
+	id: string;
+	contentType: "post" | "comment";
+	contentId: string;
+	communityId: string;
+	postId?: string | null;
+	authorId: string;
+	authorUsername: string;
+	excerpt: string;
+	state: ModerationState;
+	tier1: { score: number; severity: "none" | "low" | "high"; flags: string[] };
+	tier2?: { safeConfidence: number; decision: "auto" | "human"; usedAI: boolean } | null;
+	decidedBy: string;
+	reason?: string | null;
+	createdAt: number;
+	decidedAt?: number | null;
+}
+
+/** Moderation summary stored on a post/comment. */
+export interface ContentModeration {
+	state: ModerationState;
+	score: number;
+	severity: "none" | "low" | "high";
+	flags: string[];
+	safeConfidence?: number | null;
 }

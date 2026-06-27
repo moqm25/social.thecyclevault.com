@@ -53,9 +53,7 @@ function CommentItem({ node, postId }: { node: TreeNode; postId: string }) {
 						onVote={(next, prev) => voteComment.mutateAsync({ commentId: node.id, next, prev })}
 					/>
 					{user && (
-						<button
-							onClick={() => setReplying((v) => !v)}
-							className="text-xs font-medium text-muted transition-colors hover:text-coral">
+						<button onClick={() => setReplying((v) => !v)} className="text-xs font-medium text-muted transition-colors hover:text-coral">
 							Reply
 						</button>
 					)}

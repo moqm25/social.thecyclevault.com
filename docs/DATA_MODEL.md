@@ -59,26 +59,26 @@ directly to `firestore.indexes.json` and is enforced by
 
 Public-facing pseudonymous profile. `uid` equals the Firebase Auth UID.
 
-| Field            | Type                                          | Notes                                               |
-| ---------------- | --------------------------------------------- | --------------------------------------------------- |
-| `uid`            | string                                        | == doc ID == Auth UID                               |
-| `username`       | string                                        | Display case, e.g. `CalmFox`. **Immutable in MVP.** |
-| `usernameLower`  | string                                        | Lowercase, for lookups/joins                        |
-| `displayName`    | string?                                       | Optional, ≤ 50 chars                                |
-| `avatarUrl`      | string?                                       | Storage URL; null = generated default               |
-| `bio`            | string                                        | ≤ 300 chars, default `""`                           |
-| `role`           | enum(`user`,`moderator`,`admin`,`superadmin`) | Default `user`. **Function-only.**                  |
-| `status`         | enum(`active`,`suspended`,`banned`,`deleted`) | Default `active`. **Function-only.**                |
-| `karma`          | number                                        | Default 0. **Function-only.**                       |
-| `postCount`      | number                                        | **Function-only** counter                           |
-| `commentCount`   | number                                        | **Function-only** counter                           |
-| `moderatorOf`    | array<ref>                                    | communityIds moderated; default `[]`                |
+| Field            | Type                                          | Notes                                                                                                               |
+| ---------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `uid`            | string                                        | == doc ID == Auth UID                                                                                               |
+| `username`       | string                                        | Display case, e.g. `CalmFox`. **Immutable in MVP.**                                                                 |
+| `usernameLower`  | string                                        | Lowercase, for lookups/joins                                                                                        |
+| `displayName`    | string?                                       | Optional, ≤ 50 chars                                                                                                |
+| `avatarUrl`      | string?                                       | Storage URL; null = generated default                                                                               |
+| `bio`            | string                                        | ≤ 300 chars, default `""`                                                                                           |
+| `role`           | enum(`user`,`moderator`,`admin`,`superadmin`) | Default `user`. **Function-only.**                                                                                  |
+| `status`         | enum(`active`,`suspended`,`banned`,`deleted`) | Default `active`. **Function-only.**                                                                                |
+| `karma`          | number                                        | Default 0. **Function-only.**                                                                                       |
+| `postCount`      | number                                        | **Function-only** counter                                                                                           |
+| `commentCount`   | number                                        | **Function-only** counter                                                                                           |
+| `moderatorOf`    | array<ref>                                    | communityIds moderated; default `[]`                                                                                |
 | `badges`         | array<enum>                                   | `supporter`,`founding_supporter`,`clinician`,`org`. **Function-only** (monetization/trust — see `MONETIZATION.md`). |
-| `supporter`      | bool?                                          | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase). |
-| `supporterSince` | ts?                                            | When Supporter began; null otherwise                |
-| `suspendedUntil` | ts?                                           | Set by suspension; null otherwise                   |
-| `createdAt`      | ts                                            | server                                              |
-| `updatedAt`      | ts                                            | server                                              |
+| `supporter`      | bool?                                         | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase).                           |
+| `supporterSince` | ts?                                           | When Supporter began; null otherwise                                                                                |
+| `suspendedUntil` | ts?                                           | Set by suspension; null otherwise                                                                                   |
+| `createdAt`      | ts                                            | server                                                                                                              |
+| `updatedAt`      | ts                                            | server                                                                                                              |
 
 - **Client-editable subset (own doc only):** `displayName`, `avatarUrl`, `bio`.
   Everything else — including `badges`/`supporter` — is function-only and blocked

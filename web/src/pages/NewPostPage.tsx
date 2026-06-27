@@ -110,9 +110,7 @@ export default function NewPostPage() {
 				</p>
 
 				{errors.form && <p className="text-sm text-coral">{errors.form}</p>}
-				{profile == null && (
-					<p className="text-sm text-muted">Finishing your profile setup… if this persists, please reload.</p>
-				)}
+				{profile == null && <p className="text-sm text-muted">Finishing your profile setup… if this persists, please reload.</p>}
 
 				<div className="flex items-center gap-3">
 					<Button type="submit" loading={submitting}>

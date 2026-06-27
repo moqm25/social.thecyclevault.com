@@ -42,14 +42,20 @@ export const createUserProfile = callable<
 export const reserveUsername = callable<{ username: string }, { available: boolean; reserved?: boolean }>("reserveUsername");
 
 // ---- posts ----
-export const createPost = callable<{ communityId: string; title: string; body: string; tags?: string[] }, { postId: string }>("createPost");
+export const createPost = callable<
+	{ communityId: string; title: string; body: string; tags?: string[] },
+	{ postId: string; status: "active" | "pending" }
+>("createPost");
 
 export const updatePost = callable<{ postId: string; title?: string; body?: string; tags?: string[] }, { ok: true }>("updatePost");
 
 export const deletePostSoft = callable<{ postId: string }, { ok: true }>("deletePostSoft");
 
 // ---- comments ----
-export const createComment = callable<{ postId: string; parentCommentId?: string; body: string }, { commentId: string }>("createComment");
+export const createComment = callable<
+	{ postId: string; parentCommentId?: string; body: string },
+	{ commentId: string; status: "active" | "pending" }
+>("createComment");
 
 export const updateComment = callable<{ commentId: string; body: string }, { ok: true }>("updateComment");
 
@@ -70,29 +76,33 @@ export const reportContent = callable<
 export const markNotificationRead = callable<{ notificationId?: string; all?: boolean }, { ok: true }>("markNotificationRead");
 
 // ---- account (privacy) ----
-export const exportMyData = callable<Record<string, never>, {
-	exportedAt: string;
-	profile: unknown;
-	posts: unknown[];
-	comments: unknown[];
-	votes: unknown[];
-}>("exportMyData");
+export const exportMyData = callable<
+	Record<string, never>,
+	{
+		exportedAt: string;
+		profile: unknown;
+		posts: unknown[];
+		comments: unknown[];
+		votes: unknown[];
+	}
+>("exportMyData");
 
 export const deleteMyAccount = callable<Record<string, never>, { ok: true }>("deleteMyAccount");
 
 // ---- moderation actions (mod/admin) ----
-export const removeContent = callable<
-	{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string },
-	{ ok: true }
->("removeContent");
+export const removeContent = callable<{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string }, { ok: true }>(
+	"removeContent",
+);
 
 export const dismissReport = callable<{ reportId: string }, { ok: true }>("dismissReport");
 
 export const lockPost = callable<{ postId: string; locked: boolean; reason?: string }, { ok: true }>("lockPost");
 
+export const reviewContent = callable<
+	{ contentType: "post" | "comment"; contentId: string; decision: "approve" | "reject"; reason?: string },
+	{ ok: true }
+>("reviewContent");
+
 export const suspendUser = callable<{ uid: string; durationHours: number; reason: string }, { ok: true }>("suspendUser");
 
-export const banUser = callable<
-	{ uid: string; scope?: "global"; reason: string; permanent?: boolean },
-	{ ok: true }
->("banUser");
+export const banUser = callable<{ uid: string; scope?: "global"; reason: string; permanent?: boolean }, { ok: true }>("banUser");

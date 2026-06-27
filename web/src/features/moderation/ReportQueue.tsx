@@ -36,21 +36,13 @@ function ReportRow({ report, isAdmin, onDone }: { report: Report; isAdmin: boole
 	}
 
 	const isContent = report.targetType === "post" || report.targetType === "comment";
-	const targetLink =
-		report.targetType === "post"
-			? `/post/${report.targetId}`
-			: report.targetType === "user"
-				? `/u/${report.targetId}`
-				: undefined;
+	const targetLink = report.targetType === "post" ? `/post/${report.targetId}` : report.targetType === "user" ? `/u/${report.targetId}` : undefined;
 	const priority = PRIORITY.includes(report.reason);
 
 	return (
 		<li className={`rounded-xl border p-4 ${priority ? "border-coral-soft bg-coral-wash" : "border-line bg-surface"}`}>
 			<div className="flex flex-wrap items-center gap-2 text-xs">
-				<span
-					className={`rounded-full px-2 py-0.5 font-semibold ${
-						priority ? "bg-coral text-white" : "bg-bg-2 text-ink-2"
-					}`}>
+				<span className={`rounded-full px-2 py-0.5 font-semibold ${priority ? "bg-coral text-white" : "bg-bg-2 text-ink-2"}`}>
 					{REASON_LABEL[report.reason]}
 				</span>
 				<span className="text-muted">{report.targetType}</span>
@@ -94,9 +86,7 @@ function ReportRow({ report, isAdmin, onDone }: { report: Report; isAdmin: boole
 				{isAdmin && report.targetType === "user" && (
 					<>
 						<button
-							onClick={() =>
-								run(() => suspendUser({ uid: report.targetId, durationHours: 168, reason: REASON_LABEL[report.reason] }))
-							}
+							onClick={() => run(() => suspendUser({ uid: report.targetId, durationHours: 168, reason: REASON_LABEL[report.reason] }))}
 							disabled={busy}
 							className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink-2 hover:text-coral disabled:opacity-50">
 							Suspend 7d

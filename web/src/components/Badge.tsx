@@ -58,9 +58,7 @@ function Icon({ kind }: { kind: "heart" | "check" | "star" }) {
 export function Badge({ kind }: { kind: BadgeKind }) {
 	const m = META[kind];
 	return (
-		<span
-			title={m.title}
-			className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${m.className}`}>
+		<span title={m.title} className={`inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${m.className}`}>
 			<Icon kind={m.icon} />
 			{m.label}
 		</span>
@@ -68,15 +66,7 @@ export function Badge({ kind }: { kind: BadgeKind }) {
 }
 
 /** Renders a user's badges inline (nothing if they have none). */
-export function UserBadges({
-	badges,
-	supporter,
-	max = 2,
-}: {
-	badges?: BadgeKind[];
-	supporter?: boolean;
-	max?: number;
-}) {
+export function UserBadges({ badges, supporter, max = 2 }: { badges?: BadgeKind[]; supporter?: boolean; max?: number }) {
 	const list = [...(badges ?? [])];
 	if (supporter && !list.includes("supporter") && !list.includes("founding_supporter")) {
 		list.unshift("supporter");

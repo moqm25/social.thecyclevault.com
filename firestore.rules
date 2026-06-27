@@ -57,13 +57,15 @@ service cloud.firestore {
 
     // ------------------------------ posts ------------------------------------
     match /posts/{postId} {
-      allow read: if resource.data.status == 'active' || isMod();
+      allow read: if resource.data.status == 'active' || isMod()
+        || (isSignedIn() && resource.data.authorId == uid());
       allow write: if false; // createPost / updatePost / deletePostSoft / lockPost
     }
 
     // ----------------------------- comments ----------------------------------
     match /comments/{commentId} {
-      allow read: if resource.data.status == 'active' || isMod();
+      allow read: if resource.data.status == 'active' || isMod()
+        || (isSignedIn() && resource.data.authorId == uid());
       allow write: if false;
     }
 
@@ -110,6 +112,12 @@ service cloud.firestore {
     match /settings/{id} {
       allow read: if true; // feature flags / announcement
       allow write: if false; // admin functions only
+    }
+
+    // ------------------------- moderationQueue --------------------------------
+    match /moderationQueue/{id} {
+      allow read: if isMod(); // full content-review stream (mods/admins)
+      allow write: if false; // functions only
     }
 
     // --------------------------- default deny --------------------------------
