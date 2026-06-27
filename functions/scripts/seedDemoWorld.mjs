@@ -467,12 +467,17 @@ const EXPERT_COMMENTS = [
 	"Great question — patterns like this are exactly what’s useful to bring to an appointment.",
 ];
 let commentCount = 0;
+const postCommentCount = {}; // postId -> # active comments (mirrors createComment's counter increment)
+const commentReplyCount = {}; // parentCommentId -> # active direct replies
+const commentRefById = {}; // commentId -> Firestore ref (to patch replyCount at the end)
 function addComment(postId, author, body, { parent = null, status = "active", state = "auto_approved", flags = [], severity = "none", depth = 0, daysAgo, enqueue = false } = {}) {
 	const id = `dw-cmt-${String(++commentCount).padStart(3, "0")}`;
 	const meta = allPostMeta[postId];
 	const created = ms(daysAgo ?? intBetween(0, 20), intBetween(0, 23));
 	const sc = status === "active" ? intBetween(0, 40) : 0;
-	W(db.collection("comments").doc(id), {
+	const ref = db.collection("comments").doc(id);
+	commentRefById[id] = ref;
+	W(ref, {
 		postId, parentCommentId: parent, communityId: meta.communityId,
 		authorId: author.uid, authorUsername: author.username, ...badgeOf(author),
 		body, depth, score: sc, upvoteCount: sc + intBetween(0, 5), downvoteCount: intBetween(0, 3), replyCount: 0,
@@ -480,6 +485,10 @@ function addComment(postId, author, body, { parent = null, status = "active", st
 		edited: false, createdAt: Timestamp.fromMillis(created), updatedAt: Timestamp.fromMillis(created),
 	});
 	if (status === "active") {
+		// Mirror the real createComment transaction: bump the post's commentCount and
+		// the parent comment's replyCount so the feed shows the true number.
+		bump(postCommentCount, postId);
+		if (parent) bump(commentReplyCount, parent);
 		bump(userCommentCount, author.uid);
 		bump(userKarma, author.uid, sc);
 	}
@@ -602,6 +611,14 @@ for (const a of accounts) {
 // Apply community post counts.
 for (const [slug, count] of Object.entries(communityPostCount)) {
 	W(db.collection("communities").doc(slug), { postCount: count });
+}
+// Apply per-post comment counts (the bug fix: posts must reflect their comments).
+for (const [pid, count] of Object.entries(postCommentCount)) {
+	W(db.collection("posts").doc(pid), { commentCount: count });
+}
+// Apply per-comment reply counts.
+for (const [cid, count] of Object.entries(commentReplyCount)) {
+	if (commentRefById[cid]) W(commentRefById[cid], { replyCount: count });
 }
 
 // =============================================================== execute ======

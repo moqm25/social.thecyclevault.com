@@ -19,6 +19,10 @@ export function AppLayout() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	const location = useLocation();
 
+	// Dense, task-focused pages use the full content width (no context rail).
+	const fullWidthPrefixes = ["/admin", "/mod", "/settings", "/post/new", "/circles/new"];
+	const showRail = !fullWidthPrefixes.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
+
 	// Close the mobile drawer whenever the route changes.
 	useEffect(() => setDrawerOpen(false), [location.pathname]);
 
@@ -58,7 +62,10 @@ export function AppLayout() {
 				</div>
 			</header>
 
-			<div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_19rem]">
+			<div
+				className={`mx-auto grid max-w-[1320px] grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-[15rem_minmax(0,1fr)] ${
+					showRail ? "xl:grid-cols-[15rem_minmax(0,1fr)_19rem]" : ""
+				}`}>
 				{/* Desktop left nav */}
 				<aside className="hidden lg:block">
 					<div className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6 pr-1">
@@ -71,12 +78,14 @@ export function AppLayout() {
 					<Outlet />
 				</main>
 
-				{/* Context rail */}
-				<aside className="hidden xl:block">
-					<div className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6">
-						<RightRail />
-					</div>
-				</aside>
+				{/* Context rail — hidden on dense, task-focused pages so they use full width. */}
+				{showRail && (
+					<aside className="hidden xl:block">
+						<div className="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6">
+							<RightRail />
+						</div>
+					</aside>
+				)}
 			</div>
 
 			{/* Mobile drawer */}

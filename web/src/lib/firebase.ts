@@ -1,7 +1,7 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { initializeAppCheck, ReCaptchaV3Provider } from "firebase/app-check";
 import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth";
-import { getFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, connectFirestoreEmulator, type Firestore } from "firebase/firestore";
 import { getFunctions, connectFunctionsEmulator, type Functions } from "firebase/functions";
 import { getStorage, connectStorageEmulator, type FirebaseStorage } from "firebase/storage";
 import { env, useEmulators } from "./env";
@@ -36,7 +36,13 @@ if (env.VITE_RECAPTCHA_SITE_KEY && !useEmulators) {
 }
 
 export const auth: Auth = getAuth(app);
-export const db: Firestore = getFirestore(app);
+export const db: Firestore = useEmulators
+	? // The default streaming Listen transport gets aborted by the integrated
+	  // (automated) browser against the emulator, dropping realtime listeners into
+	  // offline mode. Long-polling is robust against that. Emulator-only; production
+	  // keeps the default transport (HTTP/2 multiplexes, so this isn't needed there).
+	  initializeFirestore(app, { experimentalForceLongPolling: true })
+	: getFirestore(app);
 export const functions: Functions = getFunctions(app, "us-central1");
 export const storage: FirebaseStorage = getStorage(app);
 

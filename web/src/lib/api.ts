@@ -96,9 +96,10 @@ export const exportMyData = callable<
 export const deleteMyAccount = callable<Record<string, never>, { ok: true }>("deleteMyAccount");
 
 // ---- moderation actions (mod/admin) ----
-export const removeContent = callable<{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string; strike?: boolean }, { ok: true }>(
-	"removeContent",
-);
+export const removeContent = callable<
+	{ targetType: "post" | "comment"; targetId: string; reason: string; relatedReportId?: string; strike?: boolean },
+	{ ok: true }
+>("removeContent");
 
 export const dismissReport = callable<{ reportId: string }, { ok: true }>("dismissReport");
 
@@ -113,7 +114,13 @@ export const suspendUser = callable<{ uid: string; durationHours: number; reason
 
 export const banUser = callable<{ uid: string; scope?: "global"; reason: string; permanent?: boolean }, { ok: true }>("banUser");
 
+export const unbanUser = callable<{ uid: string }, { ok: true }>("unbanUser");
+
 export const clearUserStrikes = callable<{ uid: string; reason?: string }, { ok: true }>("clearUserStrikes");
+
+export const restoreContent = callable<{ targetType: "post" | "comment"; targetId: string; reason: string }, { ok: true }>("restoreContent");
+
+export const setUserRole = callable<{ uid: string; role: "user" | "moderator" | "admin" | "superadmin" }, { ok: true }>("setUserRole");
 
 // ---- platform (admin: sponsored products, announcement, badges) ----
 import type { ProductCategory, BadgeKind } from "../types/models";
@@ -137,9 +144,8 @@ export const setSponsoredProductActive = callable<{ id: string; active: boolean 
 /** Aggregate-only; never blocks navigation. Fire-and-forget from the click handler. */
 export const recordSponsoredClick = callable<{ id: string }, { ok: true }>("recordSponsoredClick");
 
-export const broadcastAnnouncement = callable<
-	{ title?: string; body?: string; level?: "info" | "warning"; active: boolean },
-	{ ok: true }
->("broadcastAnnouncement");
+export const broadcastAnnouncement = callable<{ title?: string; body?: string; level?: "info" | "warning"; active: boolean }, { ok: true }>(
+	"broadcastAnnouncement",
+);
 
 export const grantBadge = callable<{ uid: string; badge: BadgeKind; grant?: boolean }, { ok: true }>("grantBadge");
