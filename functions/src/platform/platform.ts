@@ -1,7 +1,9 @@
-import { onCall } from "firebase-functions/v2/https";
+import { onCall, type CallableRequest } from "firebase-functions/v2/https";
+import { createHash } from "node:crypto";
 import { db, FieldValue, COL } from "../shared/admin.js";
 import { requireActiveUser, requireRole } from "../shared/auth.js";
 import { parseInput } from "../shared/validate.js";
+import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordAuditLog } from "../shared/audit.js";
 import {
 	upsertSponsoredProductSchema,
@@ -10,6 +12,15 @@ import {
 	broadcastAnnouncementSchema,
 	grantBadgeSchema,
 } from "../shared/schemas.js";
+
+/** Hashed caller key for click de-dup (uid when signed in; else hashed IP). No raw IP stored. */
+function clickerKey(request: CallableRequest): string {
+	if (request.auth?.uid) return request.auth.uid;
+	const raw = request.rawRequest;
+	const xff = (raw?.headers?.["x-forwarded-for"] as string | undefined) ?? "";
+	const ip = (raw?.ip || xff.split(",").map((s) => s.trim()).filter(Boolean).pop() || "unknown").trim();
+	return `ip:${createHash("sha256").update(ip).digest("hex").slice(0, 24)}`;
+}
 
 /**
  * Platform/admin functions: sponsored products (docs/MONETIZATION.md), page-wide
@@ -58,9 +69,16 @@ export const setSponsoredProductActive = onCall(async (request) => {
 	return { ok: true as const };
 });
 
-/** recordSponsoredClick — any user; bumps an AGGREGATE counter only (no per-user data). */
+/** recordSponsoredClick — any user; bumps an AGGREGATE counter only (no per-user data).
+ *  De-duped per (clicker, product) per window so the one analytics number can't be
+ *  trivially inflated; failures never block the user's navigation. */
 export const recordSponsoredClick = onCall(async (request) => {
 	const input = parseInput(recordProductClickSchema, request.data);
+	try {
+		await enforceRateLimit(`${clickerKey(request)}:${input.id}`, "productClick", RATE.productClick.limit, RATE.productClick.windowMs);
+	} catch {
+		return { ok: true as const }; // already counted this clicker recently — silently skip
+	}
 	await db
 		.collection(COL.sponsoredProducts)
 		.doc(input.id)

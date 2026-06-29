@@ -1,6 +1,7 @@
 import { onCall } from "firebase-functions/v2/https";
 import { db, adminAuth, FieldValue, COL } from "../shared/admin.js";
 import { requireAuth } from "../shared/auth.js";
+import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordAuditLog } from "../shared/audit.js";
 
 /**
@@ -9,6 +10,7 @@ import { recordAuditLog } from "../shared/audit.js";
  */
 export const exportMyData = onCall(async (request) => {
 	const auth = requireAuth(request);
+	await enforceRateLimit(auth.uid, "exportData", RATE.exportData.limit, RATE.exportData.windowMs);
 
 	const [profileSnap, posts, comments, votes] = await Promise.all([
 		db.collection(COL.users).doc(auth.uid).get(),
@@ -36,6 +38,7 @@ export const exportMyData = onCall(async (request) => {
 export const deleteMyAccount = onCall(async (request) => {
 	const auth = requireAuth(request);
 	const uid = auth.uid;
+	await enforceRateLimit(uid, "deleteAccount", RATE.deleteAccount.limit, RATE.deleteAccount.windowMs);
 
 	const userRef = db.collection(COL.users).doc(uid);
 	const userSnap = await userRef.get();
@@ -70,9 +73,14 @@ export const deleteMyAccount = onCall(async (request) => {
 });
 
 async function anonymizeAuthored(collection: string, uid: string): Promise<void> {
-	const snap = await db.collection(collection).where("authorId", "==", uid).limit(450).get();
-	if (snap.empty) return;
-	const batch = db.batch();
-	snap.forEach((d) => batch.update(d.ref, { authorId: null, authorUsername: "[deleted]" }));
-	await batch.commit();
+	// Loop in chunks until none remain — a prolific author's full history is
+	// anonymized, not just the first batch (respects the 500-write batch limit).
+	for (let guard = 0; guard < 1000; guard++) {
+		const snap = await db.collection(collection).where("authorId", "==", uid).limit(450).get();
+		if (snap.empty) return;
+		const batch = db.batch();
+		snap.forEach((d) => batch.update(d.ref, { authorId: null, authorUsername: "[deleted]" }));
+		await batch.commit();
+		if (snap.size < 450) return;
+	}
 }

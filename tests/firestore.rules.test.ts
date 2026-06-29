@@ -192,6 +192,25 @@ describe("communities & settings (public read, no client write)", () => {
 	});
 });
 
+describe("issueReports & mail (function-only, fail-closed)", () => {
+	beforeEach(async () => {
+		await seed("issueReports/r1", { message: "broken", email: "a@b.com", status: "open" });
+		await seed("mail/m1", { to: ["support@thecyclevault.com"], message: { subject: "x" } });
+	});
+
+	it("no client (guest/user) can read issue reports — may hold contact email + screenshot", async () => {
+		await assertFails(getDoc(doc(guestDb(), "issueReports", "r1")));
+		await assertFails(getDoc(doc(aliceDb(), "issueReports", "r1")));
+	});
+	it("clients cannot write issue reports directly (submit goes via function)", async () => {
+		await assertFails(setDoc(doc(aliceDb(), "issueReports", "r2"), { message: "x" }));
+	});
+	it("the mail queue is fully sealed to clients", async () => {
+		await assertFails(getDoc(doc(aliceDb(), "mail", "m1")));
+		await assertFails(setDoc(doc(aliceDb(), "mail", "m2"), { to: ["x"] }));
+	});
+});
+
 describe("default deny", () => {
 	it("an undefined collection rejects all access", async () => {
 		await assertFails(getDoc(doc(guestDb(), "secretStuff", "x")));

@@ -130,26 +130,63 @@ export const createComment = onCall(async (request) => {
 	return { commentId: commentRef.id, status: mod.status };
 });
 
-/** updateComment — author-only edit of an active comment. */
+/** updateComment — author-only edit of an active comment. Edits are RE-SCREENED
+ *  so a benign comment can't be quietly edited into spam/abuse after approval. */
 export const updateComment = onCall(async (request) => {
-	const { auth } = await requireActiveUser(request);
+	const { auth, profile } = await requireActiveUser(request);
 	const input = parseInput(updateCommentSchema, request.data);
 
 	const ref = db.collection(COL.comments).doc(input.commentId);
-	await db.runTransaction(async (tx) => {
-		const snap = await tx.get(ref);
-		if (!snap.exists) throw new HttpsError("not-found", "Comment not found.");
-		const comment = snap.data() as Record<string, unknown>;
-		if (comment.authorId !== auth.uid) {
-			throw new HttpsError("permission-denied", "You can only edit your own comments.");
-		}
-		if (comment.status !== "active") {
-			throw new HttpsError("failed-precondition", "This comment can no longer be edited.");
-		}
-		tx.update(ref, { body: input.body, edited: true, updatedAt: FieldValue.serverTimestamp() });
+	const snap = await ref.get();
+	if (!snap.exists) throw new HttpsError("not-found", "Comment not found.");
+	const comment = snap.data() as Record<string, unknown>;
+	if (comment.authorId !== auth.uid) {
+		throw new HttpsError("permission-denied", "You can only edit your own comments.");
+	}
+	if (comment.status !== "active") {
+		throw new HttpsError("failed-precondition", "This comment can no longer be edited.");
+	}
+
+	const mod = await moderateNewContent("", input.body);
+	await ref.update({
+		body: input.body,
+		edited: true,
+		status: mod.status,
+		moderation: {
+			state: mod.state,
+			score: mod.tier1.score,
+			severity: mod.tier1.severity,
+			flags: mod.tier1.flags,
+			safeConfidence: mod.tier2?.safeConfidence ?? null,
+		},
+		updatedAt: FieldValue.serverTimestamp(),
 	});
 
-	return { ok: true as const };
+	if (mod.status === "pending") {
+		const postSnap = await db.collection(COL.posts).doc(String(comment.postId)).get();
+		await enqueueModeration({
+			contentType: "comment",
+			contentId: ref.id,
+			communityId: String(postSnap.data()?.communityId ?? ""),
+			postId: String(comment.postId),
+			authorId: auth.uid,
+			authorUsername: profile.username,
+			excerpt: input.body,
+			state: mod.state,
+			tier1: mod.tier1,
+			tier2: mod.tier2,
+			decidedBy: mod.decidedBy,
+		});
+		await createNotification({
+			recipientId: auth.uid,
+			type: "mod_action",
+			title: "Your edit is being reviewed",
+			body: "Your change needs a quick check before it goes live again — a moderator will review it shortly.",
+			link: `/post/${comment.postId}`,
+		});
+	}
+
+	return { ok: true as const, status: mod.status };
 });
 
 /** deleteCommentSoft — author soft-delete; tombstones body, decrements counters. */

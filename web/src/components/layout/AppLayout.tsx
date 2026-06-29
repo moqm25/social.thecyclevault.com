@@ -6,6 +6,7 @@ import { UserMenu } from "../UserMenu";
 import { AnnouncementBanner } from "../AnnouncementBanner";
 import { AdminViewToggle } from "../AdminViewToggle";
 import { AdminModeRibbon } from "../AdminModeRibbon";
+import { FloatingReportButton } from "../FloatingReportButton";
 import { useAdminView } from "../../features/admin/AdminViewContext";
 import { SidebarNav } from "./SidebarNav";
 import { RightRail } from "./RightRail";
@@ -126,6 +127,8 @@ export function AppLayout() {
 					</div>
 				</div>
 			)}
+
+			<FloatingReportButton />
 		</div>
 	);
 }

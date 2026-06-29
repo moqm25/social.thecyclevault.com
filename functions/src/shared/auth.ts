@@ -98,13 +98,14 @@ export function requireRole(profile: ProfileSnapshot, minRole: UserRole): void {
 }
 
 /**
- * A mod is authorized for a community if global admin+ OR they're listed as a
- * moderator of that community (via `moderatorOf`). Circle creators get scoped
- * ownership this way WITHOUT the global `moderator` role — so they can moderate
- * their own circle's content but gain no platform-wide powers.
+ * A mod is authorized for a community if they hold the global `moderator`+ role
+ * (mods/admins/superadmins moderate platform-wide) OR they're listed as a
+ * moderator of that specific community (via `moderatorOf`). Circle creators get
+ * scoped ownership this way WITHOUT the global `moderator` role — so a role=`user`
+ * creator can moderate ONLY their own circle, while a global mod covers everywhere.
  */
 export function requireModeratorOf(profile: ProfileSnapshot, communityId: string): void {
-	if (ROLE_RANK[profile.role] >= ROLE_RANK.admin) return;
+	if (ROLE_RANK[profile.role] >= ROLE_RANK.moderator) return;
 	if (profile.moderatorOf.includes(communityId)) return;
 	throw new HttpsError("permission-denied", "You do not moderate this community.");
 }

@@ -621,6 +621,22 @@ for (const [cid, count] of Object.entries(commentReplyCount)) {
 	if (commentRefById[cid]) W(commentRefById[cid], { replyCount: count });
 }
 
+// Sample vote docs so admin Insights shows real vote activity (not a flat 0). We
+// don't fabricate one per score point (would be tens of thousands); a handful of
+// real upvotes per active post is enough to exercise the votes collection + index.
+const voterPool = accounts.filter((a) => a.status === "active");
+let voteCount = 0;
+for (const pid of postIds) {
+	const voters = pickN(voterPool, intBetween(2, 8));
+	for (const v of voters) {
+		W(db.collection("votes").doc(`${v.uid}_post_${pid}`), {
+			uid: v.uid, targetType: "post", targetId: pid, value: 1,
+			createdAt: T(intBetween(0, 20)), updatedAt: T(intBetween(0, 20)),
+		});
+		voteCount++;
+	}
+}
+
 // =============================================================== execute ======
 async function clearAuth() {
 	let pageToken;
@@ -713,6 +729,7 @@ async function run() {
 		activePosts: postIds.length,
 		problematicPosts: problemIds.length,
 		comments: commentCount,
+		votes: voteCount,
 		products: PRODUCTS.length,
 	};
 	console.log("\n✅ Demo world seeded into the EMULATOR.");

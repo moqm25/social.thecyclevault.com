@@ -48,4 +48,10 @@ export const RATE = {
 	// blunt spam. Guests (hashed IP) get a smaller budget.
 	issueReport: { limit: 10, windowMs: 60 * 60 * 1000 },
 	issueReportGuest: { limit: 5, windowMs: 60 * 60 * 1000 },
+	// Privacy/account: bulk reads + cascading writes — cap to deter cost-abuse.
+	exportData: { limit: 5, windowMs: 24 * 60 * 60 * 1000 },
+	deleteAccount: { limit: 3, windowMs: 24 * 60 * 60 * 1000 },
+	// Sponsored-click counter: one click per product per IP-window keeps the
+	// aggregate honest without tracking anyone.
+	productClick: { limit: 1, windowMs: 6 * 60 * 60 * 1000 },
 } as const;

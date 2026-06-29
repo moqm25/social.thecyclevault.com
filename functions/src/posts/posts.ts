@@ -97,30 +97,70 @@ export const createPost = onCall(async (request) => {
 	return { postId: postRef.id, status: mod.status };
 });
 
-/** updatePost — author-only edit of an active post. */
+/** updatePost — author-only edit of an active post. Edits are RE-SCREENED so a
+ *  benign post can't be quietly edited into spam/abuse after it's approved. */
 export const updatePost = onCall(async (request) => {
-	const { auth } = await requireActiveUser(request);
+	const { auth, profile } = await requireActiveUser(request);
 	const input = parseInput(updatePostSchema, request.data);
 
 	const ref = db.collection(COL.posts).doc(input.postId);
-	await db.runTransaction(async (tx) => {
-		const snap = await tx.get(ref);
-		if (!snap.exists) throw new HttpsError("not-found", "Post not found.");
-		const post = snap.data() as Record<string, unknown>;
-		if (post.authorId !== auth.uid) {
-			throw new HttpsError("permission-denied", "You can only edit your own posts.");
-		}
-		if (post.status !== "active") {
-			throw new HttpsError("failed-precondition", "This post can no longer be edited.");
-		}
-		const patch: Record<string, unknown> = { edited: true, updatedAt: FieldValue.serverTimestamp() };
-		if (input.title !== undefined) patch.title = input.title;
-		if (input.body !== undefined) patch.body = input.body;
-		if (input.tags !== undefined) patch.tags = input.tags;
-		tx.update(ref, patch as FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>);
-	});
+	const snap = await ref.get();
+	if (!snap.exists) throw new HttpsError("not-found", "Post not found.");
+	const post = snap.data() as Record<string, unknown>;
+	if (post.authorId !== auth.uid) {
+		throw new HttpsError("permission-denied", "You can only edit your own posts.");
+	}
+	if (post.status !== "active") {
+		throw new HttpsError("failed-precondition", "This post can no longer be edited.");
+	}
 
-	return { ok: true as const };
+	const newTitle = input.title ?? String(post.title ?? "");
+	const newBody = input.body ?? String(post.body ?? "");
+	const mod = await moderateNewContent(newTitle, newBody);
+
+	const patch: Record<string, unknown> = {
+		edited: true,
+		status: mod.status,
+		moderation: {
+			state: mod.state,
+			score: mod.tier1.score,
+			severity: mod.tier1.severity,
+			flags: mod.tier1.flags,
+			safeConfidence: mod.tier2?.safeConfidence ?? null,
+		},
+		updatedAt: FieldValue.serverTimestamp(),
+	};
+	if (input.title !== undefined) patch.title = input.title;
+	if (input.body !== undefined) patch.body = input.body;
+	if (input.tags !== undefined) patch.tags = input.tags;
+	await ref.update(patch as FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>);
+
+	// If the edit tripped moderation, hold it (counts already exist; no change),
+	// log to the queue, and tell the author — mirrors createPost.
+	if (mod.status === "pending") {
+		await enqueueModeration({
+			contentType: "post",
+			contentId: ref.id,
+			communityId: String(post.communityId),
+			postId: ref.id,
+			authorId: auth.uid,
+			authorUsername: profile.username,
+			excerpt: `${newTitle} ${newBody}`,
+			state: mod.state,
+			tier1: mod.tier1,
+			tier2: mod.tier2,
+			decidedBy: mod.decidedBy,
+		});
+		await createNotification({
+			recipientId: auth.uid,
+			type: "mod_action",
+			title: "Your edit is being reviewed",
+			body: "Your change needs a quick check before it goes live again — a moderator will review it shortly.",
+			link: `/post/${ref.id}`,
+		});
+	}
+
+	return { ok: true as const, status: mod.status };
 });
 
 /** deletePostSoft — author soft-delete; tombstones content, decrements counters. */
