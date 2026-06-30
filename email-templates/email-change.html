@@ -1,0 +1,113 @@
+<!--
+  The CycleVault Social — Email address change notice
+  --------------------------------------------------------------------------
+  Paste into: Firebase console → Authentication → Templates → Email address
+              change → ✎ Edit → "Message" (all CSS is inline).
+
+  Suggested Sender name : The CycleVault Social
+  Suggested Subject     : Your sign-in email was changed
+
+  Sent to the PREVIOUS address. Firebase placeholders kept: %EMAIL% (the old
+  address), %NEW_EMAIL% (the new one), %LINK% (the secure-it / revoke URL).
+  The visible brand name is hardcoded so it always reads "The CycleVault Social"
+  regardless of the project's %APP_NAME%.
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light only" />
+		<title>Your sign-in email was changed</title>
+	</head>
+	<body style="margin: 0; padding: 0; background-color: #fff8f6;">
+		<!-- Hidden preview text -->
+		<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #fff8f6;">
+			The sign-in email for your CycleVault Social account was changed — confirm it was you.
+		</div>
+
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fff8f6;">
+			<tr>
+				<td align="center" style="padding: 32px 16px 40px;">
+					<!-- Wordmark -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px;">
+						<tr>
+							<td align="center" style="padding-bottom: 18px;">
+								<span style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 21px; line-height: 24px; color: #0f1116;">The CycleVault</span>
+								<span style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a89bff; vertical-align: 2px;">&nbsp;Social</span>
+							</td>
+						</tr>
+					</table>
+
+					<!-- Card -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px; background-color: #ffffff; border: 1px solid #ece7ef; border-radius: 20px; box-shadow: 0 10px 34px rgba(168, 155, 255, 0.13);">
+						<!-- Top gradient hairline -->
+						<tr>
+							<td style="height: 4px; line-height: 4px; font-size: 4px; background-color: #ff7a85; background-image: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">&nbsp;</td>
+						</tr>
+
+						<tr>
+							<td style="padding: 36px 36px 32px;">
+								<h1 style="margin: 0 0 16px; font-family: Georgia, 'Times New Roman', serif; font-weight: 600; font-size: 24px; line-height: 30px; color: #0f1116;">Your sign-in email changed</h1>
+
+								<p style="margin: 0 0 14px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									Hi there,
+								</p>
+								<p style="margin: 0 0 24px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									The sign-in email for your CycleVault Social account was just changed from
+									<strong style="color: #0f1116;">%EMAIL%</strong> to <strong style="color: #0f1116;">%NEW_EMAIL%</strong>. If that was you, you’re all set — there’s nothing more to do.
+								</p>
+
+								<!-- Security box with revoke action -->
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffe6e8; border-radius: 14px;">
+									<tr>
+										<td style="padding: 16px 18px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #2a2733;">
+											🔒&nbsp; <strong style="color: #0f1116;">Didn’t make this change?</strong> Secure your account right away — this link reverses the change and lets you reset your password.
+										</td>
+									</tr>
+								</table>
+
+								<!-- Bulletproof button -->
+								<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 22px auto 24px;">
+									<tr>
+										<td align="center" bgcolor="#ff7a85" style="border-radius: 999px; background-image: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%);">
+											<a href="%LINK%" target="_blank" style="display: inline-block; padding: 14px 34px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 20px; color: #ffffff; text-decoration: none; border-radius: 999px;">Secure my account</a>
+										</td>
+									</tr>
+								</table>
+
+								<!-- Fallback link -->
+								<p style="margin: 0 0 6px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; color: #9b95ae;">
+									Button not working? Paste this link into your browser:
+								</p>
+								<p style="margin: 0 0 4px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; word-break: break-all;">
+									<a href="%LINK%" target="_blank" style="color: #ff7a85; text-decoration: underline;">%LINK%</a>
+								</p>
+
+								<!-- Sign-off -->
+								<p style="margin: 26px 0 0; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									With care,<br />
+									<span style="color: #0f1116; font-weight: 600;">The CycleVault Social team</span>
+								</p>
+							</td>
+						</tr>
+					</table>
+
+					<!-- Footer -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px;">
+						<tr>
+							<td align="center" style="padding: 22px 24px 0;">
+								<p style="margin: 0 0 6px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #9b95ae;">
+									Private by design — no tracking, no data sales, no behavioral ads.
+								</p>
+								<p style="margin: 0; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #9b95ae;">
+									You’re receiving this at %EMAIL% because the sign-in email for this account was changed.
+								</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>

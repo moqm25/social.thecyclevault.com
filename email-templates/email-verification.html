@@ -1,0 +1,112 @@
+<!--
+  The CycleVault Social — Email verification email
+  --------------------------------------------------------------------------
+  Paste into: Firebase console → Authentication → Templates → Email address
+              verification → ✎ Edit → "Message" (all CSS is inline).
+
+  Suggested Sender name : The CycleVault Social
+  Suggested Subject     : Confirm your email 🌿
+
+  Firebase placeholders kept: %EMAIL% (the account), %LINK% (the verify URL).
+  The visible brand name is hardcoded so it always reads "The CycleVault Social"
+  regardless of the project's %APP_NAME%.
+-->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light only" />
+		<title>Confirm your email</title>
+	</head>
+	<body style="margin: 0; padding: 0; background-color: #fff8f6;">
+		<!-- Hidden preview text -->
+		<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #fff8f6;">
+			Confirm your email to finish setting up your CycleVault Social account.
+		</div>
+
+		<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #fff8f6;">
+			<tr>
+				<td align="center" style="padding: 32px 16px 40px;">
+					<!-- Wordmark -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px;">
+						<tr>
+							<td align="center" style="padding-bottom: 18px;">
+								<span style="font-family: Georgia, 'Times New Roman', serif; font-style: italic; font-size: 21px; line-height: 24px; color: #0f1116;">The CycleVault</span>
+								<span style="font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #a89bff; vertical-align: 2px;">&nbsp;Social</span>
+							</td>
+						</tr>
+					</table>
+
+					<!-- Card -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px; background-color: #ffffff; border: 1px solid #ece7ef; border-radius: 20px; box-shadow: 0 10px 34px rgba(168, 155, 255, 0.13);">
+						<!-- Top gradient hairline -->
+						<tr>
+							<td style="height: 4px; line-height: 4px; font-size: 4px; background-color: #ff7a85; background-image: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%); border-top-left-radius: 20px; border-top-right-radius: 20px;">&nbsp;</td>
+						</tr>
+
+						<tr>
+							<td style="padding: 36px 36px 32px;">
+								<h1 style="margin: 0 0 16px; font-family: Georgia, 'Times New Roman', serif; font-weight: 600; font-size: 24px; line-height: 30px; color: #0f1116;">Confirm your email</h1>
+
+								<p style="margin: 0 0 14px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									Welcome 🌸
+								</p>
+								<p style="margin: 0 0 24px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									You’re almost in. The CycleVault Social is a calm, women-first space to talk about your cycle, your body, and your life. Confirm
+									<strong style="color: #0f1116;">%EMAIL%</strong> to finish setting up your account.
+								</p>
+
+								<!-- Bulletproof button -->
+								<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 0 auto 26px;">
+									<tr>
+										<td align="center" bgcolor="#ff7a85" style="border-radius: 999px; background-image: linear-gradient(135deg, #ff7a85 0%, #b6adff 100%);">
+											<a href="%LINK%" target="_blank" style="display: inline-block; padding: 14px 34px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 20px; color: #ffffff; text-decoration: none; border-radius: 999px;">Confirm my email</a>
+										</td>
+									</tr>
+								</table>
+
+								<!-- Fallback link -->
+								<p style="margin: 0 0 6px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; color: #9b95ae;">
+									Button not working? Paste this link into your browser:
+								</p>
+								<p style="margin: 0 0 26px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px; word-break: break-all;">
+									<a href="%LINK%" target="_blank" style="color: #ff7a85; text-decoration: underline;">%LINK%</a>
+								</p>
+
+								<!-- Reassurance -->
+								<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ece8ff; border-radius: 14px;">
+									<tr>
+										<td style="padding: 14px 16px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 21px; color: #2a2733;">
+											🌿&nbsp; <strong style="color: #0f1116;">Didn’t sign up?</strong> You can safely ignore this email — no account is created until it’s confirmed.
+										</td>
+									</tr>
+								</table>
+
+								<!-- Sign-off -->
+								<p style="margin: 26px 0 0; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 16px; line-height: 25px; color: #2a2733;">
+									See you inside,<br />
+									<span style="color: #0f1116; font-weight: 600;">The CycleVault Social team</span>
+								</p>
+							</td>
+						</tr>
+					</table>
+
+					<!-- Footer -->
+					<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 480px;">
+						<tr>
+							<td align="center" style="padding: 22px 24px 0;">
+								<p style="margin: 0 0 6px; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #9b95ae;">
+									Private by design — no tracking, no data sales, no behavioral ads.
+								</p>
+								<p style="margin: 0; font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 12px; line-height: 18px; color: #9b95ae;">
+									You’re receiving this because %EMAIL% was used to join The CycleVault Social.
+								</p>
+							</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</body>
+</html>
