@@ -13,6 +13,10 @@ functions/lib/
 *serviceAccount*.json
 *service-account*.json
 
+# ---- firebase extension local secrets (never commit; values live in Secret Manager) ----
+extensions/*.secret.local
+extensions/*.local
+
 # ---- firebase ----
 .firebase/
 *-debug.log
