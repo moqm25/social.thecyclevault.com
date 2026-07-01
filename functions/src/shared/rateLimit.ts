@@ -59,4 +59,7 @@ export const RATE = {
 	authEmailIp: { limit: 12, windowMs: 60 * 60 * 1000 },
 	passwordResetTarget: { limit: 4, windowMs: 60 * 60 * 1000 },
 	verifyEmail: { limit: 6, windowMs: 60 * 60 * 1000 },
+	// Admin user-directory lookups: generous for genuine support work, but capped
+	// so a compromised admin session can't bulk-scrape the member directory.
+	searchUsers: { limit: 120, windowMs: 60 * 60 * 1000 },
 } as const;

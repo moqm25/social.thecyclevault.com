@@ -2,6 +2,7 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, adminAuth, COL } from "../shared/admin.js";
 import { requireActiveUser, requireRole } from "../shared/auth.js";
 import { parseInput } from "../shared/validate.js";
+import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordModerationAction, recordAuditLog } from "../shared/audit.js";
 import { purgeAccount } from "../users/account.js";
 import { searchUsersSchema, adminDeleteUserSchema } from "../shared/schemas.js";
@@ -53,8 +54,9 @@ function toResult(uid: string, d: Record<string, unknown>, email: string | null)
 }
 
 export const searchUsers = onCall(async (request) => {
-	const { profile } = await requireActiveUser(request);
+	const { auth, profile } = await requireActiveUser(request);
 	requireRole(profile, "admin");
+	await enforceRateLimit(auth.uid, "searchUsers", RATE.searchUsers.limit, RATE.searchUsers.windowMs);
 	const input = parseInput(searchUsersSchema, request.data);
 	const raw = input.query.trim();
 	if (!raw) return { results: [] as UserResult[] };

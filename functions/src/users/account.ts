@@ -12,17 +12,23 @@ export const exportMyData = onCall(async (request) => {
 	const auth = requireAuth(request);
 	await enforceRateLimit(auth.uid, "exportData", RATE.exportData.limit, RATE.exportData.windowMs);
 
+	// Safety cap: bound each collection read so a prolific (or abusive) account
+	// can't OOM the function. 10k per collection is far above any genuine member's
+	// volume; if it's ever hit we flag it so support can help with the remainder.
+	const EXPORT_CAP = 10_000;
+
 	const [profileSnap, posts, comments, votes] = await Promise.all([
 		db.collection(COL.users).doc(auth.uid).get(),
-		db.collection(COL.posts).where("authorId", "==", auth.uid).get(),
-		db.collection(COL.comments).where("authorId", "==", auth.uid).get(),
-		db.collection(COL.votes).where("uid", "==", auth.uid).get(),
+		db.collection(COL.posts).where("authorId", "==", auth.uid).limit(EXPORT_CAP).get(),
+		db.collection(COL.comments).where("authorId", "==", auth.uid).limit(EXPORT_CAP).get(),
+		db.collection(COL.votes).where("uid", "==", auth.uid).limit(EXPORT_CAP).get(),
 	]);
 
 	await recordAuditLog({ actorId: auth.uid, event: "data_export" });
 
 	return {
 		exportedAt: new Date().toISOString(),
+		truncated: posts.size >= EXPORT_CAP || comments.size >= EXPORT_CAP || votes.size >= EXPORT_CAP,
 		profile: profileSnap.data() ?? null,
 		posts: posts.docs.map((d) => ({ id: d.id, ...d.data() })),
 		comments: comments.docs.map((d) => ({ id: d.id, ...d.data() })),
