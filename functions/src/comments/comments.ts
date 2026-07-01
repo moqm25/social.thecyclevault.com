@@ -86,7 +86,7 @@ export const createComment = onCall(async (request) => {
 			recipientId,
 			type,
 			communityId: String(post.communityId),
-			link: `/post/${input.postId}#c-${commentRef.id}`,
+			link: `/post/${input.postId}?focus=${commentRef.id}`,
 		};
 	});
 
@@ -122,8 +122,8 @@ export const createComment = onCall(async (request) => {
 			recipientId: auth.uid,
 			type: "mod_action",
 			title: "Your comment is being reviewed",
-			body: "Just a quick check before it goes live — a moderator will review it shortly.",
-			link: `/post/${input.postId}`,
+			body: "Just a quick check before it goes live — a moderator will review it shortly. Open it to see the status.",
+			link: `/post/${input.postId}?focus=${commentRef.id}`,
 		});
 	}
 
@@ -182,7 +182,7 @@ export const updateComment = onCall(async (request) => {
 			type: "mod_action",
 			title: "Your edit is being reviewed",
 			body: "Your change needs a quick check before it goes live again — a moderator will review it shortly.",
-			link: `/post/${comment.postId}`,
+			link: `/post/${comment.postId}?focus=${ref.id}`,
 		});
 	}
 

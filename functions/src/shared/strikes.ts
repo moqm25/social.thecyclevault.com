@@ -53,6 +53,7 @@ export async function applyStrike(input: {
 	reason: string;
 	contentType: "post" | "comment";
 	contentId: string;
+	postId?: string | null;
 	communityId?: string | null;
 }): Promise<StrikeOutcome> {
 	const now = Date.now();
@@ -146,7 +147,15 @@ export async function applyStrike(input: {
 		title = "A gentle heads-up";
 		body = `Your ${input.contentType} was removed for not following the Community Guidelines. This is a first warning — no further limits right now. Please take a moment to review the guidelines so we can keep this space calm and kind.`;
 	}
-	await createNotification({ recipientId: input.uid, type: "mod_action", title, body, link: "/guidelines" });
+	// Deep-link to the exact item that tripped the strike so the author can SEE what
+	// happened (not just land on the generic guidelines page). Falls back to the
+	// guidelines when we don't have enough to locate the content.
+	let link = "/guidelines";
+	if (input.contentId) {
+		if (input.contentType === "comment" && input.postId) link = `/post/${input.postId}?focus=${input.contentId}`;
+		else if (input.contentType === "post") link = `/post/${input.contentId}`;
+	}
+	await createNotification({ recipientId: input.uid, type: "mod_action", title, body, link });
 
 	return { activeStrikes, totalStrikes, suspensionHours, suspendedUntil, needsAdminReview };
 }

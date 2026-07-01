@@ -43,6 +43,11 @@ export const reviewContent = onCall(async (request) => {
 	batch.update(ref, {
 		status: newStatus,
 		"moderation.state": approve ? "human_approved" : "human_removed",
+		// Persist the human-readable outcome ON the doc so the AUTHOR (who can read
+		// their own content) can always see what happened + why — not just in a
+		// one-off notification. Mod-only details still live in moderationActions.
+		"moderation.reviewReason": input.reason ?? null,
+		"moderation.reviewedAt": FieldValue.serverTimestamp(),
 		updatedAt: FieldValue.serverTimestamp(),
 	});
 	// If rejecting content that had been counted, decrement the relevant counter.
@@ -80,11 +85,11 @@ export const reviewContent = onCall(async (request) => {
 	await createNotification({
 		recipientId: String(content.authorId),
 		type: "mod_action",
-		title: approve ? "Your post is now live" : "Your content wasn’t approved",
+		title: approve ? `Your ${input.contentType} is now live` : `Your ${input.contentType} wasn’t approved`,
 		body: approve
 			? "Thanks for your patience — it passed review and is now visible."
-			: `After review, this wasn’t approved.${input.reason ? ` Reason: ${input.reason}` : ""}`,
-		link: input.contentType === "post" ? `/post/${input.contentId}` : `/post/${content.postId}`,
+			: `After review, this wasn’t approved.${input.reason ? ` Reason: ${input.reason}` : ""} Open it to see the details.`,
+		link: input.contentType === "post" ? `/post/${input.contentId}` : `/post/${content.postId}?focus=${input.contentId}`,
 	});
 
 	// A human-confirmed rejection counts as a strike (auto-escalates; decays in 90d).
@@ -96,6 +101,7 @@ export const reviewContent = onCall(async (request) => {
 			reason: input.reason ?? "Content removed after review",
 			contentType: input.contentType,
 			contentId: input.contentId,
+			postId: input.contentType === "post" ? input.contentId : String(content.postId),
 			communityId: String(content.communityId),
 		});
 	}
@@ -161,7 +167,13 @@ export const removeContent = onCall(async (request) => {
 	requireModeratorOf(profile, String(content.communityId));
 
 	const batch = db.batch();
-	batch.update(ref, { status: "removed", updatedAt: FieldValue.serverTimestamp() });
+	batch.update(ref, {
+		status: "removed",
+		"moderation.state": "human_removed",
+		"moderation.reviewReason": input.reason,
+		"moderation.reviewedAt": FieldValue.serverTimestamp(),
+		updatedAt: FieldValue.serverTimestamp(),
+	});
 	if (input.targetType === "post") {
 		batch.update(db.collection(COL.communities).doc(String(content.communityId)), {
 			postCount: FieldValue.increment(-1),
@@ -193,9 +205,9 @@ export const removeContent = onCall(async (request) => {
 	await createNotification({
 		recipientId: String(content.authorId),
 		type: "mod_action",
-		title: "Your content was removed",
+		title: `Your ${input.targetType} was removed`,
 		body: `A moderator removed your ${input.targetType}: ${input.reason}`,
-		link: input.targetType === "post" ? `/post/${input.targetId}` : `/post/${content.postId}`,
+		link: input.targetType === "post" ? `/post/${input.targetId}` : `/post/${content.postId}?focus=${input.targetId}`,
 	});
 
 	// Removing guideline-breaking content strikes the author (auto-escalates; 90d
@@ -207,6 +219,7 @@ export const removeContent = onCall(async (request) => {
 			reason: input.reason,
 			contentType: input.targetType,
 			contentId: input.targetId,
+			postId: input.targetType === "post" ? input.targetId : String(content.postId),
 			communityId: String(content.communityId),
 		});
 	}
@@ -224,7 +237,14 @@ export const restoreContent = onCall(async (request) => {
 	const ref = db.collection(col).doc(input.targetId);
 	const snap = await ref.get();
 	if (!snap.exists) throw new HttpsError("not-found", "Content not found.");
-	await ref.update({ status: "active", updatedAt: FieldValue.serverTimestamp() });
+	const content = snap.data() as Record<string, unknown>;
+	await ref.update({
+		status: "active",
+		"moderation.state": "human_approved",
+		"moderation.reviewReason": input.reason ?? null,
+		"moderation.reviewedAt": FieldValue.serverTimestamp(),
+		updatedAt: FieldValue.serverTimestamp(),
+	});
 
 	await recordModerationAction({
 		actorId: auth.uid,
@@ -232,6 +252,13 @@ export const restoreContent = onCall(async (request) => {
 		targetType: input.targetType,
 		targetId: input.targetId,
 		reason: input.reason,
+	});
+	await createNotification({
+		recipientId: String(content.authorId),
+		type: "mod_action",
+		title: `Your ${input.targetType} is back`,
+		body: `Good news — after another look, your ${input.targetType} was restored and is visible again.`,
+		link: input.targetType === "post" ? `/post/${input.targetId}` : `/post/${String(content.postId)}?focus=${input.targetId}`,
 	});
 	return { ok: true as const };
 });
@@ -267,6 +294,13 @@ export const suspendUser = onCall(async (request) => {
 		targetType: "user",
 		targetId: input.uid,
 		metadata: { durationHours: input.durationHours },
+	});
+	await createNotification({
+		recipientId: input.uid,
+		type: "mod_action",
+		title: "Your account is temporarily paused",
+		body: `Posting and commenting are paused for now. Reason: ${input.reason}. You can still read in the meantime — please review the Community Guidelines.`,
+		link: "/guidelines",
 	});
 	return { ok: true as const };
 });
@@ -307,6 +341,13 @@ export const banUser = onCall(async (request) => {
 		targetType: "user",
 		targetId: input.uid,
 		metadata: { permanent: input.permanent ?? false },
+	});
+	await createNotification({
+		recipientId: input.uid,
+		type: "mod_action",
+		title: "Your account has been banned",
+		body: `Your access has been removed for not following the Community Guidelines. Reason: ${input.reason}.`,
+		link: "/guidelines",
 	});
 	return { ok: true as const };
 });
