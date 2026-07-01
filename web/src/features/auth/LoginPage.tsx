@@ -38,7 +38,7 @@ export default function LoginPage() {
 	const [mode, setMode] = useState<Mode>("signin");
 	const [formError, setFormError] = useState<string | null>(null);
 	const [resetMsg, setResetMsg] = useState<string | null>(null);
-	const { signIn, signUp, resetPassword } = useAuth();
+	const { signIn, signUp, signOutUser, resetPassword } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const from = (location.state as { from?: string } | null)?.from ?? "/feed";
@@ -76,12 +76,24 @@ export default function LoginPage() {
 	const onSignUp = signUpForm.handleSubmit(async (values) => {
 		setFormError(null);
 		try {
-			await signUp(values.email, values.password);
-			// Reserve username + create the pseudonymous profile (server-authoritative).
-			await createUserProfile({
-				username: values.username,
-				acceptedTermsVersion: TERMS_VERSION,
-			});
+			const created = await signUp(values.email, values.password);
+			try {
+				// Reserve username + create the pseudonymous profile (server-authoritative).
+				await createUserProfile({
+					username: values.username,
+					acceptedTermsVersion: TERMS_VERSION,
+				});
+			} catch (profileErr) {
+				// The Auth account now exists but has no profile doc (e.g. the username was
+				// taken in the TOCTOU window). Roll the account back so the user isn't
+				// trapped in a profile-less session and can retry cleanly.
+				try {
+					await created.delete();
+				} catch {
+					await signOutUser();
+				}
+				throw profileErr;
+			}
 			navigate(from, { replace: true });
 		} catch (err) {
 			setFormError(friendlyAuthError(err));

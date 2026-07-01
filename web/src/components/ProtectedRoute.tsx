@@ -41,7 +41,10 @@ export function ProtectedRoute({ children, minRole = "user" }: { children: React
 				</div>
 			);
 		}
-		if (ROLE_RANK[profile.role] < ROLE_RANK[minRole]) {
+		// Fail closed: an unknown/corrupt role resolves to rank -1 so a broken
+		// profile can never satisfy an admin/mod gate (undefined < n is false in JS).
+		const rank = ROLE_RANK[profile.role] ?? -1;
+		if (rank < ROLE_RANK[minRole]) {
 			return <Navigate to="/" replace />;
 		}
 	}
