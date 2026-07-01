@@ -23,21 +23,35 @@ export function Modal({ open, onClose, title, description, children, footer, ico
 	const panelRef = useRef<HTMLDivElement>(null);
 	const titleId = useId();
 
+	// Keep the latest onClose in a ref so the Escape handler never needs `onClose`
+	// as an effect dependency. (Parents pass a fresh onClose each render; if the
+	// focus/scroll effect re-ran on every keystroke it would yank focus back to the
+	// panel — which felt like "the whole panel keeps getting selected" while typing.)
+	const onCloseRef = useRef(onClose);
+	useEffect(() => {
+		onCloseRef.current = onClose;
+	});
+
+	// Focus move-in + restore + scroll lock + Escape — runs ONCE per open/close.
 	useEffect(() => {
 		if (!open) return;
 		const prevActive = document.activeElement as HTMLElement | null;
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === "Escape") onClose();
+			if (e.key === "Escape") onCloseRef.current();
 		};
 		document.addEventListener("keydown", onKey);
 		document.body.style.overflow = "hidden";
-		panelRef.current?.focus();
+		// Move focus into the dialog, but don't steal it from an element that already
+		// autoFocused inside the panel (e.g. the first textarea).
+		if (!panelRef.current?.contains(document.activeElement)) {
+			panelRef.current?.focus();
+		}
 		return () => {
 			document.removeEventListener("keydown", onKey);
 			document.body.style.overflow = "";
 			prevActive?.focus?.();
 		};
-	}, [open, onClose]);
+	}, [open]);
 
 	if (!open) return null;
 
