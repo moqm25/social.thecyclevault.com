@@ -34,6 +34,23 @@ export interface UserProfile {
 	updatedAt: number;
 }
 
+/** A row in the admin user-directory search (searchUsers). `email` is present only
+ *  when found via an email lookup — it's never in the public profile. */
+export interface UserSearchResult {
+	uid: string;
+	username: string;
+	displayName: string | null;
+	email: string | null;
+	role: UserRole;
+	status: UserStatus;
+	badges: BadgeKind[];
+	supporter: boolean;
+	postCount: number;
+	commentCount: number;
+	karma: number;
+	createdAt: number | null;
+}
+
 export interface Community {
 	slug: string;
 	name: string;

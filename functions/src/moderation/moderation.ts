@@ -339,6 +339,12 @@ export const setUserRole = onCall(async (request) => {
 	requireRole(profile, "superadmin");
 	const { uid, role } = parseInput(setUserRoleSchema, request.data);
 
+	// A superadmin can't change their OWN role here — prevents accidentally
+	// demoting yourself out of the last superadmin seat and locking the platform.
+	if (uid === auth.uid) {
+		throw new HttpsError("failed-precondition", "You can’t change your own role. Ask another superadmin.");
+	}
+
 	await db.collection(COL.users).doc(uid).update({
 		role,
 		updatedAt: FieldValue.serverTimestamp(),

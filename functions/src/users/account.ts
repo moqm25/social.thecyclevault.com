@@ -40,11 +40,22 @@ export const deleteMyAccount = onCall(async (request) => {
 	const uid = auth.uid;
 	await enforceRateLimit(uid, "deleteAccount", RATE.deleteAccount.limit, RATE.deleteAccount.windowMs);
 
+	await purgeAccount(uid);
+	await recordAuditLog({ actorId: uid, event: "account_deletion" });
+	return { ok: true as const };
+});
+
+/**
+ * Soft-delete + anonymize an account, release its username, and remove the Auth
+ * identity. Shared by the member's own deleteMyAccount and the admin-initiated
+ * adminDeleteUser so both erase consistently. Content is anonymized (authorId
+ * nulled, username → "[deleted]"), not hard-deleted, to keep threads readable.
+ */
+export async function purgeAccount(uid: string): Promise<void> {
 	const userRef = db.collection(COL.users).doc(uid);
 	const userSnap = await userRef.get();
 	if (userSnap.exists) {
 		const usernameLower = String(userSnap.data()?.usernameLower ?? "");
-
 		const batch = db.batch();
 		batch.update(userRef, {
 			status: "deleted",
@@ -53,24 +64,15 @@ export const deleteMyAccount = onCall(async (request) => {
 			bio: "",
 			updatedAt: FieldValue.serverTimestamp(),
 		});
-		// Release the username reservation (tombstone).
 		if (usernameLower) {
 			batch.delete(db.collection(COL.usernames).doc(usernameLower));
 		}
 		await batch.commit();
-
-		// Anonymize authored content (chunked to respect batch limits).
 		await anonymizeAuthored(COL.posts, uid);
 		await anonymizeAuthored(COL.comments, uid);
 	}
-
-	await recordAuditLog({ actorId: uid, event: "account_deletion" });
-
-	// Finally remove the auth identity.
 	await adminAuth.deleteUser(uid).catch(() => undefined);
-
-	return { ok: true as const };
-});
+}
 
 async function anonymizeAuthored(collection: string, uid: string): Promise<void> {
 	// Loop in chunks until none remain — a prolific author's full history is

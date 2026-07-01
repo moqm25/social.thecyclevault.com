@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { FirebaseError } from "firebase/app";
 import { getUserByUsername, getUserModeration } from "../../lib/firestore";
-import { grantBadge, suspendUser, banUser, unbanUser, clearUserStrikes, setUserRole, getUserActivityReport } from "../../lib/api";
+import { grantBadge, suspendUser, banUser, unbanUser, clearUserStrikes, setUserRole, getUserActivityReport, searchUsers, adminDeleteUser } from "../../lib/api";
 import { useAuth } from "../auth/AuthProvider";
 import { UserBadges } from "../../components/Badge";
 import { relativeTime } from "../../lib/time";
-import type { UserProfile, UserModeration, BadgeKind, UserRole } from "../../types/models";
+import type { UserProfile, UserModeration, BadgeKind, UserRole, UserSearchResult } from "../../types/models";
 
 const STATUS_STYLE: Record<string, string> = {
 	active: "bg-lav-wash text-lav",
@@ -27,7 +27,10 @@ const ROLES: UserRole[] = ["user", "moderator", "admin", "superadmin"];
 
 function friendly(err: unknown): string {
 	if (err instanceof FirebaseError) {
-		if (err.code === "functions/permission-denied") return "You don’t have permission for that action.";
+		// Our callables throw already-friendly messages for these — surface them.
+		if (err.code === "functions/failed-precondition" || err.code === "functions/permission-denied") {
+			return err.message || "You don’t have permission for that action.";
+		}
 		if (err.code === "functions/not-found") return "That user no longer exists.";
 	}
 	return "Action failed. Please try again.";
@@ -44,6 +47,7 @@ export function UserAdmin() {
 	const isSuperadmin = me?.role === "superadmin";
 
 	const [query, setQuery] = useState("");
+	const [results, setResults] = useState<UserSearchResult[] | null>(null);
 	const [user, setUser] = useState<UserProfile | null>(null);
 	const [mod, setMod] = useState<UserModeration | null>(null);
 	const [searching, setSearching] = useState(false);
@@ -51,25 +55,48 @@ export function UserAdmin() {
 	const [busy, setBusy] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [okMsg, setOkMsg] = useState<string | null>(null);
+	const [confirmDelete, setConfirmDelete] = useState(false);
 
 	async function load(username: string) {
 		const u = await getUserByUsername(username);
 		setUser(u);
 		setNotFound(!u);
 		setMod(u ? await getUserModeration(u.uid) : null);
+		setConfirmDelete(false);
+	}
+
+	async function select(r: UserSearchResult) {
+		setError(null);
+		setOkMsg(null);
+		setResults(null);
+		try {
+			await load(r.username);
+		} catch {
+			setError("Couldn’t open that member. Please try again.");
+		}
 	}
 
 	async function search(e: React.FormEvent) {
 		e.preventDefault();
-		const username = query.trim().replace(/^@/, "");
-		if (!username) return;
+		const q = query.trim();
+		if (!q) return;
 		setSearching(true);
 		setError(null);
 		setOkMsg(null);
+		setNotFound(false);
+		setResults(null);
+		setUser(null);
 		try {
-			await load(username);
+			const { results: found } = await searchUsers({ query: q });
+			if (found.length === 1) {
+				await load(found[0].username); // jump straight into the only match
+			} else if (found.length === 0) {
+				setNotFound(true);
+			} else {
+				setResults(found);
+			}
 		} catch {
-			setError("Couldn’t look that up. Please try again.");
+			setError("Couldn’t search right now. Please try again.");
 		} finally {
 			setSearching(false);
 		}
@@ -117,27 +144,76 @@ export function UserAdmin() {
 		}
 	}
 
+	async function deleteAccount() {
+		if (!user) return;
+		setBusy("delete");
+		setError(null);
+		setOkMsg(null);
+		try {
+			await adminDeleteUser({ uid: user.uid, reason: "Admin account deletion" });
+			await qc.invalidateQueries({ queryKey: ["accountsNeedingReview"] });
+			setOkMsg(`Account @${user.username} was deleted and its content anonymized.`);
+			setUser(null);
+			setMod(null);
+			setConfirmDelete(false);
+		} catch (err) {
+			setError(friendly(err));
+			setBusy(null);
+		}
+	}
+
 	return (
 		<div className="space-y-5">
 			<form onSubmit={search} className="flex gap-2">
 				<div className="relative flex-1">
-					<span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-2">@</span>
+					<span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-2">🔍</span>
 					<input
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
-						placeholder="Find a member by username"
-						className="w-full rounded-full border border-line bg-surface py-2.5 pl-8 pr-4 text-[15px] text-ink outline-none transition-colors placeholder:text-muted-2 focus:border-lav"
+						placeholder="Search by username or email"
+						className="w-full rounded-full border border-line bg-surface py-2.5 pl-9 pr-4 text-[15px] text-ink outline-none transition-colors placeholder:text-muted-2 focus:border-lav"
 					/>
 				</div>
 				<button
 					type="submit"
 					disabled={searching}
 					className="rounded-full bg-coral px-5 py-2.5 text-[15px] font-medium text-white transition-transform hover:scale-[1.02] disabled:opacity-50">
-					{searching ? "Looking…" : "Look up"}
+					{searching ? "Searching…" : "Search"}
 				</button>
 			</form>
 
-			{notFound && <p className="text-sm text-muted">No member found with that username.</p>}
+			{notFound && <p className="text-sm text-muted">No member found for that username or email.</p>}
+
+			{/* Multiple matches → pick one */}
+			{results && results.length > 0 && (
+				<ul className="divide-y divide-line rounded-2xl border border-line bg-surface">
+					{results.map((r) => (
+						<li key={r.uid}>
+							<button
+								onClick={() => select(r)}
+								className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-bg-2/50">
+								<span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-lav-wash text-sm font-semibold text-lav">
+									{r.username.slice(0, 1).toUpperCase()}
+								</span>
+								<span className="min-w-0 flex-1">
+									<span className="flex flex-wrap items-center gap-2">
+										<span className="font-medium text-ink">{r.displayName || r.username}</span>
+										<span className="text-sm text-muted">@{r.username}</span>
+									</span>
+									<span className="flex flex-wrap items-center gap-x-2 text-xs">
+										<span className={`rounded-full px-1.5 py-0.5 font-semibold uppercase tracking-wide ${STATUS_STYLE[r.status] ?? "bg-bg-2 text-muted"}`}>
+											{r.status}
+										</span>
+										<span className="text-muted-2">{r.role}</span>
+										{r.email && <span className="text-muted-2">· {r.email}</span>}
+									</span>
+								</span>
+								<span className="shrink-0 text-muted-2">›</span>
+							</button>
+						</li>
+					))}
+				</ul>
+			)}
 
 			{user && (
 				<div className="space-y-4 rounded-2xl border border-line bg-surface p-5 shadow-soft">
@@ -278,6 +354,46 @@ export function UserAdmin() {
 						A full record — profile, strikes, bans, moderation actions, reports, and everything they posted — for disputes or appeals. Generating
 						it is itself logged.
 					</p>
+
+					{/* Danger zone — superadmin only */}
+					{isSuperadmin && user.status !== "deleted" && (
+						<div className="rounded-xl border border-coral-soft bg-coral-wash/40 p-3">
+							<p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-coral">Danger zone</p>
+							{!confirmDelete ? (
+								<button
+									disabled={busy !== null}
+									onClick={() => {
+										setConfirmDelete(true);
+										setError(null);
+										setOkMsg(null);
+									}}
+									className="rounded-full border border-coral px-3 py-1.5 text-sm font-medium text-coral transition-colors hover:bg-coral hover:text-white disabled:opacity-50">
+									Delete account
+								</button>
+							) : (
+								<div className="space-y-2">
+									<p className="text-sm text-ink-2">
+										Permanently delete <strong>@{user.username}</strong>? Their Auth login is removed and all their content is anonymized. This
+										can’t be undone.
+									</p>
+									<div className="flex flex-wrap gap-2">
+										<button
+											disabled={busy !== null}
+											onClick={deleteAccount}
+											className="rounded-full bg-coral px-4 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50">
+											{busy === "delete" ? "Deleting…" : "Yes, delete permanently"}
+										</button>
+										<button
+											disabled={busy !== null}
+											onClick={() => setConfirmDelete(false)}
+											className="rounded-full px-4 py-1.5 text-sm font-medium text-muted transition-colors hover:text-ink-2 disabled:opacity-50">
+											Cancel
+										</button>
+									</div>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			)}
 		</div>

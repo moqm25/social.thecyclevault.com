@@ -251,3 +251,13 @@ export const resolveIssueReportSchema = z.object({
 export const sendPasswordResetSchema = z.object({
 	email: z.string().email().max(200),
 });
+
+// ---- admin user directory + deletion ----
+export const searchUsersSchema = z.object({
+	query: z.string().trim().min(1).max(200),
+});
+
+export const adminDeleteUserSchema = z.object({
+	uid: z.string().min(1).max(128),
+	reason: z.string().max(500).optional(),
+});

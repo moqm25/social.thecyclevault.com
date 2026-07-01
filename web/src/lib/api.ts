@@ -64,6 +64,12 @@ export const searchContent = callable<{ query: string; ai?: boolean }, SearchRes
 export const getPlatformStats = callable<Record<string, never>, PlatformStats>("getPlatformStats");
 export const getUserActivityReport = callable<{ uid: string }, UserActivityReport>("getUserActivityReport");
 
+// ---- admin (user directory + deletion) ----
+import type { UserSearchResult } from "../types/models";
+
+export const searchUsers = callable<{ query: string }, { results: UserSearchResult[] }>("searchUsers");
+export const adminDeleteUser = callable<{ uid: string; reason?: string }, { ok: true }>("adminDeleteUser");
+
 // ---- posts ----
 export const createPost = callable<
 	{ communityId: string; title: string; body: string; tags?: string[] },

@@ -59,6 +59,7 @@ export {
 // ---- admin (usage analytics + cost estimate) ----
 export { getPlatformStats } from "./admin/stats.js";
 export { getUserActivityReport } from "./admin/userReport.js";
+export { searchUsers, adminDeleteUser } from "./admin/users.js";
 
 // ---- support ("Report a problem" — open to everyone) ----
 export { submitIssueReport, listIssueReports, getIssueReportScreenshot, resolveIssueReport } from "./support/issues.js";
