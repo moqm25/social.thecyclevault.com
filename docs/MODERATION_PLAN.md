@@ -13,30 +13,31 @@ and [`SECURITY_RULES.md`](./SECURITY_RULES.md).
 
 ## 1. Roles & authorization
 
-| Role            | Who                     | Capabilities                                                                                                           |
-| --------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| **Guest**       | Unauthenticated         | Read active public content only                                                                                        |
-| **User**        | Registered, `active`    | Post, comment, vote, report, edit/delete own                                                                           |
-| **Moderator**   | Appointed by admins     | All User + remove content, lock posts, suspend users (bounded), resolve/dismiss reports — **platform-wide** (global, not scoped to a single community) |
-| **Admin**       | Trusted operators       | All Mod across **all** communities + ban users, restore content, manage communities                                    |
-| **Super Admin** | Founder                 | All Admin + change roles (`setUserRole`), platform settings, view audit logs                                           |
+| Role            | Who                  | Capabilities                                                                                                                                           |
+| --------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Guest**       | Unauthenticated      | Read active public content only                                                                                                                        |
+| **User**        | Registered, `active` | Post, comment, vote, report, edit/delete own                                                                                                           |
+| **Moderator**   | Appointed by admins  | All User + remove content, lock posts, suspend users (bounded), resolve/dismiss reports — **platform-wide** (global, not scoped to a single community) |
+| **Admin**       | Trusted operators    | All Mod across **all** communities + ban users, restore content, manage communities                                                                    |
+| **Super Admin** | Founder              | All Admin + change roles (`setUserRole`), platform settings, view audit logs                                                                           |
 
 ### Authorization matrix
 
-| Action                  | Guest | User | Mod                  | Admin | SuperAdmin |
-| ----------------------- | ----- | ---- | -------------------- | ----- | ---------- |
-| View active content     | ✅    | ✅   | ✅                   | ✅    | ✅         |
-| Create post/comment     | ❌    | ✅   | ✅                   | ✅    | ✅         |
-| Vote                    | ❌    | ✅   | ✅                   | ✅    | ✅         |
-| Report content          | ❌    | ✅   | ✅                   | ✅    | ✅         |
-| Edit/delete own content | ❌    | ✅   | ✅                   | ✅    | ✅         |
-| Remove others' content  | ❌    | ❌    | ✅                   | ✅    | ✅         |
-| Lock post               | ❌    | ❌    | ✅                   | ✅    | ✅         |
-| Suspend user            | ❌    | ❌   | ✅ (≤ 7 days)        | ✅    | ✅         |
-| Ban user                | ❌    | ❌   | ❌                   | ✅    | ✅         |
-| Restore removed content | ❌    | ❌   | ❌                   | ✅    | ✅         |
-| Change roles            | ❌    | ❌   | ❌                   | ❌    | ✅         |
-| View audit logs         | ❌    | ❌   | ❌                   | ❌    | ✅         |
+| Action                  | Guest | User | Mod           | Admin | SuperAdmin |
+| ----------------------- | ----- | ---- | ------------- | ----- | ---------- |
+| View active content     | ✅    | ✅   | ✅            | ✅    | ✅         |
+| Create post/comment     | ❌    | ✅   | ✅            | ✅    | ✅         |
+| Vote                    | ❌    | ✅   | ✅            | ✅    | ✅         |
+| Report content          | ❌    | ✅   | ✅            | ✅    | ✅         |
+| Edit/delete own content | ❌    | ✅   | ✅            | ✅    | ✅         |
+| Remove others' content  | ❌    | ❌   | ✅            | ✅    | ✅         |
+| Lock post               | ❌    | ❌   | ✅            | ✅    | ✅         |
+| Suspend user            | ❌    | ❌   | ✅ (≤ 7 days) | ✅    | ✅         |
+| Ban user                | ❌    | ❌   | ❌            | ✅    | ✅         |
+| Restore removed content | ❌    | ❌   | ❌            | ✅    | ✅         |
+| Change roles            | ❌    | ❌   | ❌            | ❌    | ✅         |
+| View audit logs         | ❌    | ❌   | ❌            | ❌    | ✅         |
+
 > **Moderators are global.** `requireModeratorOf` authorizes any moderator+
 > across every community (the legacy per-community `users.moderatorOf` list is
 > superseded). Admin/superadmin inherit all moderator powers.
@@ -44,8 +45,8 @@ and [`SECURITY_RULES.md`](./SECURITY_RULES.md).
 > **Edits are re-moderated.** `updatePost` and `updateComment` re-run the
 > moderation pipeline on the edited content, so a benign post can't be quietly
 > edited into a policy violation after approval.
-All enforcement happens **server-side in Cloud Functions**; the client UI merely
-hides controls the user can't use.
+> All enforcement happens **server-side in Cloud Functions**; the client UI merely
+> hides controls the user can't use.
 
 ---
 
@@ -107,13 +108,13 @@ nobody is penalized for something a person hasn't judged. Mods can pass
 
 **Escalation ladder** (by count of currently-active strikes):
 
-| Active strikes | Consequence                              |
-| -------------- | ---------------------------------------- |
-| 1              | Warning only (calm notification)         |
-| 2              | 24-hour suspension                       |
-| 3              | 7-day suspension                         |
-| 4              | 30-day suspension                        |
-| 5+             | `needsAdminReview` — a human decides     |
+| Active strikes | Consequence                          |
+| -------------- | ------------------------------------ |
+| 1              | Warning only (calm notification)     |
+| 2              | 24-hour suspension                   |
+| 3              | 7-day suspension                     |
+| 4              | 30-day suspension                    |
+| 5+             | `needsAdminReview` — a human decides |
 
 - **Decay:** strikes **expire after 90 days** (`expiresAtMs`); only active
   (non-expired, non-cleared) strikes count toward escalation. A long-ago mistake
@@ -123,9 +124,9 @@ nobody is penalized for something a person hasn't judged. Mods can pass
 - **5+ never auto-permabans** — it flags the account so an admin chooses (suspend
   longer / ban / clear) on the **Accounts needing review** panel.
 - **Privacy:** strike history lives in a mod-only collection (`userModeration/{uid}`
-  + a function-only `users/{uid}/strikes` subcollection), **never** on the public
-  profile. Only the enforced suspension (`status`/`suspendedUntil`) is on the user
-  doc, exactly as before.
+    - a function-only `users/{uid}/strikes` subcollection), **never** on the public
+      profile. Only the enforced suspension (`status`/`suspendedUntil`) is on the user
+      doc, exactly as before.
 - **Every strike is audited** (`moderationActions` + `auditLogs`) and the user is
   notified with a clear, kind explanation and a link to the guidelines.
 
@@ -191,11 +192,29 @@ human-in-the-loop for account-level actions.
 
 ---
 
-## 8. Appeals (lightweight, MVP)
+## 8. Appeals & author transparency (lightweight, MVP)
 
 A removed/suspended user sees the reason and a link to `support` (email or the
 `support` community). Admins can `restoreContent` / `unbanUser`. A formal in-app
 appeals workflow is Phase 2.
+
+**Author transparency (✅ implemented).** Every moderation outcome lands somewhere
+that actually explains it — no dead ends:
+
+- **Reason persisted on the content.** `removeContent` / `reviewContent` /
+  `restoreContent` write `moderation.reviewReason` + `moderation.reviewedAt` onto
+  the post/comment doc. Because rules let an author read their **own** non-active
+  content, the author can always see _what_ they wrote and _why_ it was actioned —
+  not just a one-off notification. Raw scores/flags stay mod-only (`ModerationDetails`).
+- **Notifications deep-link to the exact item.** Content actions link to
+  `/post/{postId}` (post) or `/post/{postId}?focus={commentId}` (comment — scrolls
+  to + highlights it, fetching the author's own hidden comment when the active
+  thread query didn't include it). Account-level actions link to the guidelines.
+- **No silent actions.** `restoreContent` (“your content is back”), `suspendUser`
+  (“temporarily paused” + reason) and `banUser` (reason) all notify the affected
+  user. Held (`pending`) content and strike escalations also notify + deep-link.
+- **Own history is visible.** On your own profile you can see your held/removed
+  posts and comments (clearly marked); others still see only active content.
 
 ---
 

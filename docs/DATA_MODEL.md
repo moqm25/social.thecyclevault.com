@@ -63,26 +63,26 @@ directly to `firestore.indexes.json` and is enforced by
 
 Public-facing pseudonymous profile. `uid` equals the Firebase Auth UID.
 
-| Field            | Type                                          | Notes                                                                                                               |
-| ---------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `uid`            | string                                        | == doc ID == Auth UID                                                                                               |
-| `username`       | string                                        | Display case, e.g. `CalmFox`. **Immutable in MVP.**                                                                 |
-| `usernameLower`  | string                                        | Lowercase, for lookups/joins                                                                                        |
-| `displayName`    | string?                                       | Optional, ≤ 50 chars                                                                                                |
-| `avatarUrl`      | string?                                       | Storage URL; null = generated default                                                                               |
-| `bio`            | string                                        | ≤ 300 chars, default `""`                                                                                           |
-| `role`           | enum(`user`,`moderator`,`admin`,`superadmin`) | Default `user`. **Function-only.**                                                                                  |
-| `status`         | enum(`active`,`suspended`,`banned`,`deleted`) | Default `active`. **Function-only.**                                                                                |
-| `karma`          | number                                        | Default 0. **Function-only.**                                                                                       |
-| `postCount`      | number                                        | **Function-only** counter                                                                                           |
-| `commentCount`   | number                                        | **Function-only** counter                                                                                           |
+| Field            | Type                                          | Notes                                                                                                                       |
+| ---------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `uid`            | string                                        | == doc ID == Auth UID                                                                                                       |
+| `username`       | string                                        | Display case, e.g. `CalmFox`. **Immutable in MVP.**                                                                         |
+| `usernameLower`  | string                                        | Lowercase, for lookups/joins                                                                                                |
+| `displayName`    | string?                                       | Optional, ≤ 50 chars                                                                                                        |
+| `avatarUrl`      | string?                                       | Storage URL; null = generated default                                                                                       |
+| `bio`            | string                                        | ≤ 300 chars, default `""`                                                                                                   |
+| `role`           | enum(`user`,`moderator`,`admin`,`superadmin`) | Default `user`. **Function-only.**                                                                                          |
+| `status`         | enum(`active`,`suspended`,`banned`,`deleted`) | Default `active`. **Function-only.**                                                                                        |
+| `karma`          | number                                        | Default 0. **Function-only.**                                                                                               |
+| `postCount`      | number                                        | **Function-only** counter                                                                                                   |
+| `commentCount`   | number                                        | **Function-only** counter                                                                                                   |
 | `moderatorOf`    | array<ref>                                    | Legacy per-community list; **superseded by the global `moderator` role** (any moderator+ acts platform-wide). Default `[]`. |
-| `badges`         | array<enum>                                   | `supporter`,`founding_supporter`,`clinician`,`org`. **Function-only** (monetization/trust — see `MONETIZATION.md`). |
-| `supporter`      | bool?                                         | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase).                           |
-| `supporterSince` | ts?                                           | When Supporter began; null otherwise                                                                                |
-| `suspendedUntil` | ts?                                           | Set by suspension; null otherwise                                                                                   |
-| `createdAt`      | ts                                            | server                                                                                                              |
-| `updatedAt`      | ts                                            | server                                                                                                              |
+| `badges`         | array<enum>                                   | `supporter`,`founding_supporter`,`clinician`,`org`. **Function-only** (monetization/trust — see `MONETIZATION.md`).         |
+| `supporter`      | bool?                                         | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase).                                   |
+| `supporterSince` | ts?                                           | When Supporter began; null otherwise                                                                                        |
+| `suspendedUntil` | ts?                                           | Set by suspension; null otherwise                                                                                           |
+| `createdAt`      | ts                                            | server                                                                                                                      |
+| `updatedAt`      | ts                                            | server                                                                                                                      |
 
 - **Client-editable subset (own doc only):** `displayName`, `avatarUrl`, `bio`.
   Everything else — including `badges`/`supporter` — is function-only and blocked
@@ -146,6 +146,7 @@ the doc ID collision _is_ the uniqueness guarantee.
 | `status`                  | enum(`active`,`removed`,`deleted`,`locked`) | `removed` = mod, `deleted` = author                |
 | `locked`                  | bool                                        | If true, no new comments                           |
 | `edited`                  | bool                                        | Set true on author edit                            |
+| `moderation`              | map?                                        | AI/human summary: `state`,`score`,`severity`,`flags` + author-visible `reviewReason`/`reviewedAt` on human action. **Function-only** |
 | `createdAt` / `updatedAt` | ts                                          | server                                             |
 
 - Created/edited/deleted only via `createPost` / `updatePost` / `deletePostSoft`
@@ -170,6 +171,7 @@ Flat collection with `parentCommentId` threading (cap `depth`).
 | `replyCount`                              | number                             | **Function-only**                                    |
 | `status`                                  | enum(`active`,`removed`,`deleted`) | soft delete                                          |
 | `edited`                                  | bool                               |                                                      |
+| `moderation`                              | map?                               | Moderation summary incl. author-visible `reviewReason`/`reviewedAt`. **Function-only** |
 | `createdAt` / `updatedAt`                 | ts                                 | server                                               |
 
 ---
@@ -373,16 +375,16 @@ These collections were added as features landed. All remain **server-authoritati
 
 Admin-curated Shop items (see `MONETIZATION.md`).
 
-| Field        | Type    | Notes                                                        |
-| ------------ | ------- | ------------------------------------------------------------ |
-| `name`       | string  | Product name                                                 |
-| `blurb`      | string  | Short description                                            |
-| `url`        | string  | Destination (must be `https://`)                             |
-| `imageUrl`   | string? | Optional image (must be `https://`)                          |
-| `category`   | enum    | Product category                                             |
-| `sponsor`    | string? | Optional sponsor label                                       |
-| `active`     | bool    | Only `active` products are shown / clickable                 |
-| `clickCount` | int     | Privacy-safe tally via `recordSponsoredClick` (IP-deduped)   |
+| Field        | Type    | Notes                                                      |
+| ------------ | ------- | ---------------------------------------------------------- |
+| `name`       | string  | Product name                                               |
+| `blurb`      | string  | Short description                                          |
+| `url`        | string  | Destination (must be `https://`)                           |
+| `imageUrl`   | string? | Optional image (must be `https://`)                        |
+| `category`   | enum    | Product category                                           |
+| `sponsor`    | string? | Optional sponsor label                                     |
+| `active`     | bool    | Only `active` products are shown / clickable               |
+| `clickCount` | int     | Privacy-safe tally via `recordSponsoredClick` (IP-deduped) |
 
 - Public read is limited to `active` products; all writes are admin-function-only.
 
@@ -390,15 +392,15 @@ Admin-curated Shop items (see `MONETIZATION.md`).
 
 Universal "Report a problem" submissions (`submitIssueReport`).
 
-| Field       | Type    | Notes                                                            |
-| ----------- | ------- | ---------------------------------------------------------------- |
-| `category`  | enum    | `bug`,`broken`,`visual`,`account`,`performance`,`other`          |
-| `message`   | string  | Reporter's description                                           |
-| `email`     | string? | Optional (guests, for follow-up)                                 |
-| `context`   | string  | JSON debug snapshot (route/url/user-agent/role), captured at submit |
-| `screenshot`| string? | Optional data-URL, size-capped; fetched on demand by admins      |
-| `status`    | enum    | `open` → `resolved`                                              |
-| `createdAt` | ts      | server                                                           |
+| Field        | Type    | Notes                                                               |
+| ------------ | ------- | ------------------------------------------------------------------- |
+| `category`   | enum    | `bug`,`broken`,`visual`,`account`,`performance`,`other`             |
+| `message`    | string  | Reporter's description                                              |
+| `email`      | string? | Optional (guests, for follow-up)                                    |
+| `context`    | string  | JSON debug snapshot (route/url/user-agent/role), captured at submit |
+| `screenshot` | string? | Optional data-URL, size-capped; fetched on demand by admins         |
+| `status`     | enum    | `open` → `resolved`                                                 |
+| `createdAt`  | ts      | server                                                              |
 
 - **Fail-closed:** no client read/write. Admins access via `listIssueReports` /
   `getIssueReportScreenshot` / `resolveIssueReport`.
