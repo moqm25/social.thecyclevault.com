@@ -5,6 +5,7 @@ import { VoteControl } from "../../components/VoteControl";
 import { AuthorName } from "../../components/AuthorName";
 import { ContentMenu } from "../../components/ContentMenu";
 import { ModerationDetails } from "../../components/ModerationDetails";
+import { AuthorModerationNotice } from "../../components/AuthorModerationNotice";
 import { useAuth } from "../auth/AuthProvider";
 import { useAdminView } from "../admin/AdminViewContext";
 import { useVoteComment } from "../posts/hooks";
@@ -38,6 +39,7 @@ function CommentItem({ node, postId, focusId }: { node: TreeNode; postId: string
 	const [replying, setReplying] = useState(false);
 
 	const hidden = node.status === "removed" || node.status === "deleted";
+	const isOwn = !!user && node.authorId === user.uid;
 	const focused = focusId === node.id;
 	const cardRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +91,9 @@ function CommentItem({ node, postId, focusId }: { node: TreeNode; postId: string
 				<p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ink">{node.body}</p>
 
 				{adminView && <ModerationDetails status={node.status} moderation={node.moderation} />}
+				{!adminView && isOwn && (node.status === "removed" || node.status === "deleted" || node.status === "pending") && (
+					<AuthorModerationNotice status={node.status} moderation={node.moderation} kind="comment" />
+				)}
 
 				<div className="mt-2 flex items-center gap-3">
 					<VoteControl

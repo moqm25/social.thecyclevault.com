@@ -30,6 +30,8 @@ export interface UserProfile {
 	badges?: BadgeKind[];
 	supporter?: boolean;
 	supporterSince?: number | null;
+	/** When suspended, the ms-epoch the suspension lifts (function-only). */
+	suspendedUntil?: number | null;
 	createdAt: number;
 	updatedAt: number;
 }
@@ -188,6 +190,9 @@ export interface ContentModeration {
 	severity: "none" | "low" | "high";
 	flags: string[];
 	safeConfidence?: number | null;
+	/** Human-readable outcome the AUTHOR can see (why it was removed/approved). */
+	reviewReason?: string | null;
+	reviewedAt?: number | null;
 }
 
 export type ProductCategory =

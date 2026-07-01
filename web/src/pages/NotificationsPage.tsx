@@ -66,7 +66,7 @@ export default function NotificationsPage() {
 									{!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-lav" aria-hidden="true" />}
 									<div className="min-w-0 flex-1">
 										<p className="font-medium text-ink">{n.title}</p>
-										<p className="truncate text-sm text-muted">{n.body}</p>
+										<p className={`text-sm text-muted ${n.type === "mod_action" ? "whitespace-pre-line" : "truncate"}`}>{n.body}</p>
 										<p className="mt-0.5 text-xs text-muted-2">{relativeTime(n.createdAt)}</p>
 									</div>
 								</div>
