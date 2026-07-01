@@ -9,6 +9,7 @@ setGlobalOptions({ region: "us-central1", maxInstances: 10 });
 
 // ---- auth / profile ----
 export { createUserProfile, reserveUsername } from "./auth/profile.js";
+export { sendBrandedPasswordReset, sendBrandedVerificationEmail } from "./auth/emails.js";
 
 // ---- communities (member-created "Circles") ----
 export { createCommunity } from "./communities/communities.js";

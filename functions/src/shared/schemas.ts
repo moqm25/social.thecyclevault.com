@@ -245,3 +245,9 @@ export const resolveIssueReportSchema = z.object({
 	id: z.string().min(1).max(128),
 	status: z.enum(["open", "resolved"]),
 });
+
+// ---- branded auth emails (sent via our own SendGrid pipeline, not Firebase's
+//      locked built-in templates) ----
+export const sendPasswordResetSchema = z.object({
+	email: z.string().email().max(200),
+});

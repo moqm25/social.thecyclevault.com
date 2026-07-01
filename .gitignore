@@ -17,6 +17,9 @@ functions/lib/
 extensions/*.secret.local
 extensions/*.local
 
+# ---- generated (built from email-templates/*.html at build time) ----
+functions/src/shared/emailTemplates.ts
+
 # ---- firebase ----
 .firebase/
 *-debug.log

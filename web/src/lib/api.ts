@@ -41,6 +41,14 @@ export const createUserProfile = callable<
 
 export const reserveUsername = callable<{ username: string }, { available: boolean; reserved?: boolean }>("reserveUsername");
 
+// ---- branded auth emails (sent via our SendGrid pipeline, not Firebase's locked
+//      built-in templates). Password reset never reveals whether an account exists.
+//      `devLink` is only returned when running against the emulator. ----
+export const sendBrandedPasswordReset = callable<{ email: string }, { ok: true; devLink?: string }>("sendBrandedPasswordReset");
+export const sendBrandedVerificationEmail = callable<Record<string, never>, { ok: true; alreadyVerified?: boolean; devLink?: string }>(
+	"sendBrandedVerificationEmail",
+);
+
 // ---- communities ("Circles") ----
 export const createCommunity = callable<
 	{ slug: string; name: string; description: string; rules?: string[]; color?: "coral" | "lav" },

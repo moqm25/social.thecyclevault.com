@@ -4,8 +4,6 @@ import {
 	signInWithEmailAndPassword,
 	createUserWithEmailAndPassword,
 	signOut as fbSignOut,
-	sendEmailVerification,
-	sendPasswordResetEmail,
 	reauthenticateWithCredential,
 	updatePassword,
 	EmailAuthProvider,
@@ -13,7 +11,7 @@ import {
 } from "firebase/auth";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, db } from "../../lib/firebase";
-import { env, useEmulators } from "../../lib/env";
+import { sendBrandedPasswordReset, sendBrandedVerificationEmail } from "../../lib/api";
 import type { UserProfile } from "../../types/models";
 
 interface AuthContextValue {
@@ -75,23 +73,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				await fbSignOut(auth);
 			},
 			sendVerification: async () => {
-				if (auth.currentUser) await sendEmailVerification(auth.currentUser);
+				// Branded verification email via our SendGrid pipeline (Firebase's built-in
+				// template body is locked by Google). devLink is returned only on the emulator.
+				const res = await sendBrandedVerificationEmail({});
+				if (res.devLink) console.info(`[The CycleVault Social] (emulator) verification link:\n${res.devLink}`);
 			},
 			resetPassword: async (email) => {
-				await sendPasswordResetEmail(auth, email);
-				// Dev convenience: the Auth emulator never sends a real email — it stores
-				// the reset link in its OOB API. Surface it in the console so the flow is
-				// testable locally. Best-effort; never blocks or throws.
-				if (useEmulators) {
-					try {
-						const res = await fetch(`http://127.0.0.1:9099/emulator/v1/projects/${env.VITE_FIREBASE_PROJECT_ID}/oobCodes`);
-						const body = (await res.json()) as { oobCodes?: Array<{ email?: string; requestType?: string; oobLink?: string }> };
-						const link = [...(body.oobCodes ?? [])].reverse().find((c) => c.email === email && c.requestType === "PASSWORD_RESET")?.oobLink;
-						if (link) console.info(`[The CycleVault Social] (emulator) password-reset link for ${email}:\n${link}`);
-					} catch {
-						/* best-effort dev helper */
-					}
-				}
+				// Branded reset email via our SendGrid pipeline. The server never reveals
+				// whether the account exists (email-enumeration protection) — it always
+				// resolves ok. devLink is returned only when running against the emulator.
+				const res = await sendBrandedPasswordReset({ email });
+				if (res.devLink) console.info(`[The CycleVault Social] (emulator) password-reset link for ${email}:\n${res.devLink}`);
 			},
 			changePassword: async (currentPassword, newPassword) => {
 				const u = auth.currentUser;

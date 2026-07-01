@@ -54,4 +54,9 @@ export const RATE = {
 	// Sponsored-click counter: one click per product per IP-window keeps the
 	// aggregate honest without tracking anyone.
 	productClick: { limit: 1, windowMs: 6 * 60 * 60 * 1000 },
+	// Branded auth emails (sent via our SendGrid pipeline). Guarded on BOTH the
+	// caller IP and the target email so nobody can inbox-bomb a victim.
+	authEmailIp: { limit: 12, windowMs: 60 * 60 * 1000 },
+	passwordResetTarget: { limit: 4, windowMs: 60 * 60 * 1000 },
+	verifyEmail: { limit: 6, windowMs: 60 * 60 * 1000 },
 } as const;
