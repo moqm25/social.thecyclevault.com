@@ -19,6 +19,7 @@ import ModDashboard from "./pages/ModDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFoundPage from "./pages/NotFoundPage";
 import LoginPage from "./features/auth/LoginPage";
+import ForgotPasswordPage from "./features/auth/ForgotPasswordPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import TermsPage from "./pages/legal/TermsPage";
 import GuidelinesPage from "./pages/legal/GuidelinesPage";
@@ -37,6 +38,7 @@ export default function App() {
 			{/* Auth — its own quiet chrome. */}
 			<Route element={<AuthLayout />}>
 				<Route path="/login" element={<LoginPage />} />
+				<Route path="/forgot-password" element={<ForgotPasswordPage />} />
 			</Route>
 
 			{/* App workspace — sidebar shell. */}
