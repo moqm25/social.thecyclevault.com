@@ -6,6 +6,7 @@ function friendly(err: unknown): string {
 	if (err instanceof FirebaseError) {
 		if (err.code === "functions/failed-precondition") return "Please verify your email, or this post may be locked.";
 		if (err.code === "functions/resource-exhausted") return "You’re commenting quickly — take a short breather.";
+		if (err.code === "functions/permission-denied") return err.message || "Your account can’t comment right now.";
 	}
 	return "Couldn’t post your comment. Please try again.";
 }

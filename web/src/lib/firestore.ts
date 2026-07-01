@@ -115,28 +115,25 @@ export async function listComments(postId: string, includeHidden = false): Promi
 	return snap.docs.map((d) => normalize<Comment>({ id: d.id, ...d.data() }));
 }
 
-export async function listUserPosts(authorId: string): Promise<Post[]> {
+export async function listUserPosts(authorId: string, ownView = false): Promise<Post[]> {
+	// On your OWN profile you can see everything you wrote (incl. held/removed) so
+	// your history isn't a mystery; others see only active. The `in` filter reuses
+	// the (authorId, status, createdAt) index, so no extra index is required.
+	const statusFilter = ownView
+		? where("status", "in", ["active", "pending", "removed", "deleted", "locked"])
+		: where("status", "==", "active");
 	const snap = await getDocs(
-		query(
-			collection(db, "posts"),
-			where("authorId", "==", authorId),
-			where("status", "==", "active"),
-			orderBy("createdAt", "desc"),
-			qLimit(PAGE_SIZE),
-		),
+		query(collection(db, "posts"), where("authorId", "==", authorId), statusFilter, orderBy("createdAt", "desc"), qLimit(PAGE_SIZE)),
 	);
 	return snap.docs.map((d) => normalize<Post>({ id: d.id, ...d.data() }));
 }
 
-export async function listUserComments(authorId: string): Promise<Comment[]> {
+export async function listUserComments(authorId: string, ownView = false): Promise<Comment[]> {
+	const statusFilter = ownView
+		? where("status", "in", ["active", "pending", "removed", "deleted"])
+		: where("status", "==", "active");
 	const snap = await getDocs(
-		query(
-			collection(db, "comments"),
-			where("authorId", "==", authorId),
-			where("status", "==", "active"),
-			orderBy("createdAt", "desc"),
-			qLimit(PAGE_SIZE),
-		),
+		query(collection(db, "comments"), where("authorId", "==", authorId), statusFilter, orderBy("createdAt", "desc"), qLimit(PAGE_SIZE)),
 	);
 	return snap.docs.map((d) => normalize<Comment>({ id: d.id, ...d.data() }));
 }

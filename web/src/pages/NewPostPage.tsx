@@ -18,6 +18,7 @@ function friendly(err: unknown): string {
 	if (err instanceof FirebaseError) {
 		if (err.code === "functions/failed-precondition") return "Please verify your email before posting.";
 		if (err.code === "functions/resource-exhausted") return "You’re posting a lot — take a short break and try again.";
+		if (err.code === "functions/permission-denied") return err.message || "Your account can’t post right now.";
 		if (err.code === "functions/not-found") return "That community no longer exists.";
 	}
 	return "Couldn’t publish your post. Please try again.";

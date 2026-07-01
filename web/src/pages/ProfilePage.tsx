@@ -10,6 +10,14 @@ import { useAuth } from "../features/auth/AuthProvider";
 
 type Tab = "posts" | "comments";
 
+function statusLabel(status: string): string {
+	if (status === "pending") return "Under review";
+	if (status === "removed") return "Removed";
+	if (status === "deleted") return "Deleted";
+	if (status === "locked") return "Locked";
+	return status;
+}
+
 /** Public pseudonymous profile: identity, badges, karma, posts/comments tabs. */
 export default function ProfilePage() {
 	const { username } = useParams<{ username: string }>();
@@ -19,8 +27,9 @@ export default function ProfilePage() {
 	const [reportOpen, setReportOpen] = useState(false);
 
 	const uid = profile.data?.uid;
-	const posts = useUserPosts(tab === "posts" ? uid : undefined);
-	const comments = useUserComments(tab === "comments" ? uid : undefined);
+	const ownView = !!me && !!uid && me.uid === uid;
+	const posts = useUserPosts(tab === "posts" ? uid : undefined, ownView);
+	const comments = useUserComments(tab === "comments" ? uid : undefined, ownView);
 
 	if (profile.isPending) {
 		return (
@@ -113,9 +122,16 @@ export default function ProfilePage() {
 					<EmptyState title="No posts yet" />
 				) : (
 					<div className="space-y-3">
-						{posts.data!.map((p) => (
-							<PostCard key={p.id} post={p} />
-						))}
+						{posts.data!.map((p) =>
+							ownView && p.status !== "active" ? (
+								<div key={p.id} className="rounded-2xl border border-dashed border-line bg-bg-2/40 p-1">
+									<p className="px-3 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-coral">{statusLabel(p.status)}</p>
+									<PostCard post={p} />
+								</div>
+							) : (
+								<PostCard key={p.id} post={p} />
+							),
+						)}
 					</div>
 				)
 			) : comments.isPending ? (
@@ -127,8 +143,13 @@ export default function ProfilePage() {
 			) : (
 				<ul className="space-y-2">
 					{comments.data!.map((c) => (
-						<li key={c.id} className="rounded-xl border border-line bg-surface p-3">
-							<Link to={`/post/${c.postId}`} className="block hover:text-coral">
+						<li
+							key={c.id}
+							className={`rounded-xl border p-3 ${ownView && c.status !== "active" ? "border-dashed border-line bg-bg-2/40" : "border-line bg-surface"}`}>
+							<Link to={ownView && c.status !== "active" ? `/post/${c.postId}?focus=${c.id}` : `/post/${c.postId}`} className="block hover:text-coral">
+								{ownView && c.status !== "active" && (
+									<p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-coral">{statusLabel(c.status)}</p>
+								)}
 								<p className="whitespace-pre-wrap text-[15px] text-ink-2">{c.body}</p>
 								<p className="mt-1 text-xs text-muted">
 									{c.score} points · {relativeTime(c.createdAt)} · in a thread
