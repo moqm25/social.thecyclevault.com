@@ -1,9 +1,9 @@
 # API_CONTRACT.md — The CycleVault Social
 
 - **Status:** Phase 0 spec (Accepted)
-- **Date:** 2026-06-26
+- **Date:** 2026-06-26 · **Last reconciled:** 2026-06-28 (full callable sweep)
 - **Owner:** [`adr/0001-foundational-architecture.md`](./adr/0001-foundational-architecture.md)
-- **Surface:** Firebase Cloud Functions (2nd gen, TypeScript, region `us-central1`)
+- **Surface:** Firebase Cloud Functions (2nd gen, TypeScript, Node 22, region `us-central1`)
 
 Every privileged mutation in the platform goes through one of these functions.
 Direct client writes to integrity fields are blocked by
@@ -181,6 +181,10 @@ Identical contract on `votes/{uid}_comment_{commentId}` and the comment's counte
 
 See [`MODERATION_PLAN.md`](./MODERATION_PLAN.md) for the authorization matrix.
 
+> **Moderators are global/platform-wide** — `requireModeratorOf` authorizes any
+> moderator+ across all communities (not just a community they own). Admin/superadmin
+> inherit moderator powers.
+
 ### `reportContent` (callable)
 
 - **Input:**
@@ -233,31 +237,99 @@ duplicates within a short window.
 
 ---
 
-## 7. Additional functions (required by moderation & privacy docs)
+## 7. Additional functions (complete callable reference)
 
-These are committed by [`MODERATION_PLAN.md`](./MODERATION_PLAN.md) and the
-account-deletion/export requirement in `DATA_MODEL.md` §16. Listed here so the
-contract is complete even though the headline list in the planning docs is the
-core set above.
+The sections above detail the core content/moderation surface. The tables below
+cover **every other deployed callable** so this contract is exhaustive. All are
+`onCall` (HTTPS Callable) on Node 22 unless marked _trigger_. "Auth" names the
+minimum gate: `guest` = no auth required, `user` = any signed-in active user,
+then the role floor (`moderator`/`admin`/`superadmin`). Every one still validates
+input with Zod and is rate-limited unless noted.
 
-| Function          | Auth       | Purpose                                         |
-| ----------------- | ---------- | ----------------------------------------------- |
-| `unbanUser`       | admin      | Deactivate ban, restore `users.status`          |
-| `restoreContent`  | mod/admin  | Reverse a `removed` status                      |
-| `dismissReport`   | mod/admin  | Close report as `dismissed`                     |
-| `setUserRole`     | superadmin | Change `role` (the only role-mutating path)     |
-| `exportMyData`    | user       | Return caller's posts/comments/votes as JSON    |
-| `deleteMyAccount` | user       | Soft-delete + anonymize per `DATA_MODEL.md` §16 |
+### 7.1 Communities
+
+| Function          | Auth                     | Purpose                                                        |
+| ----------------- | ------------------------ | -------------------------------------------------------------- |
+| `createCommunity` | user (verified) + active | Create a community/Circle. Rate-limited (`createCommunity`).   |
+
+### 7.2 Search (semantic / AI)
+
+| Function                  | Auth        | Purpose                                                                                     |
+| ------------------------- | ----------- | ------------------------------------------------------------------------------------------- |
+| `searchContent`           | **guest**   | Semantic + keyword search; optional grounded AI answer (`gemini-2.5-flash`). Rate-limited per uid (`search`/`searchAI`) or hashed IP (`searchGuest`). |
+| `embedPostOnWrite`        | _trigger_   | Firestore `onWrite` on `posts` → writes a 768-dim `text-embedding-005` vector for `findNearest` (COSINE). |
+| `reindexSearchEmbeddings` | admin       | Backfill/repair embeddings; processes up to 500 docs per run, re-runnable. No rate limit.   |
+
+### 7.3 Branded transactional email (SendGrid pipeline)
+
+| Function                       | Auth      | Purpose                                                                                          |
+| ------------------------------ | --------- | ------------------------------------------------------------------------------------------------ |
+| `sendBrandedPasswordReset`     | **guest** | Enumeration-safe reset: always returns `{ ok: true }` (emulator adds `devLink`). Queues a branded email in the `mail` collection. Rate-limited on caller IP **and** target email. |
+| `sendBrandedVerificationEmail` | user      | Send the branded verify-email to the caller's own address; no-ops if already verified. Rate-limited (`verifyEmail`). |
+
+> Both render brand-consistent HTML and hand off to the `firestore-send-email`
+> Trigger Email extension via the `mail` collection. See `DEPLOYMENT_PLAN.md`.
+
+### 7.4 Moderation & enforcement (beyond §5)
+
+| Function           | Auth       | Purpose                                                                                         |
+| ------------------ | ---------- | ------------------------------------------------------------------------------------------------ |
+| `reviewContent`    | moderator  | Approve queued/flagged content out of the review queue.                                          |
+| `restoreContent`   | admin      | Reverse a `removed` status.                                                                       |
+| `unbanUser`        | admin      | Deactivate active bans + restore `users.status:'active'`. **Status-checked** (`requireActiveUser`) so a banned admin can't self-reinstate. |
+| `dismissReport`    | moderator  | Close a report as dismissed.                                                                      |
+| `clearUserStrikes` | admin      | Wipe a user's active strikes + review flag (override).                                            |
+| `setUserRole`      | superadmin | The only role-mutating path; includes a self-demote guard.                                        |
+
+> **Moderators are global/platform-wide** (not scoped to specific communities).
+> Post/comment **edits are re-moderated** — `updatePost`/`updateComment` re-run the
+> moderation pipeline on the new content.
+
+### 7.5 Privacy & account
+
+| Function          | Auth | Purpose                                                                                                  |
+| ----------------- | ---- | -------------------------------------------------------------------------------------------------------- |
+| `exportMyData`    | user | Return caller's posts/comments/votes + profile as JSON. Each collection read is **capped at 10,000** with a `truncated` flag. Rate-limited (`exportData`). |
+| `deleteMyAccount` | user | Soft-delete + anonymize via shared `purgeAccount()` (authored content → `authorId:null`, username `"[deleted]"`; release username; delete Auth user). Rate-limited (`deleteAccount`). |
+
+### 7.6 Platform, shop & announcements
+
+| Function                    | Auth      | Purpose                                                                        |
+| --------------------------- | --------- | ------------------------------------------------------------------------------ |
+| `upsertSponsoredProduct`    | admin     | Create/update a Sponsored Product (`sponsoredProducts`).                        |
+| `setSponsoredProductActive` | admin     | Toggle a product's `active` flag.                                              |
+| `recordSponsoredClick`      | **guest** | Privacy-safe click tally; deduped one click per product per IP-window.         |
+| `broadcastAnnouncement`     | admin     | Fan-out an announcement notification to members.                               |
+| `grantBadge`                | admin     | Grant/revoke a cosmetic badge (supporter/founding_supporter/clinician/org).    |
+
+### 7.7 Admin reporting & user directory
+
+| Function                | Auth       | Purpose                                                                                              |
+| ----------------------- | ---------- | ---------------------------------------------------------------------------------------------------- |
+| `getPlatformStats`      | admin      | Aggregate platform counters for the admin console.                                                   |
+| `getUserActivityReport` | admin      | Per-user activity report for support/moderation.                                                     |
+| `searchUsers`           | admin      | Support directory: find members by username prefix **or** exact email. Rate-limited (`searchUsers`, 120/hr). Email is only returned on an exact-email lookup, never bulk-listed. |
+| `adminDeleteUser`       | superadmin | Destructive account removal via `purgeAccount()`. Guards: can't delete self, can't delete another superadmin. Fully audit-logged. |
+
+### 7.8 "Report a problem" (universal feedback)
+
+| Function                  | Auth      | Purpose                                                                                     |
+| ------------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `submitIssueReport`       | **guest** | Anyone (member or guest) can file an issue with category, message, optional email, debug context, and optional screenshot. Rate-limited (`issueReport`/`issueReportGuest`). |
+| `listIssueReports`        | admin     | List issue reports for the admin Issues queue.                                              |
+| `getIssueReportScreenshot`| admin     | Fetch a report's attached screenshot on demand.                                             |
+| `resolveIssueReport`      | admin     | Mark an issue report resolved.                                                              |
 
 ---
 
 ## 8. Triggers (event-driven, non-callable)
 
-| Trigger           | On                        | Purpose                                   |
-| ----------------- | ------------------------- | ----------------------------------------- |
-| `onUserDeleted`   | Auth user delete          | Reconcile profile/username tombstone      |
-| `onReportCreated` | `reports` create          | Optional auto-flag thresholds → mod queue |
-| `mentionParser`   | `comments`/`posts` create | Detect `@username` → `createNotification` |
+| Trigger            | On                        | Purpose                                     |
+| ------------------ | ------------------------- | ------------------------------------------- |
+| `embedPostOnWrite` | `posts` create/update     | Write/refresh the post's search embedding   |
+| `onUserDeleted`    | Auth user delete          | Reconcile profile/username tombstone        |
+| `onReportCreated`  | `reports` create          | Optional auto-flag thresholds → mod queue   |
+| `mentionParser`    | `comments`/`posts` create | Detect `@username` → `createNotification`   |
 
 > All counter mutations live inside the callable transactions above rather than in
 > `onWrite` triggers, to keep aggregation atomic with the action and avoid double

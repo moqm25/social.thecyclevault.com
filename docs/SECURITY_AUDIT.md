@@ -19,6 +19,12 @@ found **no critical or high-severity issues**. Four lower-severity items were fo
 and **all are fixed** in this pass. Several hardening recommendations remain for the
 public-launch checklist.
 
+> **Second pass (2026-06-28):** a full deep review of every callable's access
+> level, the client route guards, and the reporting flows was run after the
+> branded-email, hosting, and admin-user-directory work shipped. It found **1 High**
+> (`unbanUser` skipped the account-status check) plus five lower items — **all
+> fixed**. See [§6](#6-second-pass--deep-audit-2026-06-28).
+
 ---
 
 ## 1. Password & credential handling (the headline)
@@ -121,7 +127,53 @@ These are **not** open vulnerabilities — they're defense-in-depth for go-live:
 
 ---
 
-## 6. Sign-off
+## 6. Second pass — deep audit (2026-06-28)
+
+Full end-to-end review after the branded-email / Hosting / admin-user-directory
+work: every Cloud Function re-checked for its auth gate and access level, the
+client route guards re-read, the reporting flows and privacy/account paths
+re-walked, and all automated tests (25 function + 26 rules) re-run green.
+
+### Findings & fixes
+
+| ID      | Severity | Finding                                                                                                                                                                                                              | Status   |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| **H-1** | High     | `unbanUser` gated on `requireAuth` + `requireRole(admin)` but **not** account status, so a **banned admin** could still call it and reinstate themselves or others (privilege-retention). Every other admin action uses `requireActiveUser`. | ✅ Fixed |
+| **M-2** | Medium   | `ProtectedRoute` role check `ROLE_RANK[role] < ROLE_RANK[min]` **failed open** for an unknown/corrupt `role` (`undefined < n` is `false` in JS), so a broken profile could reach the admin/mod shell (server still blocked all actions). | ✅ Fixed |
+| **M-3** | Medium   | Signup did `signUp` → `createUserProfile` with no rollback. If profile creation failed (e.g. a username lost the TOCTOU race), the Auth account was left **orphaned with no profile**, trapping the user in a profile-less session. | ✅ Fixed |
+| **M-4** | Medium   | `exportMyData` read the caller's posts/comments/votes with **no limit** — a prolific or abusive account could OOM the function.                                                                                       | ✅ Fixed |
+| **L-4** | Low      | `searchUsers` (admin directory) had **no rate limit**, so a compromised admin session could bulk-scrape the member directory.                                                                                        | ✅ Fixed |
+| **L-5** | Low      | The `reportContent` pipeline supported `targetType: "user"` and the moderation queue rendered user reports, but there was **no UI** to report a member — the capability was unreachable.                             | ✅ Added |
+| **L-6** | Low      | "Report a problem" captured its debug context (route/url/timestamp) when the modal **opened**, so it could be stale if the reporter navigated before submitting.                                                     | ✅ Fixed |
+
+### Fix detail
+
+- **H-1:** `unbanUser` now uses `const { auth, profile } = await requireActiveUser(request); requireRole(profile, "admin");` — mirroring `banUser` / `restoreContent`. A banned/suspended admin is rejected before the unban runs. (`functions/src/moderation/moderation.ts`)
+- **M-2:** the guard coerces an unknown role to rank `-1` (`ROLE_RANK[profile.role] ?? -1`) so it **fails closed** — a corrupt profile can never satisfy a mod/admin gate. (`web/src/components/ProtectedRoute.tsx`)
+- **M-3:** on `createUserProfile` failure the just-created Auth account is rolled back (`created.delete()`, falling back to sign-out) so the user can retry cleanly instead of being trapped. (`web/src/features/auth/LoginPage.tsx`)
+- **M-4:** each export query is now bounded (`.limit(10_000)`), with a `truncated` flag in the payload so an over-cap export is honest and support can help with the remainder. (`functions/src/users/account.ts`)
+- **L-4:** added a `searchUsers` budget (120/hour/uid) enforced by admin uid. (`functions/src/shared/rateLimit.ts`, `functions/src/admin/users.ts`)
+- **L-5:** added a calm **Report** action on member profiles (`ReportUserModal`) that reuses the same `reportContent` pipeline (targetType `user`), so reports land in the one moderation queue. (`web/src/features/profile/ReportUserModal.tsx`, `web/src/pages/ProfilePage.tsx`)
+- **L-6:** the debug context is re-collected at **submit** time, so route/url/timestamp reflect where the reporter actually is. (`web/src/features/support/ReportIssueModal.tsx`)
+
+### Reviewed and accepted (no change needed)
+
+- **Admin sees registration email in the user directory** — this is intentional:
+  the directory is the **support** tool, and looking someone up by the email they
+  wrote in from is the point. Email is only returned on an exact-email lookup, never
+  bulk-listed, and role/deletion remain **superadmin-only**.
+- **`suspendUser` schema allows `durationHours` up to 8760** while moderators are
+  capped at 168h in logic — the server enforces the cap regardless of input, so the
+  wider schema is cosmetic, not a hole.
+- **`stripUndefined` only strips top-level keys** — every callable payload in the
+  app is flat, so there is no nested-undefined case to handle today.
+- **`anonymizeAuthored` stops after 1000 iterations** (≈450k authored items) and
+  **`reindexSearchEmbeddings` processes 500 docs/run** — both are far above current
+  volume and safe to re-run; noted for the scaling checklist, not bugs.
+
+---
+
+## 7. Sign-off
 
 No critical/high findings. All medium/low findings fixed in commit accompanying this
 document. Recommended items are tracked on the launch checklist above. Re-audit on

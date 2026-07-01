@@ -52,6 +52,10 @@ directly to `firestore.indexes.json` and is enforced by
 | `auditLogs`         | auto-ID                         | Functions only                              | admins only                 |
 | `bans`              | auto-ID                         | Functions only                              | mods/admins                 |
 | `settings`          | named (e.g. `global`)           | Admin functions                             | public (flags/announcement) |
+| `sponsoredProducts` | auto-ID                         | Admin functions only                        | public (active only)        |
+| `issueReports`      | auto-ID                         | Functions only (`submitIssueReport`)        | admins only                 |
+| `rateLimits`        | `{key}_{action}_{window}`       | Functions only                              | none (server-internal)      |
+| `mail`              | auto-ID                         | Functions only                              | none (extension outbox)     |
 
 ---
 
@@ -72,7 +76,7 @@ Public-facing pseudonymous profile. `uid` equals the Firebase Auth UID.
 | `karma`          | number                                        | Default 0. **Function-only.**                                                                                       |
 | `postCount`      | number                                        | **Function-only** counter                                                                                           |
 | `commentCount`   | number                                        | **Function-only** counter                                                                                           |
-| `moderatorOf`    | array<ref>                                    | communityIds moderated; default `[]`                                                                                |
+| `moderatorOf`    | array<ref>                                    | Legacy per-community list; **superseded by the global `moderator` role** (any moderator+ acts platform-wide). Default `[]`. |
 | `badges`         | array<enum>                                   | `supporter`,`founding_supporter`,`clinician`,`org`. **Function-only** (monetization/trust — see `MONETIZATION.md`). |
 | `supporter`      | bool?                                         | Paid Supporter flag. **Function-only** (set by `grantSupporter` after verified purchase).                           |
 | `supporterSince` | ts?                                           | When Supporter began; null otherwise                                                                                |
@@ -339,11 +343,15 @@ Sorting by `hotRank DESC` yields a hot feed without per-read computation. "Top" 
 
 ## 16. Account deletion & export (privacy)
 
-- **Export:** a function returns the user's own posts/comments/votes as JSON.
+- **Export:** a function returns the user's own posts/comments/votes + profile as
+  JSON. Each collection read is **bounded at 10,000 rows** and the payload carries a
+  `truncated` boolean so an over-cap export is honest (support handles the remainder).
 - **Deletion:** soft — `users.status = deleted`, profile PII fields cleared,
   `username` released or tombstoned, and authored content either anonymized
   (`authorUsername = "[deleted]"`, `authorId` nulled) or soft-removed per policy.
-  Firebase Auth record is deleted. An `auditLogs` entry records the event.
+  Firebase Auth record is deleted. An `auditLogs` entry records the event. The same
+  shared `purgeAccount()` powers both the member self-delete (`deleteMyAccount`) and
+  the superadmin-initiated `adminDeleteUser`.
 - This satisfies the roadmap's "account deletion and data export" privacy commitment.
 
 ---
@@ -353,3 +361,62 @@ Sorting by `hotRank DESC` yields a hot feed without per-read computation. "Top" 
 - Username change support post-MVP → requires denormalization reconciliation job.
 - Notifications top-level vs subcollection at scale (see `SCALING_PLAN.md`).
 - Whether to store `hotRank` or compute client-side over a recent window.
+
+---
+
+## 18. Additional collections (shipped since Phase 0)
+
+These collections were added as features landed. All remain **server-authoritative**
+(written only by Cloud Functions / the email extension via the Admin SDK).
+
+### `sponsoredProducts/{id}`
+
+Admin-curated Shop items (see `MONETIZATION.md`).
+
+| Field        | Type    | Notes                                                        |
+| ------------ | ------- | ------------------------------------------------------------ |
+| `name`       | string  | Product name                                                 |
+| `blurb`      | string  | Short description                                            |
+| `url`        | string  | Destination (must be `https://`)                             |
+| `imageUrl`   | string? | Optional image (must be `https://`)                          |
+| `category`   | enum    | Product category                                             |
+| `sponsor`    | string? | Optional sponsor label                                       |
+| `active`     | bool    | Only `active` products are shown / clickable                 |
+| `clickCount` | int     | Privacy-safe tally via `recordSponsoredClick` (IP-deduped)   |
+
+- Public read is limited to `active` products; all writes are admin-function-only.
+
+### `issueReports/{id}`
+
+Universal "Report a problem" submissions (`submitIssueReport`).
+
+| Field       | Type    | Notes                                                            |
+| ----------- | ------- | ---------------------------------------------------------------- |
+| `category`  | enum    | `bug`,`broken`,`visual`,`account`,`performance`,`other`          |
+| `message`   | string  | Reporter's description                                           |
+| `email`     | string? | Optional (guests, for follow-up)                                 |
+| `context`   | string  | JSON debug snapshot (route/url/user-agent/role), captured at submit |
+| `screenshot`| string? | Optional data-URL, size-capped; fetched on demand by admins      |
+| `status`    | enum    | `open` → `resolved`                                              |
+| `createdAt` | ts      | server                                                           |
+
+- **Fail-closed:** no client read/write. Admins access via `listIssueReports` /
+  `getIssueReportScreenshot` / `resolveIssueReport`.
+
+### `rateLimits/{key}_{action}_{window}`
+
+Server-internal sliding/fixed-window counters (keyed by uid **or** hashed IP +
+action + window). Never read or written by clients; the enforcement helper owns them.
+
+### `mail/{id}`
+
+Outbox for the `firestore-send-email` (Trigger Email) extension. Cloud Functions
+(e.g. `sendBrandedPasswordReset`) write a doc describing the email; the extension
+sends it and stamps `delivery.state`. **Fail-closed** to all clients. See
+`DEPLOYMENT_PLAN.md` for the SendGrid wiring.
+
+### Post search embedding
+
+`posts/{postId}` also carries an **`embedding`** vector field (768-dim,
+`text-embedding-005`) written by the `embedPostOnWrite` trigger and queried with
+Firestore native `findNearest` (COSINE) for semantic search. See `SEARCH.md`.

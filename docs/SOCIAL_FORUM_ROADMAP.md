@@ -25,6 +25,19 @@ Architecture:
 
 ## Product Scope
 
+> **Shipped status (2026-06-28).** The full MVP is live, plus several "later"
+> items pulled forward. **Shipped:** auth + pseudonymous profiles, communities,
+> posts/comments/voting, feeds, in-app notifications, **semantic + AI search**
+> (Firestore vector `findNearest` + `gemini-2.5-flash` grounded answers), **AI +
+> human moderation** with a review queue and global moderators, **admin console**
+> (platform stats + per-user activity report), **admin user directory** (search +
+> superadmin delete), **Sponsored Products / Shop**, **cosmetic badges**, **guest
+> name-blur**, **branded transactional emails** (SendGrid + Trigger Email), a
+> **Firebase Hosting test channel** (`cyclevault-social.web.app`), a universal
+> **"Report a problem"** flow + admin Issues queue, and a **report-a-member** flow.
+> **Not yet:** DMs, private groups, rich-text/image uploads, polls, saved posts,
+> web push, and the public custom-domain cutover.
+
 ### MVP Features
 
 1. User authentication
@@ -65,8 +78,8 @@ Architecture:
 - Image uploads
 - Polls
 - Saved posts
-- Awards/badges
-- AI moderation
+- Awards/badges ✅ shipped (cosmetic badges: supporter/founding_supporter/clinician/org)
+- AI moderation ✅ shipped (AI + human review queue)
 - AI post summarization
 - Recommendation feed
 - Mobile app integration

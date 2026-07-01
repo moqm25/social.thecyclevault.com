@@ -47,6 +47,12 @@ can only do what we explicitly allow. Schema references: [`DATA_MODEL.md`](./DAT
 | `auditLogs`         | ❌                    | admin only        | ❌                                      |
 | `bans`              | ❌                    | mod/admin         | ❌                                      |
 | `settings`          | ✅ flags/announcement | ✅                | ❌                                      |
+| `moderationQueue`   | ❌                    | mod/admin         | ❌ (functions only)                     |
+| `sponsoredProducts` | ✅ if `active`        | ✅ if `active`, all if mod | ❌ (functions only)              |
+| `userModeration`    | ❌                    | mod/admin         | ❌ (functions only)                     |
+| `issueReports`      | ❌ **fail-closed**    | ❌ (admins via callable only) | ❌ (functions only)         |
+| `rateLimits`        | ❌                    | ❌                | ❌ (server-internal)                    |
+| `mail`              | ❌ **fail-closed**    | ❌                | ❌ (extension outbox)                   |
 
 \* Even `markNotificationRead` is exposed as a function; the direct-write rule for
 `read` is an optional convenience that can be disabled.
@@ -166,6 +172,36 @@ match /databases/{db}/documents {
   match /settings/{id} {
     allow read: if true;                        // feature flags / announcement
     allow write: if false;                      // admin functions only
+  }
+
+  // ---- moderationQueue (full content-review stream) ----
+  match /moderationQueue/{id} {
+    allow read: if isMod();
+    allow write: if false;                      // functions only
+  }
+
+  // ---- sponsoredProducts (Shop) ----
+  match /sponsoredProducts/{id} {
+    allow read: if resource.data.active == true || isMod(); // public sees active
+    allow write: if false;                      // admin upsert/toggle + click fn
+  }
+
+  // ---- userModeration (private strike/review counters) ----
+  match /userModeration/{userId} {
+    allow read: if isMod();
+    allow write: if false;                      // functions only
+  }
+
+  // ---- issueReports ("Report a problem") — fail closed ----
+  // Written via submitIssueReport (open, rate-limited); admins read ONLY through
+  // admin callables. No client read/write at all.
+  match /issueReports/{id} {
+    allow read, write: if false;
+  }
+
+  // ---- mail (Trigger Email extension outbox) — fail closed ----
+  match /mail/{id} {
+    allow read, write: if false;                // server-written, extension-sent
   }
 
   // ---- default deny ----

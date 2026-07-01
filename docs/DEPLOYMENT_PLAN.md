@@ -29,6 +29,22 @@ AI assistant (or the founder) operates Firebase. Two independent deploy targets:
 Project aliases live in `.firebaserc`. The Vite app reads `VITE_FIREBASE_*` env
 vars per environment (see §5).
 
+> **Internal test URL (live):** a **Firebase Hosting** deploy serves the built SPA
+> at **`cyclevault-social.web.app`** against the real production backend. This is the
+> internal test/preview surface — **not** the public custom domain. Build and ship it
+> with:
+>
+> ```bash
+> cd web && npm run build && cd ..
+> firebase deploy --only hosting
+> ```
+>
+> The **public** cutover to `social.thecyclevault.com` (GitHub Pages, §2/§3) remains
+> a separate, deliberate, gated step.
+
+> **Functions runtime:** Cloud Functions run on **Node 22** (2nd gen, `us-central1`,
+> `maxInstances 10`).
+
 > **Blaze required.** Cloud Functions (2nd gen) deploy only on the **Blaze
 > pay-as-you-go** plan. The production project must be on Blaze with a billing
 > account **and budget alerts** (see [`COST_MODEL.md`](./COST_MODEL.md)). The free
@@ -107,6 +123,21 @@ budget alert.
 `VITE_FIREBASE_*` keys (public client config): `API_KEY`, `AUTH_DOMAIN`,
 `PROJECT_ID`, `STORAGE_BUCKET`, `MESSAGING_SENDER_ID`, `APP_ID`. **Never** commit
 service-account JSON or `FIREBASE_TOKEN`.
+
+### Branded transactional email (SendGrid + Trigger Email)
+
+Both Firebase Auth's built-in emails **and** our own branded emails send through
+**SendGrid SMTP** so everything is on-brand and deliverable:
+
+- **SMTP:** `smtp.sendgrid.net:587`, STARTTLS, username literally `apikey`, password
+  = the SendGrid API key. Configured as the Auth custom SMTP sender **and** as the
+  `firestore-send-email` (Trigger Email) extension's transport.
+- **Trigger Email extension:** watches the **`mail`** collection; `DEFAULT_FROM` is
+  `The CycleVault Social <support@thecyclevault.com>`, `DATABASE_REGION` is
+  `us-central1`. Our callables (`sendBrandedPasswordReset`, etc.) render branded HTML
+  and enqueue a `mail` doc; the extension sends it and stamps `delivery.state`.
+- **Secret:** the SendGrid API key lives in **Secret Manager** (set via the console /
+  `firebase functions:secrets:set`), never in the repo. Rotate there if leaked.
 
 ---
 

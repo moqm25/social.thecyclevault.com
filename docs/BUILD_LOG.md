@@ -21,6 +21,37 @@ optional/off.)
 
 ---
 
+## ✓ Post-MVP sessions (2026-06-28)
+
+Newest first. Each shipped feature was typecheck/lint/test-clean, deployed, and
+committed separately.
+
+- **Deep security + UX audit pass.** Full sweep of every callable's access level,
+  the client route guards, and reporting flows. Fixed: `unbanUser` now
+  status-checked (`requireActiveUser`) so a banned admin can't self-reinstate
+  (**High**); `ProtectedRoute` fails **closed** on an unknown role; signup rolls
+  back the orphaned Auth account if profile creation fails; `exportMyData` reads are
+  capped at 10k with a `truncated` flag; `searchUsers` is now rate-limited; added a
+  **Report-a-member** UI (the `reportContent` `user` path was backend-ready but
+  unreachable); "Report a problem" re-collects its debug context at submit. Details
+  in [`SECURITY_AUDIT.md`](./SECURITY_AUDIT.md) §6. Docs refreshed across the board.
+- **Admin user directory.** `searchUsers` (admin — find by username prefix or exact
+  email) + `adminDeleteUser` (superadmin, with self/other-superadmin guards), and a
+  superadmin-only "Danger zone" delete in the UI.
+- **Universal "Report a problem".** Guest-friendly feedback with category, optional
+  contact email, debug context, and optional screenshot → admin **Issues** queue
+  (`submitIssueReport` + `listIssueReports`/`getIssueReportScreenshot`/`resolveIssueReport`).
+- **Moderator role made global** (platform-wide, not per-community); post/comment
+  **edits are re-moderated**.
+- **Firebase Hosting test channel** live at **`cyclevault-social.web.app`** (real
+  prod backend; internal test URL, not the public domain).
+- **Branded transactional emails** (password reset, email verification, email
+  change) via **SendGrid SMTP** + the `firestore-send-email` Trigger Email extension
+  (the `mail` collection). Deployed on **Node 22**; prod delivery verified
+  (`delivery.state = SUCCESS`).
+
+---
+
 ## ▶ Next action
 
 **MVP UI complete + AI/human moderation live + security audited + monetization

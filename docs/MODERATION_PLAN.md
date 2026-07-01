@@ -17,7 +17,7 @@ and [`SECURITY_RULES.md`](./SECURITY_RULES.md).
 | --------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | **Guest**       | Unauthenticated         | Read active public content only                                                                                        |
 | **User**        | Registered, `active`    | Post, comment, vote, report, edit/delete own                                                                           |
-| **Moderator**   | Appointed per community | All User + remove content, lock posts, suspend users (bounded), resolve/dismiss reports — **within their communities** |
+| **Moderator**   | Appointed by admins     | All User + remove content, lock posts, suspend users (bounded), resolve/dismiss reports — **platform-wide** (global, not scoped to a single community) |
 | **Admin**       | Trusted operators       | All Mod across **all** communities + ban users, restore content, manage communities                                    |
 | **Super Admin** | Founder                 | All Admin + change roles (`setUserRole`), platform settings, view audit logs                                           |
 
@@ -30,14 +30,20 @@ and [`SECURITY_RULES.md`](./SECURITY_RULES.md).
 | Vote                    | ❌    | ✅   | ✅                   | ✅    | ✅         |
 | Report content          | ❌    | ✅   | ✅                   | ✅    | ✅         |
 | Edit/delete own content | ❌    | ✅   | ✅                   | ✅    | ✅         |
-| Remove others' content  | ❌    | ❌   | ✅ (own communities) | ✅    | ✅         |
-| Lock post               | ❌    | ❌   | ✅ (own communities) | ✅    | ✅         |
+| Remove others' content  | ❌    | ❌    | ✅                   | ✅    | ✅         |
+| Lock post               | ❌    | ❌    | ✅                   | ✅    | ✅         |
 | Suspend user            | ❌    | ❌   | ✅ (≤ 7 days)        | ✅    | ✅         |
 | Ban user                | ❌    | ❌   | ❌                   | ✅    | ✅         |
 | Restore removed content | ❌    | ❌   | ❌                   | ✅    | ✅         |
 | Change roles            | ❌    | ❌   | ❌                   | ❌    | ✅         |
 | View audit logs         | ❌    | ❌   | ❌                   | ❌    | ✅         |
-
+> **Moderators are global.** `requireModeratorOf` authorizes any moderator+
+> across every community (the legacy per-community `users.moderatorOf` list is
+> superseded). Admin/superadmin inherit all moderator powers.
+>
+> **Edits are re-moderated.** `updatePost` and `updateComment` re-run the
+> moderation pipeline on the edited content, so a benign post can't be quietly
+> edited into a policy violation after approval.
 All enforcement happens **server-side in Cloud Functions**; the client UI merely
 hides controls the user can't use.
 
