@@ -1,6 +1,6 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { db, FieldValue, COL } from "../shared/admin.js";
-import { requireActiveUser, requireAuth, getProfile, requireModeratorOf, requireRole } from "../shared/auth.js";
+import { requireActiveUser, requireModeratorOf, requireRole } from "../shared/auth.js";
 import { parseInput } from "../shared/validate.js";
 import { enforceRateLimit, RATE } from "../shared/rateLimit.js";
 import { recordModerationAction, recordAuditLog } from "../shared/audit.js";
@@ -369,8 +369,7 @@ export const setUserRole = onCall(async (request) => {
 
 /** unbanUser — admin reactivates a banned account. */
 export const unbanUser = onCall(async (request) => {
-	const auth = requireAuth(request);
-	const profile = await getProfile(auth.uid);
+	const { auth, profile } = await requireActiveUser(request);
 	requireRole(profile, "admin");
 	const { uid } = parseInput(unbanUserSchema, request.data);
 
