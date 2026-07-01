@@ -84,9 +84,9 @@ export function useDeletePost() {
 	});
 }
 
-/** Report a post or comment for moderator review. */
+/** Report a post, comment, or user for moderator review. */
 export function useReportContent() {
 	return useMutation({
-		mutationFn: (vars: { targetType: "post" | "comment"; targetId: string; reason: ReportReason; details?: string }) => reportContent(vars),
+		mutationFn: (vars: { targetType: "post" | "comment" | "user"; targetId: string; reason: ReportReason; details?: string }) => reportContent(vars),
 	});
 }

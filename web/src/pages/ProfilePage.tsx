@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useUserProfile, useUserPosts, useUserComments } from "../features/profile/hooks";
+import { ReportUserModal } from "../features/profile/ReportUserModal";
 import { PostCard } from "../components/PostCard";
 import { UserBadges } from "../components/Badge";
 import { Skeleton, EmptyState, ErrorState } from "../components/states";
@@ -15,6 +16,7 @@ export default function ProfilePage() {
 	const { profile: me } = useAuth();
 	const profile = useUserProfile(username);
 	const [tab, setTab] = useState<Tab>("posts");
+	const [reportOpen, setReportOpen] = useState(false);
 
 	const uid = profile.data?.uid;
 	const posts = useUserPosts(tab === "posts" ? uid : undefined);
@@ -76,6 +78,14 @@ export default function ProfilePage() {
 								Edit profile
 							</Link>
 						)}
+						{!isMe && me && (
+							<button
+								type="button"
+								onClick={() => setReportOpen(true)}
+								className="mt-3 inline-block rounded-full border border-line px-3.5 py-1.5 text-sm font-medium text-muted transition-colors hover:border-coral hover:text-coral">
+								Report
+							</button>
+						)}
 					</div>
 				</div>
 			</section>
@@ -128,6 +138,8 @@ export default function ProfilePage() {
 					))}
 				</ul>
 			)}
+
+			{!isMe && me && <ReportUserModal open={reportOpen} onClose={() => setReportOpen(false)} uid={u.uid} username={u.username} />}
 		</div>
 	);
 }

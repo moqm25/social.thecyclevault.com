@@ -41,17 +41,20 @@ export function ReportIssueModal({ open, onClose }: { open: boolean; onClose: ()
 	const [done, setDone] = useState(false);
 	const fileRef = useRef<HTMLInputElement>(null);
 
-	// Snapshot the debug context when the dialog opens (i.e. when the problem
-	// happened), so it matches what the reporter previews and what we send.
+	// Live builder for the debug context. Memoized for the preview below, but also
+	// re-run at submit time so the route/url/timestamp we send reflect where the
+	// reporter actually is when they hit send (not just when they opened the form).
+	const buildDebug = () =>
+		collectDebugInfo({
+			uid: user?.uid ?? null,
+			username: profile?.username ?? null,
+			role: profile?.role ?? null,
+			emailVerified: user?.emailVerified ?? null,
+			adminView,
+		});
+
 	const debug = useMemo(
-		() =>
-			collectDebugInfo({
-				uid: user?.uid ?? null,
-				username: profile?.username ?? null,
-				role: profile?.role ?? null,
-				emailVerified: user?.emailVerified ?? null,
-				adminView,
-			}),
+		buildDebug,
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[open],
 	);
@@ -128,7 +131,7 @@ export function ReportIssueModal({ open, onClose }: { open: boolean; onClose: ()
 				message: message.trim(),
 				category,
 				email: !user && email.trim() ? email.trim() : undefined,
-				context: JSON.stringify(debug).slice(0, 8000),
+				context: JSON.stringify(buildDebug()).slice(0, 8000),
 				screenshot: screenshot ?? undefined,
 			});
 			setDone(true);
