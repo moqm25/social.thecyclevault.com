@@ -18,6 +18,12 @@
 	"extensions": {
 		"firestore-send-email": "firebase/firestore-send-email@0.2.9"
 	},
+	"hosting": {
+		"//": "Firebase Hosting = a TEST/preview channel at cyclevault-social.web.app pointing at the real prod backend. This is SEPARATE from the gated public launch (GitHub Pages → social.thecyclevault.com). It intentionally does NOT set the custom domain.",
+		"public": "web/dist",
+		"ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+		"rewrites": [{ "source": "**", "destination": "/index.html" }]
+	},
 	"emulators": {
 		"auth": { "port": 9099 },
 		"functions": { "port": 5001 },
